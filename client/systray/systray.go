@@ -94,6 +94,7 @@ type Menu struct {
 	disconnect  *systray.MenuItem
 	self        *systray.MenuItem
 	exitNodes   *systray.MenuItem
+	dashboard   *systray.MenuItem
 	more        *systray.MenuItem
 	rebuildMenu *systray.MenuItem
 	quit        *systray.MenuItem
@@ -101,6 +102,8 @@ type Menu struct {
 	rebuildCh  chan struct{} // triggers a menu rebuild
 	accountsCh chan ipn.ProfileID
 	exitNodeCh chan tailcfg.StableNodeID // ID of selected exit node
+
+	dashboardAutoOpened bool // whether dashboard has been auto-opened on Running transition
 
 	eventCancel context.CancelFunc // cancel eventLoop
 
@@ -177,6 +180,17 @@ See https://tailscale.com/kb/1597/linux-systray for more information.`)
 	systray.SetTitle("tailscale")
 
 	menu.rebuild()
+
+	// Auto-open the Dashboard if tailscaled is already running.
+	menu.mu.Lock()
+	running := menu.status != nil && menu.status.BackendState == "Running"
+	if running {
+		menu.dashboardAutoOpened = true
+	}
+	menu.mu.Unlock()
+	if running {
+		OpenDashboard(menu.lc)
+	}
 
 	menu.mu.Lock()
 	if menu.readonly {
@@ -331,6 +345,16 @@ func (menu *Menu) rebuild() {
 		})
 	} else {
 		menu.more.Disable()
+	}
+
+	menu.dashboard = systray.AddMenuItem("Dashboard", "Open management dashboard")
+	if menu.status != nil && menu.status.BackendState == "Running" {
+		menu.dashboard.Enable()
+		onClick(ctx, menu.dashboard, func(_ context.Context) {
+			OpenDashboard(menu.lc)
+		})
+	} else {
+		menu.dashboard.Disable()
 	}
 
 	// TODO(#15528): this menu item shouldn't be necessary at all,
@@ -544,6 +568,15 @@ func (menu *Menu) watchIPNBusInner() error {
 			if n.State != nil {
 				log.Printf("new state: %v", n.State)
 				rebuild = true
+				// Auto-open dashboard when state transitions to Running.
+				menu.mu.Lock()
+				if !menu.dashboardAutoOpened && *n.State == ipn.Running {
+					menu.dashboardAutoOpened = true
+					menu.mu.Unlock()
+					OpenDashboard(menu.lc)
+				} else {
+					menu.mu.Unlock()
+				}
 			}
 			if n.Prefs != nil {
 				rebuild = true

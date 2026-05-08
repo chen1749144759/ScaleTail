@@ -134,24 +134,30 @@ func NewClient(opts ClientOpts) (*Client, error) {
 	addr, _ := netip.ParseAddr(u.Hostname())
 	isPrivateHost := addr.IsPrivate() || addr.IsLoopback() || u.Hostname() == "localhost"
 	if port := u.Port(); port != "" {
-		// If there is an explicit port specified, entirely rely on the scheme,
-		// unless it's http with a private host in which case we never try using HTTPS.
 		if u.Scheme == "https" {
 			httpPort = ""
 			httpsPort = port
 		} else if u.Scheme == "http" {
 			httpPort = port
-			httpsPort = "443"
-			if isPrivateHost {
-				logf("setting empty HTTPS port with http scheme and private host %s", u.Hostname())
-				httpsPort = ""
+			if port == "80" {
+				// Standard port 80: keep the 443 HTTPS fallback.
+				// The fallback exists for networks that MITM port 80
+				// but leave 443 untouched.
+				httpsPort = "443"
+			} else {
+				// Non-standard port: disable the HTTPS fallback.
+				// The fallback hardcodes port 443, which is wrong for
+				// custom servers (e.g. headscale on :60098). Falling
+				// back to 443 would connect to a port the server
+				// doesn't listen on. With NoPort, the controlhttp
+				// dialer skips HTTPS entirely and always uses HTTP.
+				httpsPort = controlhttp.NoPort
 			}
 		}
 	} else if u.Scheme == "http" && isPrivateHost {
-		// Whenever the scheme is http and the hostname is an IP address, do not set the HTTPS port,
-		// as there cannot be a TLS certificate issued for an IP, unless it's a public IP.
+		// Private host, no explicit port: use HTTP on 80, no HTTPS.
 		httpPort = "80"
-		httpsPort = ""
+		httpsPort = controlhttp.NoPort
 	}
 
 	np := &Client{
