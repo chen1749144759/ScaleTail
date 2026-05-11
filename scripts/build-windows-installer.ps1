@@ -22,7 +22,7 @@ try {
   go build -trimpath -o (Join-Path $outDirAbs "tailscaled.exe") ./cmd/tailscaled
 
   Write-Host "Building tailscale-systray.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "tailscale-systray.exe") ./cmd/systray
+  go build -trimpath -ldflags "-H=windowsgui" -o (Join-Path $outDirAbs "tailscale-systray.exe") ./cmd/systray
 } finally {
   $env:CGO_ENABLED = $oldCgo
 }
