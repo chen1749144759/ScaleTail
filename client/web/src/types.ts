@@ -10,6 +10,8 @@ export type NodeData = {
   OS: string
   IPv4: string
   IPv6: string
+  RxBytes: number
+  TxBytes: number
   ID: string
   KeyExpiry: string
   KeyExpired: boolean
@@ -31,6 +33,7 @@ export type NodeData = {
   Tags: string[]
   RunningSSHServer: boolean
   ControlAdminURL: string
+  ControlURL: string
   LicensesURL: string
   Features: { [key in Feature]: boolean } // value is true if given feature is available on this client
   ACLAllowsAnyIncomingTraffic: boolean

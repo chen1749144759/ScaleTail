@@ -601,6 +601,9 @@ func (s *Server) serveAPI(w http.ResponseWriter, r *http.Request) {
 	case path == "/data" && r.Method == httpm.GET:
 		s.serveGetNodeData(w, r)
 		return
+	case path == "/up" && r.Method == httpm.POST:
+		s.serveTailscaleUp(w, r)
+		return
 	case path == "/exit-nodes" && r.Method == httpm.GET:
 		s.serveGetExitNodes(w, r)
 		return
@@ -827,6 +830,8 @@ type nodeData struct {
 	DomainName  string
 	IPv4        netip.Addr
 	IPv6        netip.Addr
+	RxBytes     int64
+	TxBytes     int64
 	OS          string
 	IPNVersion  string
 
@@ -856,6 +861,7 @@ type nodeData struct {
 	ACLAllowsAnyIncomingTraffic bool
 
 	ControlAdminURL string
+	ControlURL      string
 	LicensesURL     string
 
 	// Features is the set of available features for use on the
@@ -893,6 +899,8 @@ func (s *Server) serveGetNodeData(w http.ResponseWriter, r *http.Request) {
 		DeviceName:       strings.Split(st.Self.DNSName, ".")[0],
 		IPv4:             ipv4,
 		IPv6:             ipv6,
+		RxBytes:          st.Self.RxBytes,
+		TxBytes:          st.Self.TxBytes,
 		OS:               st.Self.OS,
 		IPNVersion:       strings.Split(st.Version, "-")[0],
 		Profile:          st.User[st.Self.UserID],
@@ -906,6 +914,7 @@ func (s *Server) serveGetNodeData(w http.ResponseWriter, r *http.Request) {
 		RunningSSHServer: prefs.RunSSH,
 		URLPrefix:        strings.TrimSuffix(s.pathPrefix, "/"),
 		ControlAdminURL:  prefs.AdminPageURL(s.polc),
+		ControlURL:       prefs.ControlURL,
 		LicensesURL:      licenses.LicensesURL(),
 		Features:         availableFeatures(),
 
@@ -1136,22 +1145,19 @@ func (s *Server) servePostRoutes(ctx context.Context, data postRoutesRequest) er
 func (s *Server) tailscaleUp(ctx context.Context, st *ipnstate.Status, opt tailscaleUpOptions) (authURL string, retErr error) {
 	origAuthURL := st.AuthURL
 	isRunning := st.BackendState == ipn.Running.String()
+	controlURL, err := normalizeControlURL(opt.ControlURL)
+	if err != nil {
+		return "", err
+	}
+	opt.ControlURL = controlURL
+	hasConnectOptions := opt.ControlURL != "" || opt.AuthKey != ""
 
 	if !opt.Reauthenticate {
 		switch {
-		case origAuthURL != "":
+		case origAuthURL != "" && !hasConnectOptions:
 			return origAuthURL, nil
 		case isRunning:
 			return "", nil
-		case st.BackendState == ipn.Stopped.String():
-			// stopped and not reauthenticating, so just start running
-			_, err := s.lc.EditPrefs(ctx, &ipn.MaskedPrefs{
-				Prefs: ipn.Prefs{
-					WantRunning: true,
-				},
-				WantRunningSet: true,
-			})
-			return "", err
 		}
 	}
 
@@ -1169,35 +1175,52 @@ func (s *Server) tailscaleUp(ctx context.Context, st *ipnstate.Status, opt tails
 	}
 	defer watcher.Close()
 
+	startErr := make(chan error, 1)
 	go func() {
 		if !isRunning {
-			ipnOptions := ipn.Options{AuthKey: opt.AuthKey}
-			if opt.ControlURL != "" {
-				_, err := s.lc.EditPrefs(ctx, &ipn.MaskedPrefs{
-					Prefs: ipn.Prefs{
-						ControlURL: opt.ControlURL,
-					},
-					ControlURLSet: true,
-				})
-				if err != nil {
-					s.logf("edit prefs: %v", err)
-				}
+			if err := s.applyTailscaleUpPrefs(ctx, opt); err != nil {
+				s.logf("edit prefs: %v", err)
+				startErr <- err
+				cancelWatch()
+				return
 			}
+			ipnOptions := ipn.Options{AuthKey: opt.AuthKey}
 			if err := s.lc.Start(ctx, ipnOptions); err != nil {
 				s.logf("start: %v", err)
+				startErr <- err
+				cancelWatch()
+				return
 			}
 		}
 		if opt.Reauthenticate {
 			if err := s.lc.StartLoginInteractive(ctx); err != nil {
 				s.logf("startLogin: %v", err)
+				startErr <- err
+				cancelWatch()
+				return
 			}
 		}
+		close(startErr)
 	}()
 
 	for {
 		n, err := watcher.Next()
 		if err != nil {
+			select {
+			case err, ok := <-startErr:
+				if ok && err != nil {
+					return "", err
+				}
+			default:
+			}
 			return "", err
+		}
+		select {
+		case err, ok := <-startErr:
+			if ok && err != nil {
+				return "", err
+			}
+		default:
 		}
 		if n.State != nil && *n.State == ipn.Running {
 			return "", nil
@@ -1210,6 +1233,41 @@ func (s *Server) tailscaleUp(ctx context.Context, st *ipnstate.Status, opt tails
 			return *url, nil
 		}
 	}
+}
+
+func (s *Server) applyTailscaleUpPrefs(ctx context.Context, opt tailscaleUpOptions) error {
+	mp := &ipn.MaskedPrefs{
+		Prefs: ipn.Prefs{
+			WantRunning: true,
+		},
+		WantRunningSet: true,
+	}
+	if opt.ControlURL != "" {
+		mp.Prefs.ControlURL = opt.ControlURL
+		mp.ControlURLSet = true
+	}
+	_, err := s.lc.EditPrefs(ctx, mp)
+	return err
+}
+
+func normalizeControlURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", nil
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "", fmt.Errorf("invalid control URL: %w", err)
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return "", errors.New("control URL scheme must be http or https")
+	}
+	if u.Host == "" {
+		return "", errors.New("control URL must include a host")
+	}
+	u.RawQuery = ""
+	u.Fragment = ""
+	return strings.TrimRight(u.String(), "/"), nil
 }
 
 type tailscaleUpOptions struct {

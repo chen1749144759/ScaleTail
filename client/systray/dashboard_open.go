@@ -6,7 +6,6 @@ package systray
 import (
 	"log"
 
-	"github.com/toqueteos/webbrowser"
 	"tailscale.com/client/local"
 )
 
@@ -17,8 +16,22 @@ func OpenDashboard(lc *local.Client) {
 		log.Printf("dashboard: %v", err)
 		return
 	}
-	log.Printf("dashboard: opening %s", url)
-	if err := webbrowser.Open(url); err != nil {
-		log.Printf("dashboard: open browser: %v", err)
+	log.Printf("dashboard: opening window %s", url)
+	if err := openDesktopWindow(url); err != nil {
+		log.Printf("dashboard: open window: %v", err)
+	}
+}
+
+// OpenConnectWindow starts the local control panel and opens the server
+// configuration window.
+func OpenConnectWindow(lc *local.Client) {
+	url, err := StartConnectWindow(lc)
+	if err != nil {
+		log.Printf("connect window: %v", err)
+		return
+	}
+	log.Printf("connect window: opening %s", url)
+	if err := openDesktopWindow(url); err != nil {
+		log.Printf("connect window: open: %v", err)
 	}
 }

@@ -62,14 +62,18 @@ export default function HomeView({
             fullDomain={`${node.DeviceName}.${node.TailnetName}`}
           />
         </div>
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <TrafficStat label="Received" value={node.RxBytes} />
+          <TrafficStat label="Sent" value={node.TxBytes} />
+        </div>
         {(node.Features["advertise-exit-node"] ||
           node.Features["use-exit-node"]) && (
-          <ExitNodeSelector
-            className="mb-5"
-            node={node}
-            disabled={!canEdit("exitnodes", auth)}
-          />
-        )}
+            <ExitNodeSelector
+              className="mb-5"
+              node={node}
+              disabled={!canEdit("exitnodes", auth)}
+            />
+          )}
         <Link
           className="link font-medium"
           to="/details"
@@ -131,6 +135,29 @@ export default function HomeView({
       </div>
     </div>
   )
+}
+
+function TrafficStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md bg-gray-50 px-3 py-2">
+      <div className="text-gray-500 text-xs font-medium mb-1">{label}</div>
+      <div className="text-gray-800 text-sm font-semibold">
+        {formatBytes(value)}
+      </div>
+    </div>
+  )
+}
+
+function formatBytes(value: number) {
+  const units = ["B", "KB", "MB", "GB", "TB"]
+  let size = value || 0
+  let unit = 0
+  while (size >= 1024 && unit < units.length - 1) {
+    size = size / 1024
+    unit++
+  }
+  const digits = unit === 0 || size >= 10 ? 0 : 1
+  return `${size.toFixed(digits)} ${units[unit]}`
 }
 
 function SettingsCard({

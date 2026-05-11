@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"golang.org/x/net/http2"
+	"tailscale.com/control/controlhttp"
 	"tailscale.com/control/controlhttp/controlhttpserver"
 	"tailscale.com/net/netmon"
 	"tailscale.com/net/tsdial"
@@ -96,51 +97,57 @@ func TestNoiseClientPortsAreSet(t *testing.T) {
 			wantHTTP:  "80",
 		},
 		{
+			name:      "http-url-explicit-default-port",
+			url:       "http://example.com:80",
+			wantHTTPS: controlhttp.NoPort,
+			wantHTTP:  "80",
+		},
+		{
 			name:      "https-url-custom-port",
 			url:       "https://example.com:123",
 			wantHTTPS: "123",
-			wantHTTP:  "",
+			wantHTTP:  controlhttp.NoPort,
 		},
 		{
 			name:      "http-url-custom-port",
 			url:       "http://example.com:123",
-			wantHTTPS: "443", // TODO(bradfitz): questionable; change?
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "123",
 		},
 		{
 			name:      "http-loopback-no-port",
 			url:       "http://127.0.0.1",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "80",
 		},
 		{
 			name:      "http-loopback-custom-port",
 			url:       "http://127.0.0.1:8080",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "8080",
 		},
 		{
 			name:      "http-localhost-no-port",
 			url:       "http://localhost",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "80",
 		},
 		{
 			name:      "http-localhost-custom-port",
 			url:       "http://localhost:8080",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "8080",
 		},
 		{
 			name:      "http-private-ip-no-port",
 			url:       "http://192.168.2.3",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "80",
 		},
 		{
 			name:      "http-private-ip-custom-port",
 			url:       "http://192.168.2.3:8080",
-			wantHTTPS: "",
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "8080",
 		},
 		{
@@ -152,7 +159,7 @@ func TestNoiseClientPortsAreSet(t *testing.T) {
 		{
 			name:      "http-public-ip-custom-port",
 			url:       "http://1.2.3.4:8080",
-			wantHTTPS: "443", // TODO(bradfitz): questionable; change?
+			wantHTTPS: controlhttp.NoPort,
 			wantHTTP:  "8080",
 		},
 		{
@@ -165,7 +172,7 @@ func TestNoiseClientPortsAreSet(t *testing.T) {
 			name:      "https-public-ip-custom-port",
 			url:       "https://1.2.3.4:8080",
 			wantHTTPS: "8080",
-			wantHTTP:  "",
+			wantHTTP:  controlhttp.NoPort,
 		},
 	}
 

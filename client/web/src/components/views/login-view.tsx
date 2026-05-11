@@ -1,56 +1,76 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
-import React, { useState, useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { useAPI } from "src/api"
 import { NodeData } from "src/types"
 import Button from "src/ui/button"
 import Input from "src/ui/input"
 import Toggle from "src/ui/toggle"
 
+type InitialServerConfig = {
+  serverIP: string
+  serverPort: string
+  useHTTPS: boolean
+}
+
+function initialServerConfig(controlURL: string): InitialServerConfig {
+  if (!controlURL) {
+    return { serverIP: "", serverPort: "80", useHTTPS: false }
+  }
+  try {
+    const u = new URL(controlURL)
+    const useHTTPS = u.protocol === "https:"
+    return {
+      serverIP: u.hostname,
+      serverPort: u.port || (useHTTPS ? "443" : "80"),
+      useHTTPS,
+    }
+  } catch {
+    return { serverIP: "", serverPort: "80", useHTTPS: false }
+  }
+}
+
+function bracketIPv6Host(host: string) {
+  return host.includes(":") && !host.startsWith("[") ? `[${host}]` : host
+}
+
 /**
  * ServerConfigView replaces the original LoginView.
- * It provides a GUI form for configuring the control server URL
- * (IP, port, HTTPS) in place of using the CLI `tailscale up --login-server=...`
- *
- * Rendered when the client is not connected to a tailnet:
- *   - "Stopped" / "NoState": show full server configuration form
- *   - "NeedsLogin": show re-auth or auth URL handling
+ * It lets users configure the control server URL without invoking
+ * `tailscale up --login-server=...` from a shell.
  */
 export default function ServerConfigView({ data }: { data: NodeData }) {
   const api = useAPI()
+  const initial = initialServerConfig(data.ControlURL)
 
-  // Form state
-  const [serverIP, setServerIP] = useState("")
-  const [serverPort, setServerPort] = useState("80")
-  const [useHTTPS, setUseHTTPS] = useState(false)
+  const [serverIP, setServerIP] = useState(initial.serverIP)
+  const [serverPort, setServerPort] = useState(initial.serverPort)
+  const [useHTTPS, setUseHTTPS] = useState(initial.useHTTPS)
   const [authKey, setAuthKey] = useState("")
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState("")
 
-  const needsConfig = data.Status === "Stopped" || data.Status === "NoState"
   const needsAuth = data.Status === "NeedsLogin"
 
   const buildControlURL = useCallback(() => {
     const scheme = useHTTPS ? "https" : "http"
     const port = serverPort.trim()
-    // Omit default ports for cleaner URLs
-    if (
-      (useHTTPS && port === "443") ||
-      (!useHTTPS && port === "80")
-    ) {
-      return `${scheme}://${serverIP.trim()}`
-    }
-    return `${scheme}://${serverIP.trim()}:${port}`
+    const host = bracketIPv6Host(serverIP.trim())
+    return `${scheme}://${host}:${port}`
   }, [serverIP, serverPort, useHTTPS])
 
   const handleConnect = useCallback(async () => {
-    const ip = serverIP.trim()
-    if (!ip) {
-      setError("请输入服务器 IP 地址")
+    const host = serverIP.trim()
+    const port = Number(serverPort)
+    if (!host) {
+      setError("请输入服务器地址")
+      return
+    }
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      setError("请输入 1-65535 之间的端口")
       return
     }
 
-    const controlURL = buildControlURL()
     setError("")
     setConnecting(true)
 
@@ -58,81 +78,35 @@ export default function ServerConfigView({ data }: { data: NodeData }) {
       await api({
         action: "up",
         data: {
-          ControlURL: controlURL,
+          ControlURL: buildControlURL(),
           AuthKey: authKey.trim() || undefined,
-          Reauthenticate: !authKey.trim(), // with auth key: direct login; without: need browser auth
+          Reauthenticate: !authKey.trim(),
         },
       })
-      // After api("up"), useSWR auto-refreshes /data.
-      // If Status transitions to "Running", app.tsx switches to management view.
-      // If an auth URL is returned, it's auto-opened in the browser.
     } catch (err) {
       setError(String(err))
     } finally {
       setConnecting(false)
     }
-  }, [serverIP, serverPort, useHTTPS, authKey, buildControlURL, api])
+  }, [serverIP, serverPort, authKey, buildControlURL, api])
 
-  const handleReauth = useCallback(async () => {
-    setError("")
-    setConnecting(true)
-    try {
-      await api({
-        action: "up",
-        data: { Reauthenticate: true },
-      })
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setConnecting(false)
-    }
-  }, [api])
-
-  // Auth form (when Status=NeedsLogin — device needs re-authentication)
-  if (needsAuth) {
-    return (
-      <div className="mb-8 py-6 px-8 bg-white rounded-md shadow-2xl">
-        <h3 className="text-2xl font-semibold mb-3">
-          {data.IPv4 !== "0" && data.IPv4 ? "重新认证" : "正在认证"}
-        </h3>
-        {data.IPv4 !== "0" && data.IPv4 ? (
-          <>
-            <p className="text-gray-700 mb-2">
-              设备密钥已过期或需要重新认证。
-            </p>
-            <p className="text-gray-600 text-sm mb-4">
-              当前设备地址：{data.IPv4}
-            </p>
-          </>
-        ) : (
-          <p className="text-gray-700 mb-4">
-            正在连接控制服务器，请在浏览器中完成认证。
-          </p>
-        )}
-        <Button
-          onClick={handleReauth}
-          className="w-full mb-3"
-          intent="primary"
-          loading={connecting}
-        >
-          重新认证
-        </Button>
-        {error && (
-          <p className="text-red-500 text-sm mt-2">{error}</p>
-        )}
-      </div>
-    )
-  }
-
-  // Server configuration form (Status=Stopped/NoState — never configured)
   return (
     <div className="mb-8 py-6 px-8 bg-white rounded-md shadow-2xl">
-      <h3 className="text-2xl font-semibold mb-1">连接到控制服务器</h3>
+      <h3 className="text-2xl font-semibold mb-1">
+        {needsAuth ? "重新连接控制服务器" : "连接到控制服务器"}
+      </h3>
       <p className="text-gray-500 text-sm mb-6">
-        请输入自定义控制服务器的连接信息
+        {needsAuth
+          ? "认证未完成或已失效，可以继续使用当前配置，也可以重新填写服务端。"
+          : "请输入自定义控制服务器的连接信息。"}
       </p>
 
-      {/* Server IP */}
+      {needsAuth && data.IPv4 !== "0" && data.IPv4 ? (
+        <div className="mb-4 p-2 bg-gray-50 rounded text-sm text-gray-600">
+          当前设备地址：{data.IPv4}
+        </div>
+      ) : null}
+
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">
           服务器地址
@@ -146,7 +120,6 @@ export default function ServerConfigView({ data }: { data: NodeData }) {
         />
       </div>
 
-      {/* Port + HTTPS row */}
       <div className="flex gap-3 mb-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -155,12 +128,9 @@ export default function ServerConfigView({ data }: { data: NodeData }) {
           <Input
             type="text"
             inputMode="numeric"
-            placeholder="80"
+            placeholder={useHTTPS ? "443" : "80"}
             value={serverPort}
-            onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, "")
-              setServerPort(v)
-            }}
+            onChange={(e) => setServerPort(e.target.value.replace(/\D/g, ""))}
             disabled={connecting}
           />
         </div>
@@ -176,14 +146,12 @@ export default function ServerConfigView({ data }: { data: NodeData }) {
         </div>
       </div>
 
-      {/* Preview of URL */}
-      {serverIP.trim() && (
+      {serverIP.trim() && serverPort.trim() ? (
         <div className="mb-4 p-2 bg-gray-50 rounded text-sm text-gray-600 font-mono break-all">
           {buildControlURL()}
         </div>
-      )}
+      ) : null}
 
-      {/* Auth Key */}
       <div className="mb-5">
         <label className="block text-sm font-medium text-gray-700 mb-1">
           认证密钥
@@ -197,25 +165,21 @@ export default function ServerConfigView({ data }: { data: NodeData }) {
           disabled={connecting}
         />
         <p className="text-gray-400 text-xs mt-1">
-          填写预认证密钥可免浏览器认证，留空则在浏览器中完成认证
+          填写预认证密钥可直接连接；留空则在浏览器中完成认证。
         </p>
       </div>
 
-      {/* Connect button */}
       <Button
         onClick={handleConnect}
         className="w-full mb-2"
         intent="primary"
         loading={connecting}
-        disabled={!serverIP.trim()}
+        disabled={!serverIP.trim() || !serverPort.trim()}
       >
-        连接
+        {needsAuth ? "重新连接" : "连接"}
       </Button>
 
-      {/* Error display */}
-      {error && (
-        <p className="text-red-500 text-sm mt-2">{error}</p>
-      )}
+      {error ? <p className="text-red-500 text-sm mt-2">{error}</p> : null}
     </div>
   )
 }

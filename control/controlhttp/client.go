@@ -237,9 +237,8 @@ func (a *Dialer) dialHost(ctx context.Context) (*ClientConn, error) {
 // If optAddr is valid, then no DNS is used and the connection will be made to the
 // provided address.
 func (a *Dialer) dialHostOpt(ctx context.Context, optAddr netip.Addr, optACEHost string) (*ClientConn, error) {
-	// Create one shared context used by both port 80 and port 443 dials.
-	// If port 80 is still in flight when 443 returns, this deferred cancel
-	// will stop the port 80 dial.
+	// Create one shared context used by HTTP and HTTPS dials. If one is still
+	// in flight when the other returns, this deferred cancel will stop it.
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -248,10 +247,13 @@ func (a *Dialer) dialHostOpt(ctx context.Context, optAddr netip.Addr, optACEHost
 	// u80 and u443 are the URLs we'll try to hit over HTTP or HTTPS,
 	// respectively, in order to do the HTTP upgrade to a net.Conn over which
 	// we'll speak Noise.
-	u80 := &url.URL{
-		Scheme: "http",
-		Host:   net.JoinHostPort(a.Hostname, strDef(a.HTTPPort, "80")),
-		Path:   serverUpgradePath,
+	var u80 *url.URL
+	if a.HTTPPort != NoPort {
+		u80 = &url.URL{
+			Scheme: "http",
+			Host:   net.JoinHostPort(a.Hostname, strDef(a.HTTPPort, "80")),
+			Path:   serverUpgradePath,
+		}
 	}
 	u443 := &url.URL{
 		Scheme: "https",
@@ -260,6 +262,9 @@ func (a *Dialer) dialHostOpt(ctx context.Context, optAddr netip.Addr, optACEHost
 	}
 	if a.HTTPSPort == NoPort || optACEHost != "" {
 		u443 = nil
+	}
+	if u80 == nil && u443 == nil {
+		return nil, errors.New("no control connection ports enabled")
 	}
 
 	type tryURLRes struct {
@@ -285,19 +290,19 @@ func (a *Dialer) dialHostOpt(ctx context.Context, optAddr netip.Addr, optACEHost
 		}
 	}
 
-	forceTLS := a.forceNoise443()
+	forceTLS := a.forceNoise443() && u443 != nil
 
 	// Start the plaintext HTTP attempt first, unless disabled by the envknob.
-	if !forceTLS || u443 == nil {
+	if u80 != nil && !forceTLS {
 		go try(u80)
 	}
 
-	// In case outbound port 80 blocked or MITM'ed poorly, start a backup timer
-	// to dial port 443 if port 80 doesn't either succeed or fail quickly.
+	// In case outbound HTTP is blocked or MITM'ed poorly, start a backup timer
+	// to dial HTTPS if HTTP doesn't either succeed or fail quickly.
 	var try443Timer tstime.TimerController
 	if u443 != nil {
 		delay := a.httpsFallbackDelay()
-		if forceTLS {
+		if forceTLS || u80 == nil {
 			delay = 0
 		}
 		try443Timer = a.clock().AfterFunc(delay, func() { try(u443) })
@@ -307,6 +312,11 @@ func (a *Dialer) dialHostOpt(ctx context.Context, optAddr netip.Addr, optACEHost
 	var err80, err443 error
 	if forceTLS {
 		err80 = errors.New("TLS forced: no port 80 dialed")
+	} else if u80 == nil {
+		err80 = errors.New("HTTP disabled")
+	}
+	if u443 == nil {
+		err443 = errors.New("HTTPS disabled")
 	}
 	for {
 		select {

@@ -26,9 +26,8 @@ const (
 	serverUpgradePath = "/ts2021"
 )
 
-// NoPort is a sentinel value for Dialer.HTTPSPort to indicate that HTTPS
-// should not be tried on any port. It exists primarily for some localhost
-// tests where the control plane only runs on HTTP.
+// NoPort is a sentinel value for Dialer.HTTPPort or Dialer.HTTPSPort to
+// indicate that the corresponding scheme should not be tried on any port.
 const NoPort = "none"
 
 // Dialer contains configuration on how to dial the Tailscale control server.
@@ -56,6 +55,8 @@ type Dialer struct {
 	// HTTPPort is the port number to use when making a HTTP connection.
 	//
 	// If not specified, this defaults to port 80.
+	//
+	// If "none" (NoPort), HTTP is disabled.
 	HTTPPort string
 
 	// HTTPSPort is the port number to use when making a HTTPS connection.

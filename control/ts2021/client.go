@@ -135,24 +135,16 @@ func NewClient(opts ClientOpts) (*Client, error) {
 	isPrivateHost := addr.IsPrivate() || addr.IsLoopback() || u.Hostname() == "localhost"
 	if port := u.Port(); port != "" {
 		if u.Scheme == "https" {
-			httpPort = ""
+			httpPort = controlhttp.NoPort
 			httpsPort = port
 		} else if u.Scheme == "http" {
 			httpPort = port
-			if port == "80" {
-				// Standard port 80: keep the 443 HTTPS fallback.
-				// The fallback exists for networks that MITM port 80
-				// but leave 443 untouched.
-				httpsPort = "443"
-			} else {
-				// Non-standard port: disable the HTTPS fallback.
-				// The fallback hardcodes port 443, which is wrong for
-				// custom servers (e.g. headscale on :60098). Falling
-				// back to 443 would connect to a port the server
-				// doesn't listen on. With NoPort, the controlhttp
-				// dialer skips HTTPS entirely and always uses HTTP.
-				httpsPort = controlhttp.NoPort
-			}
+			// Explicit HTTP port: disable the HTTPS fallback. The fallback
+			// defaults to 443, which is wrong for custom servers (for
+			// example, headscale on :60098) and for users who explicitly
+			// configured port 80. With NoPort, the controlhttp dialer skips
+			// HTTPS entirely and always uses HTTP.
+			httpsPort = controlhttp.NoPort
 		}
 	} else if u.Scheme == "http" && isPrivateHost {
 		// Private host, no explicit port: use HTTP on 80, no HTTPS.
