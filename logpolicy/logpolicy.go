@@ -212,19 +212,19 @@ func LogsDir(logf logger.Logf) string {
 	case "windows":
 		if version.CmdName() == "tailscaled" {
 			// In the common case, when tailscaled is run as the Local System (as a service),
-			// we want to use %ProgramData% (C:\ProgramData\Tailscale), aside the
+			// we want to use %ProgramData% (C:\ProgramData\ScaleTail), aside the
 			// system state config with the machine key, etc. But if that directory's
 			// not accessible, then it's probably because the user is running tailscaled
 			// as a regular user (perhaps in userspace-networking/SOCK5 mode) and we should
 			// just use the %LocalAppData% instead. In a user context, %LocalAppData% isn't
 			// subject to random deletions from Windows system updates.
-			dir := filepath.Join(os.Getenv("ProgramData"), "Tailscale")
+			dir := filepath.Join(os.Getenv("ProgramData"), "ScaleTail")
 			if winProgramDataAccessible(dir) {
 				logf("logpolicy: using dir %v", dir)
 				return dir
 			}
 		}
-		dir := filepath.Join(os.Getenv("LocalAppData"), "Tailscale")
+		dir := filepath.Join(os.Getenv("LocalAppData"), "ScaleTail")
 		logf("logpolicy: using LocalAppData dir %v", dir)
 		return dir
 	case "linux":
@@ -254,7 +254,7 @@ func LogsDir(logf logger.Logf) string {
 
 	cacheDir, err := os.UserCacheDir()
 	if err == nil {
-		d := filepath.Join(cacheDir, "Tailscale")
+		d := filepath.Join(cacheDir, "ScaleTail")
 		logf("logpolicy: using UserCacheDir, %q", d)
 		return d
 	}
@@ -299,7 +299,7 @@ func winProgramDataAccessible(dir string) bool {
 		// TODO: windows ACLs
 		return false
 	}
-	// The C:\ProgramData\Tailscale directory should be locked down
+	// The C:\ProgramData\ScaleTail directory should be locked down
 	// by with ACLs to only be readable by the local system so a
 	// regular user shouldn't be able to do this operation:
 	if _, err := os.ReadDir(dir); err != nil {
@@ -578,7 +578,7 @@ func (opts Options) init(disableLogging bool) (*logtail.Config, *Policy) {
 			// Machines which started using Tailscale more recently will have
 			// %LocalAppData%\tailscaled.log.conf
 			//
-			// Attempt to migrate the log conf to C:\ProgramData\Tailscale
+			// Attempt to migrate the log conf to C:\ProgramData\ScaleTail
 			oldDir := filepath.Join(os.Getenv("LocalAppData"), "Tailscale")
 
 			oldPath := filepath.Join(oldDir, "tailscaled.log.conf")

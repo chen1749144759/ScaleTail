@@ -137,8 +137,19 @@ func TryWindowsAppDataMigration(logf logger.Logf, path string) string {
 		// what they are doing.
 		return path
 	}
-	oldFile := paths.LegacyStateFilePath()
-	return paths.TryConfigFileMigration(logf, oldFile, path)
+	for _, oldFile := range []string{paths.LegacySystemStateFilePath(), paths.LegacyStateFilePath()} {
+		if oldFile == "" || oldFile == path {
+			continue
+		}
+		nextPath := paths.TryConfigFileMigration(logf, oldFile, path)
+		if nextPath != path {
+			return nextPath
+		}
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+	return path
 }
 
 // FileStore is a StateStore that uses a JSON file for persistence.

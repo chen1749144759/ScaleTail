@@ -13,7 +13,7 @@ import {
 	validateHostname,
 	watchIPNBus,
 } from "./localapi";
-import { getServiceOverview, startTailscaleService } from "./service";
+import { getServiceOverview, startScaleTailService } from "./service";
 import { BackendState, ConnectRequest, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
@@ -220,7 +220,7 @@ function registerIPC(): void {
   });
   ipcMain.handle("api:getServiceStatus", async () => getServiceOverview());
   ipcMain.handle("api:startService", async () => {
-    const overview = await startTailscaleService(async () => {
+    const overview = await startScaleTailService(async () => {
       await getStatus(false);
     });
     await refreshTrayStatus();
@@ -306,7 +306,7 @@ async function ensureDaemonReady(peers: boolean): Promise<Status> {
     return await getStatus(peers);
   } catch (firstError) {
     try {
-      await startTailscaleService(async () => {
+      await startScaleTailService(async () => {
         await getStatus(false);
       });
       return await getStatus(peers);

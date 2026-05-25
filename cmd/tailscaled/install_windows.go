@@ -35,11 +35,14 @@ var serviceDependencies = []string{
 	"WinHttpAutoProxySvc",
 }
 
+var legacyServiceNames = []string{"Tailscale"}
+
 func installSystemDaemonWindows(args []string) (err error) {
 	m, err := mgr.Connect()
 	if err != nil {
 		return fmt.Errorf("failed to connect to Windows service manager: %v", err)
 	}
+	defer m.Disconnect()
 
 	service, err := m.OpenService(serviceName)
 	if err == nil {
@@ -60,7 +63,7 @@ func installSystemDaemonWindows(args []string) (err error) {
 		ErrorControl: mgr.ErrorNormal,
 		Dependencies: serviceDependencies,
 		DisplayName:  serviceName,
-		Description:  "Connects this computer to others on the Tailscale network.",
+		Description:  "Connects this computer to the ScaleTail network.",
 	}
 
 	service, err = m.CreateService(serviceName, exe, c)
@@ -102,15 +105,40 @@ func uninstallSystemDaemonWindows(args []string) (ret error) {
 	}
 	defer m.Disconnect()
 
-	service, err := m.OpenService(serviceName)
+	names := append([]string{serviceName}, legacyServiceNames...)
+	var deleted bool
+	var firstErr error
+	for _, name := range names {
+		if err := uninstallWindowsService(m, name); err != nil {
+			if errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
+				continue
+			}
+			if firstErr == nil {
+				firstErr = err
+			}
+			continue
+		}
+		deleted = true
+	}
+	if firstErr != nil {
+		return firstErr
+	}
+	if !deleted {
+		return fmt.Errorf("failed to open %q service: %w", serviceName, windows.ERROR_SERVICE_DOES_NOT_EXIST)
+	}
+	return nil
+}
+
+func uninstallWindowsService(m *mgr.Mgr, name string) error {
+	service, err := m.OpenService(name)
 	if err != nil {
-		return fmt.Errorf("failed to open %q service: %v", serviceName, err)
+		return fmt.Errorf("failed to open %q service: %w", name, err)
 	}
 
 	st, err := service.Query()
 	if err != nil {
 		service.Close()
-		return fmt.Errorf("failed to query service state: %v", err)
+		return fmt.Errorf("failed to query %q service state: %v", name, err)
 	}
 	if st.State != svc.Stopped {
 		service.Control(svc.Stop)
@@ -118,13 +146,13 @@ func uninstallSystemDaemonWindows(args []string) (ret error) {
 	err = service.Delete()
 	service.Close()
 	if err != nil {
-		return fmt.Errorf("failed to delete service: %v", err)
+		return fmt.Errorf("failed to delete %q service: %v", name, err)
 	}
 
 	bo := backoff.NewBackoff("uninstall", logger.Discard, 30*time.Second)
 	end := time.Now().Add(15 * time.Second)
 	for time.Until(end) > 0 {
-		service, err = m.OpenService(serviceName)
+		service, err = m.OpenService(name)
 		if err != nil {
 			// service is no longer openable; success!
 			break

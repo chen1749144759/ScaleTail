@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { ServiceOverview, ServiceState } from "../shared/types";
 
-const tailscaleService = "Tailscale";
+const scaleTailService = "ScaleTail";
 const dependencies = ["Dnscache", "iphlpsvc", "netprofm", "WinHttpAutoProxySvc"];
 
 const stateMap: Record<number, ServiceState["state"]> = {
@@ -13,16 +13,16 @@ const stateMap: Record<number, ServiceState["state"]> = {
 };
 
 export async function getServiceOverview(): Promise<ServiceOverview> {
-  const [service, ...deps] = await Promise.all([tailscaleService, ...dependencies].map(queryService));
+  const [service, ...deps] = await Promise.all([scaleTailService, ...dependencies].map(queryService));
   return {
     service,
     dependencies: deps,
   };
 }
 
-export async function startTailscaleService(checkReady: () => Promise<void>): Promise<ServiceOverview> {
+export async function startScaleTailService(checkReady: () => Promise<void>): Promise<ServiceOverview> {
   const deps = await Promise.all(dependencies.map(ensureServiceRunning));
-  await ensureServiceRunning(tailscaleService);
+  await ensureServiceRunning(scaleTailService);
 
   const deadline = Date.now() + 20000;
   let lastErr: unknown;
@@ -71,7 +71,7 @@ async function ensureServiceRunning(name: string): Promise<ServiceState> {
     return current;
   }
   if (!current.exists) {
-    throw new Error(name === tailscaleService ? "ScaleTail 服务未安装，请重新运行安装包。" : `依赖服务 ${name} 不存在。`);
+    throw new Error(name === scaleTailService ? "ScaleTail 服务未安装，请重新运行安装包。" : `依赖服务 ${name} 不存在。`);
   }
 
   const start = await runSC(["start", name], 12000);

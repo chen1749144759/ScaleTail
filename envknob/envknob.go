@@ -535,7 +535,7 @@ func ApplyDiskConfigError() error { return applyDiskConfigErr }
 // environment variables to a running service in a way similar to modifying
 // /etc/default/tailscaled on Linux.
 //
-// On Windows, you use %ProgramData%\Tailscale\tailscaled-env.txt instead.
+// On Windows, you use %ProgramData%\ScaleTail\tailscaled-env.txt instead.
 //
 // On macOS, use one of:
 //
@@ -607,6 +607,7 @@ func getPlatformEnvFiles() []string {
 	switch runtime.GOOS {
 	case "windows":
 		return []string{
+			filepath.Join(os.Getenv("ProgramData"), "ScaleTail", "tailscaled-env.txt"),
 			filepath.Join(os.Getenv("ProgramData"), "Tailscale", "tailscaled-env.txt"),
 		}
 	case "linux":
