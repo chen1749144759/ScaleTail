@@ -80,6 +80,7 @@ var handler = map[string]LocalAPIHandler{
 	"goroutines":           (*Handler).serveGoroutines,
 	"login-interactive":    (*Handler).serveLoginInteractive,
 	"logout":               (*Handler).serveLogout,
+	"netcheck":             (*Handler).serveNetcheck,
 	"peer-by-id":           (*Handler).servePeerByID,
 	"ping":                 (*Handler).servePing,
 	"prefs":                (*Handler).servePrefs,

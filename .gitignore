@@ -43,6 +43,8 @@ ssh/tailssh/testcontainers/tailscaled
 .vite/
 client/web/node_modules
 client/web/build/assets
+client/electron/node_modules
+client/electron/dist
 
 /gocross
 /dist
