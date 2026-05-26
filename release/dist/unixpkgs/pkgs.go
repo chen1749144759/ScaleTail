@@ -20,6 +20,13 @@ import (
 	"tailscale.com/release/dist"
 )
 
+const (
+	scaleTailPackageName        = "scaletail"
+	scaleTailPackageMaintainer  = "ScaleTail <noreply@github.com>"
+	scaleTailPackageDescription = "ScaleTail client and daemon for private WireGuard networks"
+	scaleTailPackageHomepage    = "https://github.com/chen1749144759/ScaleTail"
+)
+
 type tgzTarget struct {
 	filenameArch string // arch to use in filename instead of deriving from goEnv["GOARCH"]
 	goEnv        map[string]string
@@ -46,9 +53,9 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if t.goEnv["GOOS"] == "linux" {
 		// Linux used to be the only tgz architecture, so we didn't put the OS
 		// name in the filename.
-		filename = fmt.Sprintf("tailscale_%s_%s.tgz", b.Version.Short, t.arch())
+		filename = fmt.Sprintf("%s_%s_%s.tgz", scaleTailPackageName, b.Version.Short, t.arch())
 	} else {
-		filename = fmt.Sprintf("tailscale_%s_%s_%s.tgz", b.Version.Short, t.os(), t.arch())
+		filename = fmt.Sprintf("%s_%s_%s_%s.tgz", scaleTailPackageName, b.Version.Short, t.os(), t.arch())
 	}
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
@@ -249,14 +256,14 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, err
 	}
 	info := nfpm.WithDefaults(&nfpm.Info{
-		Name:        "tailscale",
+		Name:        scaleTailPackageName,
 		Arch:        arch,
 		Platform:    "linux",
 		Version:     b.Version.Short,
-		Maintainer:  "Tailscale Inc <info@tailscale.com>",
-		Description: "The easiest, most secure, cross platform way to use WireGuard + oauth2 + 2FA/SSO",
-		Homepage:    "https://www.tailscale.com",
-		License:     "MIT",
+		Maintainer:  scaleTailPackageMaintainer,
+		Description: scaleTailPackageDescription,
+		Homepage:    scaleTailPackageHomepage,
+		License:     "BSD-3-Clause",
 		Section:     "net",
 		Priority:    "extra",
 		Overridables: nfpm.Overridables{
@@ -280,7 +287,6 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 				"iptables",
 			},
 			Recommends: []string{
-				"tailscale-archive-keyring (>= 1.35.181)",
 				// The "ip" command isn't needed since 2021-11-01 in
 				// 408b0923a61972ed but kept as an option as of
 				// 2021-11-18 in d24ed3f68e35e802d531371.  See
@@ -290,8 +296,8 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 				// we can live without it, so it's not Depends.
 				"iproute2",
 			},
-			Replaces:  []string{"tailscale-relay"},
-			Conflicts: []string{"tailscale-relay"},
+			Replaces:  []string{"tailscale", "tailscale-relay"},
+			Conflicts: []string{"tailscale", "tailscale-relay"},
 		},
 	})
 	pkg, err := nfpm.Get("deb")
@@ -299,7 +305,7 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, err
 	}
 
-	filename := fmt.Sprintf("tailscale_%s_%s.deb", b.Version.Short, arch)
+	filename := fmt.Sprintf("%s_%s_%s.deb", scaleTailPackageName, b.Version.Short, arch)
 	log.Printf("Building %s", filename)
 	f, err := os.Create(filepath.Join(b.Out, filename))
 	if err != nil {
@@ -402,14 +408,14 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, err
 	}
 	info := nfpm.WithDefaults(&nfpm.Info{
-		Name:        "tailscale",
+		Name:        scaleTailPackageName,
 		Arch:        arch,
 		Platform:    "linux",
 		Version:     b.Version.Short,
-		Maintainer:  "Tailscale Inc <info@tailscale.com>",
-		Description: "The easiest, most secure, cross platform way to use WireGuard + oauth2 + 2FA/SSO",
-		Homepage:    "https://www.tailscale.com",
-		License:     "MIT",
+		Maintainer:  scaleTailPackageMaintainer,
+		Description: scaleTailPackageDescription,
+		Homepage:    scaleTailPackageHomepage,
+		License:     "BSD-3-Clause",
 		Overridables: nfpm.Overridables{
 			Contents: contents,
 			Scripts: nfpm.Scripts{
@@ -418,8 +424,8 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 				PostRemove:  filepath.Join(repoDir, "release/rpm/rpm.postrm.sh"),
 			},
 			Depends:   []string{"iptables", "iproute"},
-			Replaces:  []string{"tailscale-relay"},
-			Conflicts: []string{"tailscale-relay"},
+			Replaces:  []string{"tailscale", "tailscale-relay"},
+			Conflicts: []string{"tailscale", "tailscale-relay"},
 			RPM: nfpm.RPM{
 				Group: "Network",
 				Signature: nfpm.RPMSignature{
@@ -435,7 +441,7 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, err
 	}
 
-	filename := fmt.Sprintf("tailscale_%s_%s.rpm", b.Version.Short, arch)
+	filename := fmt.Sprintf("%s_%s_%s.rpm", scaleTailPackageName, b.Version.Short, arch)
 	log.Printf("Building %s", filename)
 
 	f, err := os.Create(filepath.Join(b.Out, filename))
@@ -452,6 +458,140 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 
 	return []string{filename}, nil
 }
+
+type guiPackageTarget struct {
+	goArch  string
+	pkgType string
+}
+
+func (t *guiPackageTarget) String() string {
+	return fmt.Sprintf("linux/%s/gui-%s", t.goArch, t.pkgType)
+}
+
+func (t *guiPackageTarget) Build(b *dist.Build) ([]string, error) {
+	if t.pkgType != "deb" && t.pkgType != "rpm" {
+		return nil, fmt.Errorf("unsupported GUI package type %q", t.pkgType)
+	}
+
+	repoDir, err := b.GoPkg("tailscale.com")
+	if err != nil {
+		return nil, err
+	}
+
+	workDir := b.TmpDir()
+	desktopPath := filepath.Join(workDir, "scaletail-systray.desktop")
+	servicePath := filepath.Join(workDir, "scaletail-systray.service")
+	if err := os.WriteFile(desktopPath, []byte(scaleTailDesktopEntry), 0644); err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(servicePath, []byte(scaleTailUserService), 0644); err != nil {
+		return nil, err
+	}
+
+	contents, err := files.PrepareForPackager(files.Contents{
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      desktopPath,
+			Destination: "/usr/share/applications/scaletail-systray.desktop",
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      servicePath,
+			Destination: "/usr/lib/systemd/user/scaletail-systray.service",
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(repoDir, "client/systray/tailscale.png"),
+			Destination: "/usr/share/pixmaps/scaletail.png",
+		},
+	}, 0, t.pkgType, false)
+	if err != nil {
+		return nil, err
+	}
+
+	arch := "all"
+	depends := []string{fmt.Sprintf("%s (= %s)", scaleTailPackageName, b.Version.Short)}
+	filename := fmt.Sprintf("%s-gui_%s_%s.deb", scaleTailPackageName, b.Version.Short, arch)
+	if t.pkgType == "rpm" {
+		arch = "noarch"
+		depends = []string{fmt.Sprintf("%s = %s", scaleTailPackageName, b.Version.Short)}
+		filename = fmt.Sprintf("%s-gui_%s_%s.rpm", scaleTailPackageName, b.Version.Short, arch)
+	}
+
+	info := nfpm.WithDefaults(&nfpm.Info{
+		Name:        scaleTailPackageName + "-gui",
+		Arch:        arch,
+		Platform:    "linux",
+		Version:     b.Version.Short,
+		Maintainer:  scaleTailPackageMaintainer,
+		Description: "Optional ScaleTail desktop tray and dashboard launcher",
+		Homepage:    scaleTailPackageHomepage,
+		License:     "BSD-3-Clause",
+		Section:     "net",
+		Priority:    "optional",
+		Overridables: nfpm.Overridables{
+			Contents: contents,
+			Depends:  depends,
+		},
+	})
+	if t.pkgType == "deb" {
+		info.Overridables.Recommends = []string{"dbus-user-session", "xdg-utils"}
+	}
+	if t.pkgType == "rpm" {
+		info.Overridables.RPM.Group = "Network"
+	}
+
+	pkg, err := nfpm.Get(t.pkgType)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Building %s", filename)
+	f, err := os.Create(filepath.Join(b.Out, filename))
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	if err := pkg.Package(info, f); err != nil {
+		return nil, err
+	}
+	if err := f.Close(); err != nil {
+		return nil, err
+	}
+
+	return []string{filename}, nil
+}
+
+const scaleTailDesktopEntry = `[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ScaleTail
+Comment=ScaleTail desktop tray and dashboard
+Exec=/usr/bin/tailscale systray
+TryExec=/usr/bin/tailscale
+Terminal=false
+NoDisplay=true
+StartupNotify=false
+Icon=scaletail
+Categories=Network;System;
+X-GNOME-Autostart-enabled=true
+`
+
+const scaleTailUserService = `[Unit]
+Description=ScaleTail System Tray
+Documentation=https://github.com/chen1749144759/ScaleTail
+Requires=dbus.service
+After=dbus.service
+PartOf=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tailscale systray
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+`
 
 // debArch returns the debian arch name for the given Go arch name.
 // nfpm also does this translation internally, but we need to do it outside nfpm

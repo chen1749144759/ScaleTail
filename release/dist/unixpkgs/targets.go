@@ -50,6 +50,10 @@ func Targets(signers Signers) []dist.Target {
 			signer: signers.RPM,
 		})
 	}
+	ret = append(ret,
+		&guiPackageTarget{goArch: "amd64", pkgType: "deb"},
+		&guiPackageTarget{goArch: "amd64", pkgType: "rpm"},
+	)
 
 	// Special case: AMD Geode is 386 with softfloat. Tarballs only since it's
 	// an ancient architecture.

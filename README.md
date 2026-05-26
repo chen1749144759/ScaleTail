@@ -166,18 +166,47 @@ headscale nodes approve-routes --identifier <node-id> --routes 192.168.10.0/24
 
 ## Linux 包说明
 
-当前发布目标是 Windows amd64，所以 Release 只提供 Windows 安装包。
-
-在 Windows 上可以交叉编译 Linux 的 Go 核心二进制，例如：
+Linux amd64 包可以通过 WSL 构建。默认会同时生成核心包和可选 GUI 包：
 
 ```powershell
-$env:GOOS = "linux"
-$env:GOARCH = "amd64"
-go build -trimpath -o dist\linux-amd64\tailscaled ./cmd/tailscaled
-go build -trimpath -o dist\linux-amd64\tailscale-localapi ./cmd/tailscale-localapi
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-linux-packages-wsl.ps1 -Distro Ubuntu-24.04 -Version 0.0.1
 ```
 
-但这不是完整 Linux 发行包。当前 Electron + Inno Setup 打包链路是 Windows 专用；Linux 的 `.deb`、`.rpm`、AppImage 或 systemd 服务安装脚本需要单独做 Linux/WSL/Docker 构建流程。
+如果只给服务器使用，不需要桌面托盘和可视化入口，可以跳过 GUI 包：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-linux-packages-wsl.ps1 -Distro Ubuntu-24.04 -Version 0.0.1 -SkipGui
+```
+
+输出目录：
+
+```text
+dist\linux-v0.0.1\
+  scaletail_0.0.1_amd64.deb
+  scaletail_0.0.1_x86_64.rpm
+  scaletail_0.0.1_amd64.tgz
+  scaletail-gui_0.0.1_all.deb
+  scaletail-gui_0.0.1_noarch.rpm
+  SHA256SUMS-linux-amd64.txt
+```
+
+Linux 核心包仍复用上游 Linux 运行方式：命令为 `/usr/bin/tailscale`，服务为 `tailscaled.service`。包名改为 `scaletail`，并声明与官方 `tailscale` 包冲突，避免同一台机器同时安装导致文件和 systemd 单元冲突。
+
+Debian/Ubuntu 服务器只安装核心包：
+
+```bash
+sudo apt install ./scaletail_0.0.1_amd64.deb
+sudo systemctl enable --now tailscaled
+```
+
+有桌面环境时再额外安装 GUI 包：
+
+```bash
+sudo apt install ./scaletail-gui_0.0.1_all.deb
+systemctl --user enable --now scaletail-systray.service
+```
+
+RPM 系发行版同理，服务器只装 `scaletail_0.0.1_x86_64.rpm`，桌面环境再装 `scaletail-gui_0.0.1_noarch.rpm`。
 
 ## 与上游的关系
 
