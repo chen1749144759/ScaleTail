@@ -1,4 +1,4 @@
-#define AppVersion "1.97.0"
+#define AppVersion "0.0.1"
 
 [Setup]
 AppName=ScaleTail

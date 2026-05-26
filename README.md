@@ -108,7 +108,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-windows-inst
 输出文件：
 
 ```text
-dist\installer\scaletail-1.97.0-windows-amd64-setup-custom.exe
+dist\installer\scaletail-0.0.1-windows-amd64-setup-custom.exe
 ```
 
 ## 开发 Electron 客户端
