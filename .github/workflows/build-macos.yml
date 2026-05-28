@@ -1,0 +1,48 @@
+name: Build macOS package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "ScaleTail version"
+        required: true
+        default: "0.0.1"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: macOS ${{ matrix.goarch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goarch: amd64
+            runner: macos-15-intel
+          - goarch: arm64
+            runner: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build unsigned pkg
+        shell: bash
+        run: |
+          chmod +x ./scripts/build-macos-pkg.sh ./tool/go ./tool/gocross/gocross-wrapper.sh
+          ./scripts/build-macos-pkg.sh \
+            --version "${{ inputs.version }}" \
+            --arch "${{ matrix.goarch }}" \
+            --out "dist/macos-${{ matrix.goarch }}"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: scaletail-macos-${{ inputs.version }}-${{ matrix.goarch }}
+          path: |
+            dist/macos-${{ matrix.goarch }}/*.pkg
+            dist/macos-${{ matrix.goarch }}/*.tar.gz
+            dist/macos-${{ matrix.goarch }}/SHA256SUMS-macos-${{ matrix.goarch }}.txt
+          if-no-files-found: error

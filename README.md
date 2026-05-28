@@ -208,6 +208,32 @@ systemctl --user enable --now scaletail-systray.service
 
 RPM 系发行版同理，服务器只装 `scaletail_0.0.1_x86_64.rpm`，桌面环境再装 `scaletail-gui_0.0.1_noarch.rpm`。
 
+## macOS 包说明
+
+macOS 未签名安装包通过 GitHub Actions 的 macOS runner 构建。该 workflow 只支持手动触发，不会在 push 或 PR 时自动运行：
+
+```text
+Actions -> Build macOS package -> Run workflow
+```
+
+输入版本号后会分别生成：
+
+```text
+ScaleTail-0.0.1-darwin-amd64.pkg
+ScaleTail-0.0.1-darwin-arm64.pkg
+scaletail_0.0.1_darwin_amd64.tar.gz
+scaletail_0.0.1_darwin_arm64.tar.gz
+```
+
+当前 macOS 包是核心 daemon/CLI 安装包，不包含 Electron GUI。包内安装路径复用上游 macOS 运行方式：
+
+- `/usr/local/bin/tailscale`
+- `/usr/local/bin/tailscaled`
+- `/Library/LaunchDaemons/com.tailscale.tailscaled.plist`
+- `/Library/Tailscale`
+
+未签名 `.pkg` 适合内部测试。正式公开分发时，还需要 Apple Developer ID 证书签名和 notarization。
+
 ## 与上游的关系
 
 ScaleTail 基于 Tailscale 源码定制，核心网络功能仍来自上游项目。许可证保持与上游一致。
