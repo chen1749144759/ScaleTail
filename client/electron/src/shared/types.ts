@@ -101,6 +101,8 @@ export interface TailscaleAPI {
   getStatus(peers?: boolean): Promise<Status>;
   getPrefs(): Promise<Prefs>;
   connect(req: ConnectRequest): Promise<ConnectResponse>;
+  disconnect(): Promise<{ ok: boolean; message: string }>;
+  reconnect(): Promise<{ ok: boolean; message: string }>;
   logout(): Promise<{ ok: boolean }>;
   setExitNode(id: string): Promise<{ ok: boolean }>;
   setAdvertiseRoutes(routes: string[]): Promise<{ ok: boolean }>;

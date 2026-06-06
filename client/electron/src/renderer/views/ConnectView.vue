@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { Copy, LayoutDashboard, LogOut, PlugZap } from "lucide-vue-next";
+import { Copy, LayoutDashboard, LogOut, PlugZap, PowerOff } from "lucide-vue-next";
 import StatusPill from "../components/StatusPill.vue";
 import type { Prefs, Status } from "../../shared/types";
 
@@ -21,7 +21,10 @@ const message = ref("");
 const error = ref("");
 
 const backendState = computed(() => status.value?.BackendState || "");
-const locked = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
+const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
+const canResume = computed(() => backendState.value === "Stopped" && Boolean(status.value?.HaveNodeKey));
+const configLocked = computed(() => activeState.value || canResume.value);
+const canLogout = computed(() => activeState.value || canResume.value);
 const controlURL = computed(() => {
   const scheme = useHTTPS.value ? "https" : "http";
   const port = serverPort.value.trim() || (useHTTPS.value ? "443" : "80");
@@ -65,7 +68,7 @@ async function load() {
     if (!serverPort.value) {
       serverPort.value = useHTTPS.value ? "443" : "80";
     }
-    if (locked.value) {
+    if (configLocked.value) {
       message.value = lockMessage(backendState.value);
     }
   } catch (err) {
@@ -76,7 +79,7 @@ async function load() {
 }
 
 async function connect() {
-  if (locked.value) {
+  if (configLocked.value) {
     return;
   }
   loading.value = true;
@@ -101,8 +104,40 @@ async function connect() {
   }
 }
 
+async function disconnectCurrent() {
+  loading.value = true;
+  error.value = "";
+  message.value = "正在临时断开连接...";
+  try {
+    const res = await window.tailscale.disconnect();
+    message.value = res.message;
+    await load();
+  } catch (err) {
+    error.value = messageOf(err);
+    message.value = "";
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function reconnectCurrent() {
+  loading.value = true;
+  error.value = "";
+  message.value = "正在恢复连接...";
+  try {
+    const res = await window.tailscale.reconnect();
+    message.value = res.message;
+    await load();
+  } catch (err) {
+    error.value = messageOf(err);
+    message.value = "";
+  } finally {
+    loading.value = false;
+  }
+}
+
 async function logoutCurrent() {
-  if (!confirm("确定退出当前网络吗？退出后会清除当前登录状态，服务端配置将解锁，之后可以连接其他服务端。")) {
+  if (!confirm("确定退出当前网络吗？这会清除当前登录状态和本机节点身份。之后如需重新加入网络，需要重新填写有效预认证密钥，或在 Headscale 服务端手动注册。")) {
     return;
   }
   loading.value = true;
@@ -158,6 +193,9 @@ function lockMessage(state: string) {
   if (state === "NeedsMachineAuth") {
     return "当前连接正在等待设备授权，服务端配置已临时锁定。";
   }
+  if (state === "Stopped") {
+    return "当前已临时断开，登录状态仍保留。可直接恢复连接；如需更换服务端，请先退出当前网络。";
+  }
   return "当前已连接，服务端配置已锁定。需要连接其他服务端时，请先退出当前网络。";
 }
 
@@ -189,26 +227,26 @@ function messageOf(err: unknown) {
       <div class="form-grid">
         <label class="field wide">
           <span>服务端 IP 或域名</span>
-          <input v-model="serverIP" :disabled="locked" type="text" placeholder="192.168.1.10 或 headscale.example.com" />
+          <input v-model="serverIP" :disabled="configLocked" type="text" placeholder="192.168.1.10 或 headscale.example.com" />
         </label>
         <label class="field">
           <span>端口</span>
-          <input v-model="serverPort" :disabled="locked" type="text" inputmode="numeric" placeholder="80" />
+          <input v-model="serverPort" :disabled="configLocked" type="text" inputmode="numeric" placeholder="80" />
         </label>
       </div>
 
       <label class="field">
         <span>本机设备名称，可选</span>
-        <input v-model="hostname" :disabled="locked" type="text" placeholder="留空使用系统主机名，例如 office-pc" />
+        <input v-model="hostname" :disabled="configLocked" type="text" placeholder="留空使用系统主机名，例如 office-pc" />
       </label>
 
       <div class="checks">
         <label>
-          <input v-model="useHTTPS" :disabled="locked" type="checkbox" />
+          <input v-model="useHTTPS" :disabled="configLocked" type="checkbox" />
           使用 HTTPS
         </label>
         <label>
-          <input v-model="acceptRoutes" :disabled="locked" type="checkbox" />
+          <input v-model="acceptRoutes" :disabled="configLocked" type="checkbox" />
           接受路由
         </label>
       </div>
@@ -217,7 +255,7 @@ function messageOf(err: unknown) {
 
       <label class="field">
         <span>预认证密钥，可选</span>
-        <input v-model="authKey" :disabled="locked" type="password" placeholder="tskey-auth-... 或 hskey-auth-..." />
+        <input v-model="authKey" :disabled="configLocked" type="password" placeholder="tskey-auth-... 或 hskey-auth-..." />
       </label>
 
       <div class="command-head">
@@ -230,11 +268,19 @@ function messageOf(err: unknown) {
       <textarea class="command mono" :value="commandLine" readonly />
 
       <div class="toolbar">
-        <button class="btn primary" :disabled="locked || loading" @click="connect">
+        <button v-if="canResume" class="btn primary" :disabled="loading" @click="reconnectCurrent">
+          <PlugZap :size="16" />
+          恢复连接
+        </button>
+        <button v-else-if="!activeState" class="btn primary" :disabled="loading" @click="connect">
           <PlugZap :size="16" />
           连接
         </button>
-        <button v-if="locked" class="btn danger" :disabled="loading" @click="logoutCurrent">
+        <button v-if="activeState" class="btn" :disabled="loading" @click="disconnectCurrent">
+          <PowerOff :size="16" />
+          断开连接
+        </button>
+        <button v-if="canLogout" class="btn danger" :disabled="loading" @click="logoutCurrent">
           <LogOut :size="16" />
           退出当前网络
         </button>

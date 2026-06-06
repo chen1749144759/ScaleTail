@@ -4,14 +4,14 @@ import {
   buildControlURL,
   getPrefs,
   getStatus,
-	logout,
-	patchPrefs,
-	runNetcheck,
-	setUseExitNode,
-	startLoginInteractive,
-	startWithPrefs,
-	validateHostname,
-	watchIPNBus,
+  logout,
+  patchPrefs,
+  runNetcheck,
+  setUseExitNode,
+  startLoginInteractive,
+  startWithPrefs,
+  validateHostname,
+  watchIPNBus,
 } from "./localapi";
 import { getServiceOverview, startScaleTailService } from "./service";
 import { BackendState, ConnectRequest, Status } from "../shared/types";
@@ -24,6 +24,13 @@ let isQuitting = false;
 let lastStatus: Status | undefined;
 let stopWatch: (() => void) | undefined;
 let refreshTimer: NodeJS.Timeout | undefined;
+let authBrowserAllowedUntil = 0;
+let authBrowserSuppressedUntil = 0;
+let lastAuthURL = "";
+let lastAuthURLOpenedAt = 0;
+
+const AUTH_BROWSER_WINDOW_MS = 2 * 60 * 1000;
+const AUTH_URL_DEDUPE_MS = 60 * 1000;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -184,6 +191,8 @@ function registerIPC(): void {
     return getPrefs();
   });
   ipcMain.handle("api:connect", async (_event, req: ConnectRequest) => connect(req));
+  ipcMain.handle("api:disconnect", async () => disconnect());
+  ipcMain.handle("api:reconnect", async () => reconnect());
   ipcMain.handle("api:logout", async () => {
     await ensureDaemonReady(false);
     await logout();
@@ -236,8 +245,11 @@ function registerIPC(): void {
 async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: string; message: string }> {
   const status = await ensureDaemonReady(false);
   const state = status.BackendState || "";
+  if (state === "Stopped" && status.HaveNodeKey) {
+    throw new Error("当前只是临时断开状态，请点击“恢复连接”。如需更换服务端，请先点击“退出当前网络”。");
+  }
   if (state === "Running" || state === "Starting" || state === "NeedsMachineAuth") {
-    throw new Error("当前已有连接或连接流程正在进行。请先退出当前网络，再修改服务端配置。");
+    throw new Error("当前已有连接或连接流程正在进行。请先临时断开，或退出当前网络后再修改服务端配置。");
   }
 
   const controlURL = buildControlURL(req);
@@ -249,13 +261,17 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
   prefs.RouteAll = Boolean(req.acceptRoutes);
 
   const authKey = req.authKey.trim();
+  if (authKey) {
+    suppressAuthBrowser();
+  }
   await startWithPrefs(prefs, authKey);
-  if (state === "NeedsLogin" || !status.HaveNodeKey) {
+  if (!authKey && (state === "NeedsLogin" || !status.HaveNodeKey)) {
+    allowAuthBrowser();
     await startLoginInteractive();
   }
   const nextStatus = await waitForConnectionProgress(authKey);
-  if (nextStatus.AuthURL) {
-    void shell.openExternal(nextStatus.AuthURL);
+  if (!authKey && nextStatus.AuthURL) {
+    openAuthURLIfAllowed(nextStatus.AuthURL);
   }
   await refreshTrayStatus();
 
@@ -278,6 +294,46 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
     controlURL,
     message,
   };
+}
+
+async function disconnect(): Promise<{ ok: boolean; message: string }> {
+  const status = await ensureDaemonReady(false);
+  if (!status.HaveNodeKey && status.BackendState !== "NeedsMachineAuth") {
+    throw new Error("当前没有可临时断开的已登录网络。");
+  }
+  await setWantRunning(false);
+  await refreshTrayStatus();
+  return { ok: true, message: "已临时断开连接，登录状态仍保留。需要恢复时点击“恢复连接”。" };
+}
+
+async function reconnect(): Promise<{ ok: boolean; message: string }> {
+  const status = await ensureDaemonReady(false);
+  if (!status.HaveNodeKey) {
+    throw new Error("当前没有已保存的登录身份，请重新填写服务端信息和预认证密钥后连接。");
+  }
+  suppressAuthBrowser();
+  await setWantRunning(true);
+  const nextStatus = await waitForConnectionProgress("");
+  await refreshTrayStatus();
+
+  const nextState = nextStatus.BackendState || "";
+  if (nextState === "Running") {
+    return { ok: true, message: "已恢复连接。" };
+  }
+  if (nextState === "NeedsMachineAuth") {
+    return { ok: true, message: "已提交恢复请求，当前仍在等待服务端设备授权。" };
+  }
+  if (nextState === "NeedsLogin" || nextStatus.AuthURL) {
+    throw new Error("恢复连接需要重新认证。请退出当前网络后，使用有效预认证密钥重新连接。");
+  }
+  return { ok: true, message: "已提交恢复连接请求，tailscaled 正在与服务端建立连接。" };
+}
+
+async function setWantRunning(wantRunning: boolean): Promise<void> {
+  await patchPrefs({
+    Prefs: { WantRunning: wantRunning },
+    WantRunningSet: true,
+  });
 }
 
 async function waitForConnectionProgress(authKey: string): Promise<Status> {
@@ -332,7 +388,7 @@ function startDaemonWatch(): void {
     (notify) => {
       const n = notify as { BrowseToURL?: string; State?: BackendState; Prefs?: unknown };
       if (n.BrowseToURL) {
-        void shell.openExternal(n.BrowseToURL);
+        openAuthURLIfAllowed(n.BrowseToURL);
       }
       if (n.State || n.Prefs) {
         void refreshTrayStatus();
@@ -343,6 +399,30 @@ function startDaemonWatch(): void {
       // The watcher reconnects itself; avoid noisy UI for transient boot races.
     },
   );
+}
+
+function allowAuthBrowser(): void {
+  authBrowserAllowedUntil = Date.now() + AUTH_BROWSER_WINDOW_MS;
+  authBrowserSuppressedUntil = 0;
+}
+
+function suppressAuthBrowser(): void {
+  authBrowserAllowedUntil = 0;
+  authBrowserSuppressedUntil = Date.now() + AUTH_BROWSER_WINDOW_MS;
+}
+
+function openAuthURLIfAllowed(url: string): boolean {
+  const now = Date.now();
+  if (!url || now < authBrowserSuppressedUntil || now > authBrowserAllowedUntil) {
+    return false;
+  }
+  if (url === lastAuthURL && now - lastAuthURLOpenedAt < AUTH_URL_DEDUPE_MS) {
+    return true;
+  }
+  lastAuthURL = url;
+  lastAuthURLOpenedAt = now;
+  void shell.openExternal(url);
+  return true;
 }
 
 function routeFromArgs(args: string[]): Route | undefined {
