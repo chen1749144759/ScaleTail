@@ -19,6 +19,7 @@ const acceptRoutes = ref(true);
 const loading = ref(false);
 const message = ref("");
 const error = ref("");
+const logoutConfirmOpen = ref(false);
 
 const backendState = computed(() => status.value?.BackendState || "");
 const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
@@ -136,15 +137,18 @@ async function reconnectCurrent() {
   }
 }
 
+function requestLogout() {
+  logoutConfirmOpen.value = true;
+}
+
 async function logoutCurrent() {
-  if (!confirm("确定退出当前网络吗？这会清除当前登录状态和本机节点身份。之后如需重新加入网络，需要重新填写有效预认证密钥，或在 Headscale 服务端手动注册。")) {
-    return;
-  }
+  logoutConfirmOpen.value = false;
   loading.value = true;
   error.value = "";
   message.value = "正在退出当前网络...";
   try {
     await window.tailscale.logout();
+    authKey.value = "";
     message.value = "已退出当前网络，现在可以修改服务端配置。";
     await load();
   } catch (err) {
@@ -280,7 +284,7 @@ function messageOf(err: unknown) {
           <PowerOff :size="16" />
           断开连接
         </button>
-        <button v-if="canLogout" class="btn danger" :disabled="loading" @click="logoutCurrent">
+        <button v-if="canLogout" class="btn danger" :disabled="loading" @click="requestLogout">
           <LogOut :size="16" />
           退出当前网络
         </button>
@@ -289,6 +293,25 @@ function messageOf(err: unknown) {
           打开仪表盘
         </button>
       </div>
+    </div>
+
+    <div v-if="logoutConfirmOpen" class="modal-backdrop" @click.self="logoutConfirmOpen = false">
+      <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+        <div>
+          <span class="modal-kicker">退出当前网络</span>
+          <h3 id="logout-title">清除当前登录状态？</h3>
+          <p>
+            这会删除本机节点身份并解锁服务端配置。之后如需重新加入网络，需要重新填写有效预认证密钥，或在 Headscale 服务端手动注册。
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" :disabled="loading" @click="logoutConfirmOpen = false">取消</button>
+          <button class="btn danger solid" :disabled="loading" @click="logoutCurrent">
+            <LogOut :size="16" />
+            确认退出
+          </button>
+        </div>
+      </section>
     </div>
   </section>
 </template>

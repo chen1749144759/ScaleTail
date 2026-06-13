@@ -41,6 +41,7 @@ export interface Prefs {
   ControlURL?: string;
   Hostname?: string;
   WantRunning?: boolean;
+  LoggedOut?: boolean;
   RouteAll?: boolean;
   ExitNodeID?: string;
   AdvertiseRoutes?: string[];

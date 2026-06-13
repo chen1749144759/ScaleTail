@@ -101,7 +101,6 @@ function createMainWindow(route: Route): BrowserWindow {
     autoHideMenuBar: true,
     frame: false,
     transparent: true,
-    backgroundMaterial: "acrylic",
     hasShadow: false,
     resizable: false,
     maximizable: false,
@@ -258,15 +257,17 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
   prefs.ControlURL = controlURL;
   prefs.Hostname = hostname;
   prefs.WantRunning = true;
+  prefs.LoggedOut = false;
   prefs.RouteAll = Boolean(req.acceptRoutes);
 
   const authKey = req.authKey.trim();
   if (authKey) {
     suppressAuthBrowser();
+  } else {
+    allowAuthBrowser();
   }
   await startWithPrefs(prefs, authKey);
-  if (!authKey && (state === "NeedsLogin" || !status.HaveNodeKey)) {
-    allowAuthBrowser();
+  if (state === "NeedsLogin" || !status.HaveNodeKey) {
     await startLoginInteractive();
   }
   const nextStatus = await waitForConnectionProgress(authKey);
@@ -312,7 +313,7 @@ async function reconnect(): Promise<{ ok: boolean; message: string }> {
     throw new Error("当前没有已保存的登录身份，请重新填写服务端信息和预认证密钥后连接。");
   }
   suppressAuthBrowser();
-  await setWantRunning(true);
+  await setRunningPrefs(true);
   const nextStatus = await waitForConnectionProgress("");
   await refreshTrayStatus();
 
@@ -333,6 +334,14 @@ async function setWantRunning(wantRunning: boolean): Promise<void> {
   await patchPrefs({
     Prefs: { WantRunning: wantRunning },
     WantRunningSet: true,
+  });
+}
+
+async function setRunningPrefs(wantRunning: boolean): Promise<void> {
+  await patchPrefs({
+    Prefs: { WantRunning: wantRunning, LoggedOut: false },
+    WantRunningSet: true,
+    LoggedOutSet: true,
   });
 }
 
