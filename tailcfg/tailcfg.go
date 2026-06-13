@@ -71,7 +71,7 @@ type CapabilityVersion int
 //   - 21: 2021-06-15: added MapResponse.DNSConfig.CertDomains
 //   - 22: 2021-06-16: added MapResponse.DNSConfig.ExtraRecords
 //   - 23: 2021-08-25: DNSConfig.Routes values may be empty (for ExtraRecords support in 1.14.1+)
-//   - 24: 2021-09-18: MapResponse.Health from control to node; node shows in "tailscale status"
+//   - 24: 2021-09-18: MapResponse.Health from control to node; node shows in "scaletail status"
 //   - 25: 2021-11-01: MapResponse.Debug.Exit
 //   - 26: 2022-01-12: (nothing, just bumping for 1.20.0)
 //   - 27: 2022-02-18: start of SSHPolicy being respected
@@ -160,7 +160,7 @@ type CapabilityVersion int
 //   - 111: 2025-01-14: Client supports a peer having Node.HomeDERP (issue #14636)
 //   - 112: 2025-01-14: Client interprets AllowedIPs of nil as meaning same as Addresses
 //   - 113: 2025-01-20: Client communicates to control whether funnel is enabled by sending Hostinfo.IngressEnabled (#14688)
-//   - 114: 2025-01-30: NodeAttrMaxKeyDuration CapMap defined, clients might use it (no tailscaled code change) (#14829)
+//   - 114: 2025-01-30: NodeAttrMaxKeyDuration CapMap defined, clients might use it (no scaletaild code change) (#14829)
 //   - 115: 2025-03-07: Client understands DERPRegion.NoMeasureNoHome.
 //   - 116: 2025-05-05: Client serves MagicDNS "AAAA" if NodeAttrMagicDNSPeerAAAA set on self node
 //   - 117: 2025-05-28: Client understands DisplayMessages (structured health messages), but not necessarily PrimaryAction.
@@ -217,7 +217,7 @@ func (u LoginID) IsZero() bool {
 
 // NodeID is a unique integer ID for a node.
 //
-// It's global within a control plane URL ("tailscale up --login-server") and is
+// It's global within a control plane URL ("scaletail up --login-server") and is
 // (as of 2025-01-06) never re-used even after a node is deleted.
 //
 // To be nice, control plane servers should not use int64s that are too large to
@@ -466,7 +466,7 @@ type Node struct {
 	// UnsignedPeerAPIOnly means that this node is not signed nor subject to TKA
 	// restrictions. However, in exchange for that privilege, it does not get
 	// network access. It can only access this node's peerapi, which may not let
-	// it do anything. It is the tailscaled client's job to double-check the
+	// it do anything. It is the scaletaild client's job to double-check the
 	// MapResponse's PacketFilter to verify that its AllowedIPs will not be
 	// accepted by the packet filter.
 	UnsignedPeerAPIOnly bool `json:",omitzero"`
@@ -1092,7 +1092,7 @@ type NetInfo struct {
 	// debug iptables-vs-nftables issues. The string is of the form
 	// "{nft,ift}-REASON", like "nft-forced" or "ipt-default". Empty means
 	// either not Linux or a configuration in which the host firewall rules
-	// are not managed by tailscaled.
+	// are not managed by scaletaild.
 	FirewallMode string `json:",omitzero"`
 
 	// Update BasicallyEqual when adding fields.
@@ -1841,10 +1841,10 @@ const (
 	PingDisco PingType = "disco"
 	// PingTSMP performs a ping, using the IP layer, but avoiding the OS IP stack.
 	PingTSMP PingType = "TSMP"
-	// PingICMP performs a ping between two tailscale nodes using ICMP that is
+	// PingICMP performs a ping between two scaletail nodes using ICMP that is
 	// received by the target systems IP stack.
 	PingICMP PingType = "ICMP"
-	// PingPeerAPI performs a ping between two tailscale nodes using ICMP that is
+	// PingPeerAPI performs a ping between two scaletail nodes using ICMP that is
 	// received by the target systems IP stack.
 	PingPeerAPI PingType = "peerapi"
 )
@@ -1899,7 +1899,7 @@ type PingRequest struct {
 }
 
 // PingResponse provides result information for a TSMP or Disco PingRequest.
-// Typically populated from an ipnstate.PingResult used in `tailscale ping`.
+// Typically populated from an ipnstate.PingResult used in `scaletail ping`.
 type PingResponse struct {
 	Type PingType // ping type, such as TSMP or disco.
 
@@ -2564,7 +2564,7 @@ const (
 
 	// NodeAttrDisableDeltaUpdates makes the client not process updates via the
 	// delta update mechanism and should instead treat all netmap changes as
-	// "full" ones as tailscaled did in 1.48.x and earlier.
+	// "full" ones as scaletaild did in 1.48.x and earlier.
 	NodeAttrDisableDeltaUpdates NodeCapability = "disable-delta-updates"
 
 	// NodeAttrRandomizeClientPort makes magicsock UDP bind to
@@ -2802,7 +2802,7 @@ const (
 
 // SetDNSRequest is a request to add a DNS record.
 //
-// This is used to let tailscaled clients complete their ACME DNS-01 challenges
+// This is used to let scaletaild clients complete their ACME DNS-01 challenges
 // (so people can use LetsEncrypt, etc) to get TLS certificates for
 // their foo.bar.ts.net MagicDNS names.
 //
@@ -3003,7 +3003,7 @@ type SSHAction struct {
 	// response, it should be re-fetched as long as the SSH
 	// session is open.
 	//
-	// The following variables in the URL are expanded by tailscaled:
+	// The following variables in the URL are expanded by scaletaild:
 	//
 	//   * $SRC_NODE_IP (URL escaped)
 	//   * $SRC_NODE_ID (Node.ID as int64 string)

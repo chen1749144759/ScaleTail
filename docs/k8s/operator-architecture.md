@@ -133,9 +133,9 @@ flowchart TD
 
 The L7 ingress architecture diagram is relatively similar to L3 ingress. It is
 configured via an `Ingress` object instead of a `Service`, and uses
-`tailscale serve` to accept traffic instead of configuring `iptables` or
-`nftables` rules. Note that we use tailscaled's local API (`SetServeConfig`) to
-set serve config, not the `tailscale serve` command.
+`scaletail serve` to accept traffic instead of configuring `iptables` or
+`nftables` rules. Note that we use scaletaild's local API (`SetServeConfig`) to
+set serve config, not the `scaletail serve` command.
 
 ```mermaid
 %%{ init: { 'theme':'neutral' } }%%
@@ -164,7 +164,7 @@ flowchart TD
         end
 
         subgraph defaultns[namespace=default]
-            ingress[tailscale Ingress]
+            ingress[scaletail Ingress]
             svc["Service"]
             svc --> pod1((pod1))
             svc --> pod2((pod2))
@@ -478,7 +478,7 @@ flowchart TD
             subgraph tailscale-ns[namespace=tailscale]
                 operator((operator)):::tsnode
                 cn-sts[StatefulSet]
-                cn-pod(("tailscale (dst)")):::tsnode
+                cn-pod(("scaletail (dst)")):::tsnode
                 cfg-secret["config Secret"]
                 state-secret["state Secret"]
             end

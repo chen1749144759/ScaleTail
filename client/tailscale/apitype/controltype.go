@@ -47,6 +47,6 @@ type DNSResolver struct {
 	BootstrapResolution []string `json:"bootstrapResolution,omitempty"`
 
 	// UseWithExitNode signals this resolver should be used
-	// even when a tailscale exit node is configured on a device.
+	// even when a scaletail exit node is configured on a device.
 	UseWithExitNode bool `json:"useWithExitNode,omitempty"`
 }

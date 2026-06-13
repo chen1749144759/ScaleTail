@@ -2432,12 +2432,12 @@ func applyNetworkMap(t *testing.T, m *magicStack, nm *netmap.NetworkMap) {
 	// Make sure we can't use v6 to avoid test failures.
 	m.conn.noV6.Store(true)
 
-	// Turn the network map into a wireguard config (for the tailscale internal wireguard device).
+	// Turn the network map into a wireguard config (for the scaletail internal wireguard device).
 	cfg, err := nmcfg.WGCfg(m.privateKey, nm, t.Logf, netmap.AllowSubnetRoutes, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Apply the wireguard config to the tailscale internal wireguard device.
+	// Apply the wireguard config to the scaletail internal wireguard device.
 	if err := m.Reconfig(cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -3329,7 +3329,7 @@ func TestNetworkSendErrors(t *testing.T) {
 		}
 		resp := httptest.NewRecorder()
 		reg.Handler(resp, new(http.Request))
-		if !strings.Contains(resp.Body.String(), `tailscaled_outbound_dropped_packets_total{reason="error"} 1`) {
+		if !strings.Contains(resp.Body.String(), `scaletaild_outbound_dropped_packets_total{reason="error"} 1`) {
 			t.Errorf("expected NetworkDown to increment packet dropped metric; got %q", resp.Body.String())
 		}
 	})
@@ -3345,7 +3345,7 @@ func TestNetworkSendErrors(t *testing.T) {
 		}
 		resp := httptest.NewRecorder()
 		reg.Handler(resp, new(http.Request))
-		if !strings.Contains(resp.Body.String(), `tailscaled_outbound_dropped_packets_total{reason="error"} 1`) {
+		if !strings.Contains(resp.Body.String(), `scaletaild_outbound_dropped_packets_total{reason="error"} 1`) {
 			t.Errorf("expected invalid payload to increment packet dropped metric; got %q", resp.Body.String())
 		}
 	})

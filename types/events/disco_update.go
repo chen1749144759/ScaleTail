@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package events contains type used as eventbus topics in tailscaled.
+// Package events contains type used as eventbus topics in scaletaild.
 package events
 
 import (

@@ -3,7 +3,7 @@
 
 //go:build linux
 
-// The containerboot binary is a wrapper for starting tailscaled in a container.
+// The containerboot binary is a wrapper for starting scaletaild in a container.
 // It handles reading the desired mode of operation out of environment
 // variables, bringing up and authenticating Tailscale, and any other
 // kubernetes-specific side jobs.
@@ -41,28 +41,28 @@
 //     destination defined by an IP.
 //   - TS_TAILNET_TARGET_FQDN: proxy all incoming non-Tailscale traffic to the given
 //     destination defined by a MagicDNS name.
-//   - TS_TAILSCALED_EXTRA_ARGS: extra arguments to 'tailscaled'.
-//   - TS_EXTRA_ARGS: extra arguments to 'tailscale up'.
+//   - TS_SCALETAILD_EXTRA_ARGS: extra arguments to 'scaletaild'.
+//   - TS_EXTRA_ARGS: extra arguments to 'scaletail up'.
 //   - TS_USERSPACE: run with userspace networking (the default)
 //     instead of kernel networking.
-//   - TS_STATE_DIR: the directory in which to store tailscaled
+//   - TS_STATE_DIR: the directory in which to store scaletaild
 //     state. The data should persist across container
 //     restarts.
 //   - TS_ACCEPT_DNS: whether to use the tailnet's DNS configuration.
 //   - TS_KUBE_SECRET: the name of the Kubernetes secret in which to
-//     store tailscaled state.
+//     store scaletaild state.
 //   - TS_SOCKS5_SERVER: the address on which to listen for SOCKS5
 //     proxying into the tailnet.
 //   - TS_OUTBOUND_HTTP_PROXY_LISTEN: the address on which to listen
 //     for HTTP proxying into the tailnet.
-//   - TS_SOCKET: the path where the tailscaled LocalAPI socket should
+//   - TS_SOCKET: the path where the scaletaild LocalAPI socket should
 //     be created.
 //   - TS_AUTH_ONCE: if true, only attempt to log in if not already
 //     logged in. If false (the default, for backwards
 //     compatibility), forcibly log in every time the
 //     container starts.
 //   - TS_SERVE_CONFIG: if specified, is the file path where the ipn.ServeConfig is located.
-//     It will be applied once tailscaled is up and running. If the file contains
+//     It will be applied once scaletaild is up and running. If the file contains
 //     ${TS_CERT_DOMAIN}, it will be replaced with the value of the available FQDN.
 //     It cannot be used in conjunction with TS_DEST_IP. The file is watched for changes,
 //     and will be re-applied when it changes.
@@ -79,12 +79,12 @@
 //     OK if this node has at least one tailnet IP address, otherwise returns 503.
 //     NB: the health criteria might change in the future.
 //   - TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR: if specified, a path to a
-//     directory that containers tailscaled config in file. The config file needs to be
-//     named cap-<current-tailscaled-cap>.hujson. If this is set, TS_HOSTNAME,
+//     directory that containers scaletaild config in file. The config file needs to be
+//     named cap-<current-scaletaild-cap>.hujson. If this is set, TS_HOSTNAME,
 //     TS_EXTRA_ARGS, TS_AUTHKEY, TS_CLIENT_ID, TS_CLIENT_SECRET, TS_ID_TOKEN,
 //     TS_ROUTES, TS_ACCEPT_DNS, TS_AUDIENCE env vars must not be set. If this is set,
-//     containerboot only runs `tailscaled --config <path-to-this-configfile>`
-//     and not `tailscale up` or `tailscale set`.
+//     containerboot only runs `scaletaild --config <path-to-this-configfile>`
+//     and not `scaletail up` or `scaletail set`.
 //     The config file contents are currently read once on container start.
 //     NB: This env var is currently experimental and the logic will likely change!
 //     TS_EXPERIMENTAL_ENABLE_FORWARDING_OPTIMIZATIONS: set to true to
@@ -112,7 +112,7 @@
 // be persistent storage.
 //
 // Additionally, if TS_AUTHKEY is not set and the TS_KUBE_SECRET contains an
-// "authkey" field, that key is used as the tailscale authkey.
+// "authkey" field, that key is used as the scaletail authkey.
 package main
 
 import (
@@ -187,9 +187,9 @@ func run() error {
 		if cfg.ProxyTargetIP != "" || cfg.ProxyTargetDNSName != "" || cfg.Routes != nil || cfg.TailnetTargetIP != "" || cfg.TailnetTargetFQDN != "" {
 			if err := ensureIPForwarding(cfg.Root, cfg.ProxyTargetIP, cfg.TailnetTargetIP, cfg.TailnetTargetFQDN, cfg.Routes); err != nil {
 				log.Printf("Failed to enable IP forwarding: %v", err)
-				log.Printf("To run tailscale as a proxy or router container, IP forwarding must be enabled.")
+				log.Printf("To run scaletail as a proxy or router container, IP forwarding must be enabled.")
 				if cfg.InKubernetes {
-					return fmt.Errorf("you can either set the sysctls as a privileged initContainer, or run the tailscale container with privileged=true.")
+					return fmt.Errorf("you can either set the sysctls as a privileged initContainer, or run the scaletail container with privileged=true.")
 				} else {
 					return fmt.Errorf("you can fix this by running the container with privileged=true, or the equivalent in your container runtime that permits access to sysctls.")
 				}
@@ -208,9 +208,9 @@ func run() error {
 	bootCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
-	var tailscaledConfigAuthkey string
+	var scaletaildConfigAuthkey string
 	if isOneStepConfig(cfg) {
-		tailscaledConfigAuthkey = authkey.AuthKeyFromConfig(cfg.TailscaledConfigFilePath)
+		scaletaildConfigAuthkey = authkey.AuthKeyFromConfig(cfg.ScaleTaildConfigFilePath)
 	}
 
 	var kc *kubeClient
@@ -226,19 +226,19 @@ func run() error {
 		// hasKubeStateStore because although we know we're in kube, that
 		// doesn't guarantee the state store is properly configured.
 		if hasKubeStateStore(cfg) {
-			if err := kc.resetContainerbootState(bootCtx, cfg.PodUID, tailscaledConfigAuthkey); err != nil {
+			if err := kc.resetContainerbootState(bootCtx, cfg.PodUID, scaletaildConfigAuthkey); err != nil {
 				return fmt.Errorf("error clearing previous state from Secret: %w", err)
 			}
 		}
 	}
 
-	client, daemonProcess, err := startTailscaled(bootCtx, cfg)
+	client, daemonProcess, err := startScaleTaild(bootCtx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to bring up tailscale: %w", err)
 	}
-	killTailscaled := func() {
+	killScaleTaild := func() {
 		// The default termination grace period for a Pod is 30s. We wait 25s at
-		// most so that we still reserve some of that budget for tailscaled
+		// most so that we still reserve some of that budget for scaletaild
 		// to receive and react to a SIGTERM before the SIGKILL that k8s
 		// will send at the end of the grace period.
 		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
@@ -250,7 +250,7 @@ func run() error {
 		}
 
 		if hasKubeStateStore(cfg) {
-			// Check we're not shutting tailscaled down while it's still writing
+			// Check we're not shutting scaletaild down while it's still writing
 			// state. If we authenticate and fail to write all the state, we'll
 			// never recover automatically.
 			log.Printf("Checking for consistent state")
@@ -259,12 +259,12 @@ func run() error {
 				log.Printf("Error waiting for consistent state on shutdown: %v", err)
 			}
 		}
-		log.Printf("Sending SIGTERM to tailscaled")
+		log.Printf("Sending SIGTERM to scaletaild")
 		if err := daemonProcess.Signal(unix.SIGTERM); err != nil {
-			log.Fatalf("error shutting tailscaled down: %v", err)
+			log.Fatalf("error shutting scaletaild down: %v", err)
 		}
 	}
-	defer killTailscaled()
+	defer killScaleTaild()
 
 	var healthCheck *healthz.Healthz
 	ep := &egressProxy{}
@@ -308,28 +308,28 @@ func run() error {
 
 	w, err := client.WatchIPNBus(bootCtx, ipn.NotifyInitialNetMap|ipn.NotifyInitialPrefs|ipn.NotifyInitialState|ipn.NotifyInitialHealthState|ipn.NotifyRateLimit)
 	if err != nil {
-		return fmt.Errorf("failed to watch tailscaled for updates: %w", err)
+		return fmt.Errorf("failed to watch scaletaild for updates: %w", err)
 	}
 
-	// Now that we've started tailscaled, we can symlink the socket to the
+	// Now that we've started scaletaild, we can symlink the socket to the
 	// default location if needed.
-	const defaultTailscaledSocketPath = "/var/run/tailscale/tailscaled.sock"
-	if cfg.Socket != "" && cfg.Socket != defaultTailscaledSocketPath {
+	const defaultScaleTaildSocketPath = "/var/run/tailscale/scaletaild.sock"
+	if cfg.Socket != "" && cfg.Socket != defaultScaleTaildSocketPath {
 		// If we were given a socket path, symlink it to the default location so
 		// that the CLI can find it without any extra flags.
 		// See #6849.
 
-		dir := filepath.Dir(defaultTailscaledSocketPath)
+		dir := filepath.Dir(defaultScaleTaildSocketPath)
 		err := os.MkdirAll(dir, 0700)
 		if err == nil {
-			err = syscall.Symlink(cfg.Socket, defaultTailscaledSocketPath)
+			err = syscall.Symlink(cfg.Socket, defaultScaleTaildSocketPath)
 		}
 		if err != nil {
-			log.Printf("[warning] failed to symlink socket: %v\n\tTo interact with the Tailscale CLI please use `tailscale --socket=%q`", err, cfg.Socket)
+			log.Printf("[warning] failed to symlink socket: %v\n\tTo interact with the Tailscale CLI please use `scaletail --socket=%q`", err, cfg.Socket)
 		}
 	}
 
-	// Because we're still shelling out to `tailscale up` to get access to its
+	// Because we're still shelling out to `scaletail up` to get access to its
 	// flag parser, we have to stop watching the IPN bus so that we can block on
 	// the subcommand without stalling anything. Then once it's done, we resume
 	// watching the bus.
@@ -348,7 +348,7 @@ func run() error {
 		}
 		w, err = client.WatchIPNBus(bootCtx, ipn.NotifyInitialNetMap|ipn.NotifyInitialState|ipn.NotifyRateLimit)
 		if err != nil {
-			return fmt.Errorf("rewatching tailscaled for updates after auth: %w", err)
+			return fmt.Errorf("rewatching scaletaild for updates after auth: %w", err)
 		}
 		return nil
 	}
@@ -363,19 +363,19 @@ authLoop:
 	for {
 		n, err := w.Next()
 		if err != nil {
-			return fmt.Errorf("failed to read from tailscaled: %w", err)
+			return fmt.Errorf("failed to read from scaletaild: %w", err)
 		}
 
 		if n.State != nil {
 			switch *n.State {
 			case ipn.NeedsLogin:
 				if isOneStepConfig(cfg) {
-					// This could happen if this is the first time tailscaled was run for this
+					// This could happen if this is the first time scaletaild was run for this
 					// device and the auth key was not passed via the configfile.
 					if hasKubeStateStore(cfg) {
 						log.Printf("Auth key missing or invalid (NeedsLogin state), disconnecting from control and requesting new key from operator")
 
-						err := kc.setAndWaitForAuthKeyReissue(ctx, client, cfg, tailscaledConfigAuthkey)
+						err := kc.setAndWaitForAuthKeyReissue(ctx, client, cfg, scaletaildConfigAuthkey)
 						if err != nil {
 							return fmt.Errorf("failed to get a reissued authkey: %w", err)
 						}
@@ -386,7 +386,7 @@ authLoop:
 						return nil
 					}
 
-					return errors.New("invalid state: tailscaled daemon started with a config file, but tailscale is not logged in: ensure you pass a valid auth key in the config file")
+					return errors.New("invalid state: scaletaild daemon started with a config file, but scaletail is not logged in: ensure you pass a valid auth key in the config file")
 				}
 
 				if err := authTailscale(); err != nil {
@@ -397,13 +397,13 @@ authLoop:
 			case ipn.Running:
 				// Technically, all we want is to keep monitoring the bus for
 				// netmap updates. However, in order to make the container crash
-				// if tailscale doesn't initially come up, the watch has a
+				// if scaletail doesn't initially come up, the watch has a
 				// startup deadline on it. So, we have to break out of this
 				// watch loop, cancel the watch, and watch again with no
 				// deadline to continue monitoring for changes.
 				break authLoop
 			default:
-				log.Printf("tailscaled in state %q, waiting", *n.State)
+				log.Printf("scaletaild in state %q, waiting", *n.State)
 			}
 		}
 
@@ -415,7 +415,7 @@ authLoop:
 				if isOneStepConfig(cfg) && hasKubeStateStore(cfg) {
 					log.Printf("Auth key failed to authenticate (may be expired or single-use), disconnecting from control and requesting new key from operator")
 
-					err := kc.setAndWaitForAuthKeyReissue(ctx, client, cfg, tailscaledConfigAuthkey)
+					err := kc.setAndWaitForAuthKeyReissue(ctx, client, cfg, scaletaildConfigAuthkey)
 					if err != nil {
 						return fmt.Errorf("failed to get a reissued authkey: %w", err)
 					}
@@ -460,20 +460,20 @@ authLoop:
 
 	w, err = client.WatchIPNBus(ctx, ipn.NotifyInitialNetMap|ipn.NotifyInitialState|ipn.NotifyRateLimit)
 	if err != nil {
-		return fmt.Errorf("rewatching tailscaled for updates after auth: %w", err)
+		return fmt.Errorf("rewatching scaletaild for updates after auth: %w", err)
 	}
 
-	// If tailscaled config was read from a mounted file, watch the file for updates and reload.
+	// If scaletaild config was read from a mounted file, watch the file for updates and reload.
 	cfgWatchErrChan := make(chan error)
 	cfgWatchCtx, cfgWatchCancel := context.WithCancel(ctx)
 	defer cfgWatchCancel()
-	if cfg.TailscaledConfigFilePath != "" {
-		go watchTailscaledConfigChanges(cfgWatchCtx, cfg.TailscaledConfigFilePath, client, cfgWatchErrChan)
+	if cfg.ScaleTaildConfigFilePath != "" {
+		go watchScaleTaildConfigChanges(cfgWatchCtx, cfg.ScaleTaildConfigFilePath, client, cfgWatchErrChan)
 	}
 
 	var (
 		startupTasksDone       = false
-		currentIPs             deephash.Sum // tailscale IPs assigned to device
+		currentIPs             deephash.Sum // scaletail IPs assigned to device
 		currentDeviceID        deephash.Sum // device ID
 		currentDeviceEndpoints deephash.Sum // device FQDN and IPs
 
@@ -564,16 +564,16 @@ runLoop:
 		var processNetmap bool
 		select {
 		case <-ctx.Done():
-			// Although killTailscaled() is deferred earlier, if we
+			// Although killScaleTaild() is deferred earlier, if we
 			// have started the reaper defined below, we need to
-			// kill tailscaled and let reaper clean up child
+			// kill scaletaild and let reaper clean up child
 			// processes.
-			killTailscaled()
+			killScaleTaild()
 			break runLoop
 		case err := <-errChan:
-			return fmt.Errorf("failed to read from tailscaled: %w", err)
+			return fmt.Errorf("failed to read from scaletaild: %w", err)
 		case err := <-cfgWatchErrChan:
-			return fmt.Errorf("failed to watch tailscaled config: %w", err)
+			return fmt.Errorf("failed to watch scaletaild config: %w", err)
 		case <-peerPoll.C:
 			processNetmap = true
 		case n := <-notifyChan:
@@ -584,7 +584,7 @@ runLoop:
 				// control flow required to make it work now is hard. So, just crash
 				// the container and rely on the container runtime to restart us,
 				// whereupon we'll go through initial auth again.
-				return fmt.Errorf("tailscaled left running state (now in state %q), exiting", *n.State)
+				return fmt.Errorf("scaletaild left running state (now in state %q), exiting", *n.State)
 			}
 			if n.SelfChange != nil {
 				processNetmap = true
@@ -828,10 +828,10 @@ runLoop:
 					}()
 				}
 
-				// Wait on tailscaled process. It won't be cleaned up by default when the
+				// Wait on scaletaild process. It won't be cleaned up by default when the
 				// container exits as it is not PID1. TODO (irbekrm): perhaps we can replace the
 				// reaper by a running cmd.Wait in a goroutine immediately after starting
-				// tailscaled?
+				// scaletaild?
 				reaper := func() {
 					defer wg.Done()
 					for {
@@ -841,9 +841,9 @@ runLoop:
 							continue
 						}
 						if err != nil {
-							log.Fatalf("Waiting for tailscaled to exit: %v", err)
+							log.Fatalf("Waiting for scaletaild to exit: %v", err)
 						}
-						log.Print("tailscaled exited")
+						log.Print("scaletaild exited")
 						os.Exit(0)
 					}
 				}
@@ -923,20 +923,20 @@ func contextWithExitSignalWatch() (context.Context, func()) {
 	return ctx, f
 }
 
-// tailscaledConfigFilePath returns the path to the tailscaled config file that
+// scaletaildConfigFilePath returns the path to the scaletaild config file that
 // should be used for the current capability version. It is determined by the
 // TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR environment variable and looks for a
 // file named cap-<capability_version>.hujson in the directory. It searches for
 // the highest capability version that is less than or equal to the current
 // capability version.
-func tailscaledConfigFilePath() string {
+func scaletaildConfigFilePath() string {
 	dir := os.Getenv("TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR")
 	if dir == "" {
 		return ""
 	}
 	fe, err := os.ReadDir(dir)
 	if err != nil {
-		log.Fatalf("error reading tailscaled config directory %q: %v", dir, err)
+		log.Fatalf("error reading scaletaild config directory %q: %v", dir, err)
 	}
 	maxCompatVer := tailcfg.CapabilityVersion(-1)
 	for _, e := range fe {
@@ -955,10 +955,10 @@ func tailscaledConfigFilePath() string {
 		}
 	}
 	if maxCompatVer == -1 {
-		log.Fatalf("no tailscaled config file found in %q for current capability version %d", dir, tailcfg.CurrentCapabilityVersion)
+		log.Fatalf("no scaletaild config file found in %q for current capability version %d", dir, tailcfg.CurrentCapabilityVersion)
 	}
-	filePath := filepath.Join(dir, kubeutils.TailscaledConfigFileName(maxCompatVer))
-	log.Printf("Using tailscaled config file %q to match current capability version %d", filePath, tailcfg.CurrentCapabilityVersion)
+	filePath := filepath.Join(dir, kubeutils.ScaleTaildConfigFileName(maxCompatVer))
+	log.Printf("Using scaletaild config file %q to match current capability version %d", filePath, tailcfg.CurrentCapabilityVersion)
 	return filePath
 }
 
@@ -985,7 +985,7 @@ func runHTTPServer(mux *http.ServeMux, addr string) (close func() error) {
 	}
 }
 
-// fetchNetMap fetches the current netmap from tailscaled via the
+// fetchNetMap fetches the current netmap from scaletaild via the
 // "current-netmap" localapi debug action. The debug action's payload
 // shape is intentionally not part of any stable API; containerboot
 // reads its own internal-package types out of it. New external consumers

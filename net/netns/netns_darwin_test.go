@@ -60,7 +60,7 @@ func TestGetInterfaceIndex(t *testing.T) {
 			t.Fatal(err)
 		}
 		if tsif == nil {
-			t.Skip("no tailscale interface on this machine")
+			t.Skip("no scaletail interface on this machine")
 		}
 
 		defaultIdx, err := netmon.DefaultRouteInterfaceIndex()

@@ -23,35 +23,35 @@ RUN if echo "$BASE" | grep "ubuntu:"; then \
     pam-auth-update --enable mkhomedir \
     ; fi
 
-COPY tailscaled .
+COPY scaletaild .
 COPY tailssh.test .
 
-RUN chmod 755 tailscaled
+RUN chmod 755 scaletaild
 
 # Run tests normally.
 # On Ubuntu, delete testuser's home directory between tests to verify
 # that PAM's pam_mkhomedir recreates it each time.
 RUN set -e && \
     eval $(ssh-agent -s) && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestSSHAgentForwarding && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestSSHAgentForwarding && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSFTP && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSFTP && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSCP && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSCP && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSSH && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSSH && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationParamiko && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestLocalUnixForwarding && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestReverseUnixForwarding && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestUnixForwardingDenied && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestUnixForwardingPathRestriction
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationParamiko && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestLocalUnixForwarding && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestReverseUnixForwarding && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestUnixForwardingDenied && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestUnixForwardingPathRestriction
 
 # Run tests as non-root user testuser and make sure tests still pass.
 RUN set -e && \
     touch /tmp/tailscalessh.log && \
     chown testuser:groupone /tmp/tailscalessh.log && \
-    export TAILSCALED_PATH=$(pwd)/tailscaled && \
+    export SCALETAILD_PATH=$(pwd)/scaletaild && \
     eval $(su -m testuser -c "ssh-agent -s") && \
     su -m testuser -c "./tailssh.test -test.v -test.run 'TestSSHAgentForwarding|TestIntegration|TestDoDropPrivileges'" && \
     echo "Also, deny everyone access to the user's home directory and make sure non file-related tests still pass." && \
@@ -70,7 +70,7 @@ RUN if echo "$BASE" | grep -q "ubuntu:"; then \
     printf "#!/bin/bash\necho 'Enforcing'" > /usr/bin/getenforce && \
     chmod 755 /usr/bin/getenforce && \
     eval $(ssh-agent -s) && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run 'TestSSHAgentForwarding|TestIntegration' && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run 'TestSSHAgentForwarding|TestIntegration' && \
     mv /tmp/login_orig /usr/bin/login && \
     rm /usr/bin/getenforce \
     ; fi
@@ -79,17 +79,17 @@ RUN if echo "$BASE" | grep -q "ubuntu:"; then \
 RUN set -e && \
     rm $(which login) && \
     eval $(ssh-agent -s) && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestSSHAgentForwarding && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestSSHAgentForwarding && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSFTP && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSFTP && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSCP && \
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSCP && \
     if echo "$BASE" | grep -q "ubuntu:"; then rm -Rf /home/testuser; fi && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run TestIntegrationSSH
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run TestIntegrationSSH
 
 # Remove the su command and make sure tests still pass.
 RUN set -e && \
     chown root:root /tmp/tailscalessh.log && \
     rm $(which su) && \
     eval $(ssh-agent -s) && \
-    TAILSCALED_PATH=$(pwd)/tailscaled ./tailssh.test -test.v -test.run 'TestSSHAgentForwarding|TestIntegration|TestDoDropPrivileges'
+    SCALETAILD_PATH=$(pwd)/scaletaild ./tailssh.test -test.v -test.run 'TestSSHAgentForwarding|TestIntegration|TestDoDropPrivileges'

@@ -47,7 +47,7 @@ func netNDBBytesWithoutTailscale(raw []byte) ([]byte, error) {
 	removeLine := set.Set[string]{}
 	for bs.Scan() {
 		t := bs.Text()
-		if rest, ok := strings.CutPrefix(t, "#tailscaled-added-line:"); ok {
+		if rest, ok := strings.CutPrefix(t, "#scaletaild-added-line:"); ok {
 			removeLine.Add(strings.TrimSpace(rest))
 			continue
 		}
@@ -59,7 +59,7 @@ func netNDBBytesWithoutTailscale(raw []byte) ([]byte, error) {
 
 		// Also remove any DNS line referencing *.ts.net. This is
 		// Tailscale-specific (and won't work with, say, Headscale), but
-		// the Headscale case will be covered by the #tailscaled-added-line
+		// the Headscale case will be covered by the #scaletaild-added-line
 		// logic above, assuming the user didn't delete those comments.
 		if (strings.HasPrefix(trimmed, "dns=") || strings.Contains(trimmed, "dnsdomain=")) &&
 			strings.HasSuffix(trimmed, ".ts.net") {
@@ -103,7 +103,7 @@ func setNDBSuffix(tsFree []byte, suffix string) []byte {
 	}
 	var ret bytes.Buffer
 	for _, s := range added {
-		ret.WriteString("#tailscaled-added-line: ")
+		ret.WriteString("#scaletaild-added-line: ")
 		ret.WriteString(s)
 		ret.WriteString("\n")
 	}

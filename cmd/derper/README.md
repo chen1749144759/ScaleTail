@@ -31,14 +31,14 @@ If you've decided or been advised to run your own `derper`, then read on.
   packages. Use `go install tailscale.com/cmd/derper@latest` with the latest
   version of Go. You should update this binary approximately as regularly as
   you update Tailscale nodes. If using `--verify-clients`, the `derper` binary
-  and `tailscaled` binary on the machine must be built from the same git revision.
+  and `scaletaild` binary on the machine must be built from the same git revision.
   (It might work otherwise, but they're developed and only tested together.)
 
 * The DERP protocol does a protocol switch inside TLS from HTTP to a custom
   bidirectional binary protocol. It is thus incompatible with many HTTP proxies.
   Do not put `derper` behind another HTTP proxy.
 
-* The `tailscaled` client does its own selection of the fastest/nearest DERP
+* The `scaletaild` client does its own selection of the fastest/nearest DERP
   server based on latency measurements. Do not put `derper` behind a global load
   balancer.
 
@@ -58,10 +58,10 @@ rely on its DNS which might be broken and dependent on DERP to get back up.
 
 * Monitor your DERP servers with [`cmd/derpprobe`](../derpprobe/).
 
-* If using `--verify-clients`, a `tailscaled` must be running alongside the
-  `derper`, and all clients must be visible to the derper tailscaled in the ACL.
+* If using `--verify-clients`, a `scaletaild` must be running alongside the
+  `derper`, and all clients must be visible to the derper scaletaild in the ACL.
 
-* If using `--verify-clients`, a `tailscaled` must also be running alongside
+* If using `--verify-clients`, a `scaletaild` must also be running alongside
   your `derpprobe`, and `derpprobe` needs to use `--derp-map=local`.
 
 * The firewall on the `derper` should permit TCP ports 80 and 443 and UDP port
@@ -100,7 +100,7 @@ analysis to diagnose the most tricky problems. There is no "plain text" or
 
 * `cmd/derpprobe` provides a service for monitoring DERP cluster health.
 
-* `tailscale debug derp` and `tailscale netcheck` provide additional client
+* `scaletail debug derp` and `scaletail netcheck` provide additional client
   driven diagnostic information for DERP communications.
 
 * Tailscale logs may provide insight for certain problems, such as if DERPs are

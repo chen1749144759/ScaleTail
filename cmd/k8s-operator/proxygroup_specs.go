@@ -110,7 +110,7 @@ func pgStatefulSet(pg *tsapi.ProxyGroup, namespace, image, tsFirewallMode string
 		var volumes []corev1.Volume
 		for i := range pgReplicas(pg) {
 			volumes = append(volumes, corev1.Volume{
-				Name: fmt.Sprintf("tailscaledconfig-%d", i),
+				Name: fmt.Sprintf("scaletaildconfig-%d", i),
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
 						SecretName: pgConfigSecretName(pg.Name, i),
@@ -144,7 +144,7 @@ func pgStatefulSet(pg *tsapi.ProxyGroup, namespace, image, tsFirewallMode string
 		// for pods that haven't meaningfully changed.
 		for i := range pgReplicas(pg) {
 			mounts = append(mounts, corev1.VolumeMount{
-				Name:      fmt.Sprintf("tailscaledconfig-%d", i),
+				Name:      fmt.Sprintf("scaletaildconfig-%d", i),
 				ReadOnly:  true,
 				MountPath: fmt.Sprintf("/etc/tsconfig/%s-%d", pg.Name, i),
 			})

@@ -25,6 +25,6 @@ func init() {
 			fmt.Fprintf(os.Stderr, "tailscale.toolchain.rev = %q, want %q; but ignoring due to TS_PERMIT_TOOLCHAIN_MISMATCH=1\n", tsRev, want)
 			return
 		}
-		panic(fmt.Sprintf("binary built with tailscale_go build tag but Go toolchain %q doesn't match github.com/tailscale/tailscale expected value %q; override this failure with TS_PERMIT_TOOLCHAIN_MISMATCH=1", tsRev, want))
+		panic(fmt.Sprintf("binary built with tailscale_go build tag but Go toolchain %q doesn't match github.com/tailscale/scaletail expected value %q; override this failure with TS_PERMIT_TOOLCHAIN_MISMATCH=1", tsRev, want))
 	}
 }

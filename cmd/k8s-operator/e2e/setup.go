@@ -225,7 +225,7 @@ func runTests(m *testing.M) (int, error) {
 		// For devcontrol -> pebble (DNS mgmt for ACME challenges):
 		// * Port forward from localhost port 8055 to in-cluster pebble port 8055.
 		//
-		// For Pods -> devcontrol (tailscale clients joining the tailnet):
+		// For Pods -> devcontrol (scaletail clients joining the tailnet):
 		// * Create ssh-server Deployment in cluster.
 		// * Create reverse ssh tunnel that goes from ssh-server port 31544 to localhost:31544.
 		if err = forwardLocalPortToPod(ctx, logger, restCfg, ns, pebblePod, 8055); err != nil {
@@ -255,7 +255,7 @@ func runTests(m *testing.M) (int, error) {
 		}
 
 		// Address cluster workloads can reach devcontrol at. Must be a private
-		// IP to make sure tailscale client code recognises it shouldn't try an
+		// IP to make sure scaletail client code recognises it shouldn't try an
 		// https fallback. See [controlclient.NewNoiseClient] for details.
 		clusterLoginServer = fmt.Sprintf("http://%s:31544", sshServiceIP)
 
@@ -528,7 +528,7 @@ func runTests(m *testing.M) (int, error) {
 	}
 	defer secondTNClient.Close()
 
-	// Create the tailnet Secret in the tailscale namespace.
+	// Create the tailnet Secret in the scaletail namespace.
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "second-tailnet-credentials",

@@ -69,7 +69,7 @@ if [[ ! -x "$go_tool" ]]; then
 fi
 
 pkg_id="com.scaletail.scaletail"
-launchd_label="com.tailscale.tailscaled"
+launchd_label="com.scaletail.scaletaild"
 work_dir="${TMPDIR:-/tmp}/scaletail-macos-${version}-${goarch}"
 pkg_root="$work_dir/root"
 scripts_dir="$work_dir/scripts"
@@ -81,18 +81,18 @@ rm -rf "$work_dir"
 mkdir -p \
   "$pkg_root/usr/local/bin" \
   "$pkg_root/Library/LaunchDaemons" \
-  "$pkg_root/Library/Tailscale" \
+  "$pkg_root/Library/ScaleTail" \
   "$scripts_dir" \
   "$out_dir"
 
-echo "Building tailscale for darwin/$goarch"
-TS_VERSION_OVERRIDE="$version" GOOS=darwin GOARCH="$goarch" "$go_tool" build -trimpath -o "$pkg_root/usr/local/bin/tailscale" ./cmd/tailscale
+echo "Building scaletail for darwin/$goarch"
+TS_VERSION_OVERRIDE="$version" GOOS=darwin GOARCH="$goarch" "$go_tool" build -trimpath -o "$pkg_root/usr/local/bin/scaletail" ./cmd/scaletail
 
-echo "Building tailscaled for darwin/$goarch"
-TS_VERSION_OVERRIDE="$version" GOOS=darwin GOARCH="$goarch" "$go_tool" build -trimpath -o "$pkg_root/usr/local/bin/tailscaled" ./cmd/tailscaled
+echo "Building scaletaild for darwin/$goarch"
+TS_VERSION_OVERRIDE="$version" GOOS=darwin GOARCH="$goarch" "$go_tool" build -trimpath -o "$pkg_root/usr/local/bin/scaletaild" ./cmd/scaletaild
 
-chmod 0755 "$pkg_root/usr/local/bin/tailscale" "$pkg_root/usr/local/bin/tailscaled"
-chmod 0700 "$pkg_root/Library/Tailscale"
+chmod 0755 "$pkg_root/usr/local/bin/scaletail" "$pkg_root/usr/local/bin/scaletaild"
+chmod 0700 "$pkg_root/Library/ScaleTail"
 
 cat >"$pkg_root/Library/LaunchDaemons/${launchd_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -103,7 +103,7 @@ cat >"$pkg_root/Library/LaunchDaemons/${launchd_label}.plist" <<PLIST
   <string>${launchd_label}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/tailscaled</string>
+    <string>/usr/local/bin/scaletaild</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
@@ -117,7 +117,7 @@ cat >"$scripts_dir/preinstall" <<'SCRIPT'
 #!/bin/sh
 set -e
 
-label="com.tailscale.tailscaled"
+label="com.scaletail.scaletaild"
 plist="/Library/LaunchDaemons/${label}.plist"
 
 if launchctl print "system/${label}" >/dev/null 2>&1; then
@@ -132,15 +132,15 @@ cat >"$scripts_dir/postinstall" <<'SCRIPT'
 #!/bin/sh
 set -e
 
-label="com.tailscale.tailscaled"
+label="com.scaletail.scaletaild"
 plist="/Library/LaunchDaemons/${label}.plist"
 
-mkdir -p /Library/Tailscale
-chown root:wheel /Library/Tailscale
-chmod 700 /Library/Tailscale
+mkdir -p /Library/ScaleTail
+chown root:wheel /Library/ScaleTail
+chmod 700 /Library/ScaleTail
 
-chown root:wheel /usr/local/bin/tailscale /usr/local/bin/tailscaled "$plist"
-chmod 755 /usr/local/bin/tailscale /usr/local/bin/tailscaled
+chown root:wheel /usr/local/bin/scaletail /usr/local/bin/scaletaild "$plist"
+chmod 755 /usr/local/bin/scaletail /usr/local/bin/scaletaild
 chmod 644 "$plist"
 
 if ! launchctl bootstrap system "$plist" >/dev/null 2>&1; then

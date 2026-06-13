@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Program speedtest provides the speedtest command. The reason to keep it separate from
-// the normal tailscale cli is because it is not yet ready to go in the tailscale binary.
-// It will be included in the tailscale cli after it has been added to tailscaled.
+// the normal scaletail cli is because it is not yet ready to go in the scaletail binary.
+// It will be included in the scaletail cli after it has been added to scaletaild.
 
 // Example usage for client command: go run cmd/speedtest -host 127.0.0.1:20333 -t 5s
 // This will connect to the server on 127.0.0.1:20333 and start a 5 second download speedtest.

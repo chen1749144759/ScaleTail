@@ -23,11 +23,11 @@ import (
 	"tailscale.com/client/local"
 )
 
-func startTailscaled(ctx context.Context, cfg *settings) (*local.Client, *os.Process, error) {
-	args := tailscaledArgs(cfg)
-	// tailscaled runs without context, since it needs to persist
+func startScaleTaild(ctx context.Context, cfg *settings) (*local.Client, *os.Process, error) {
+	args := scaletaildArgs(cfg)
+	// scaletaild runs without context, since it needs to persist
 	// beyond the startup timeout in ctx.
-	cmd := exec.Command("tailscaled", args...)
+	cmd := exec.Command("scaletaild", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -36,23 +36,23 @@ func startTailscaled(ctx context.Context, cfg *settings) (*local.Client, *os.Pro
 	if cfg.CertShareMode != "" {
 		cmd.Env = append(os.Environ(), "TS_CERT_SHARE_MODE="+cfg.CertShareMode)
 	}
-	log.Printf("Starting tailscaled")
+	log.Printf("Starting scaletaild")
 	if err := cmd.Start(); err != nil {
-		return nil, nil, fmt.Errorf("starting tailscaled failed: %w", err)
+		return nil, nil, fmt.Errorf("starting scaletaild failed: %w", err)
 	}
 
 	// Wait for the socket file to appear, otherwise API ops will racily fail.
-	log.Printf("Waiting for tailscaled socket at %s", cfg.Socket)
+	log.Printf("Waiting for scaletaild socket at %s", cfg.Socket)
 	for {
 		if ctx.Err() != nil {
-			return nil, nil, errors.New("timed out waiting for tailscaled socket")
+			return nil, nil, errors.New("timed out waiting for scaletaild socket")
 		}
 		_, err := os.Stat(cfg.Socket)
 		if errors.Is(err, fs.ErrNotExist) {
 			time.Sleep(100 * time.Millisecond)
 			continue
 		} else if err != nil {
-			return nil, nil, fmt.Errorf("error waiting for tailscaled socket: %w", err)
+			return nil, nil, fmt.Errorf("error waiting for scaletaild socket: %w", err)
 		}
 		break
 	}
@@ -65,8 +65,8 @@ func startTailscaled(ctx context.Context, cfg *settings) (*local.Client, *os.Pro
 	return tsClient, cmd.Process, nil
 }
 
-// tailscaledArgs uses cfg to construct the argv for tailscaled.
-func tailscaledArgs(cfg *settings) []string {
+// scaletaildArgs uses cfg to construct the argv for scaletaild.
+func scaletaildArgs(cfg *settings) []string {
 	args := []string{"--socket=" + cfg.Socket}
 	switch {
 	case cfg.KubeSecret != "":
@@ -93,12 +93,12 @@ func tailscaledArgs(cfg *settings) []string {
 	if cfg.HTTPProxyAddr != "" {
 		args = append(args, "--outbound-http-proxy-listen="+cfg.HTTPProxyAddr)
 	}
-	if cfg.TailscaledConfigFilePath != "" {
-		args = append(args, "--config="+cfg.TailscaledConfigFilePath)
+	if cfg.ScaleTaildConfigFilePath != "" {
+		args = append(args, "--config="+cfg.ScaleTaildConfigFilePath)
 	}
 	// Once enough proxy versions have been released for all the supported
 	// versions to understand this cfg setting, the operator can stop
-	// setting TS_TAILSCALED_EXTRA_ARGS for the debug flag.
+	// setting TS_SCALETAILD_EXTRA_ARGS for the debug flag.
 	if cfg.DebugAddrPort != "" && !strings.Contains(cfg.DaemonExtraArgs, cfg.DebugAddrPort) {
 		args = append(args, "--debug="+cfg.DebugAddrPort)
 	}
@@ -108,7 +108,7 @@ func tailscaledArgs(cfg *settings) []string {
 	return args
 }
 
-// tailscaleUp uses cfg to run 'tailscale up' everytime containerboot starts, or
+// tailscaleUp uses cfg to run 'scaletail up' everytime containerboot starts, or
 // if TS_AUTH_ONCE is set, only the first time containerboot starts.
 func tailscaleUp(ctx context.Context, cfg *settings) error {
 	args := []string{"--socket=" + cfg.Socket, "up"}
@@ -145,17 +145,17 @@ func tailscaleUp(ctx context.Context, cfg *settings) error {
 	if cfg.ExtraArgs != "" {
 		args = append(args, strings.Fields(cfg.ExtraArgs)...)
 	}
-	log.Printf("Running 'tailscale up'")
+	log.Printf("Running 'scaletail up'")
 	cmd := exec.CommandContext(ctx, "tailscale", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("tailscale up failed: %v", err)
+		return fmt.Errorf("scaletail up failed: %v", err)
 	}
 	return nil
 }
 
-// tailscaleSet uses cfg to run 'tailscale set' to set any known configuration
+// tailscaleSet uses cfg to run 'scaletail set' to set any known configuration
 // options that are passed in via environment variables. This is run after the
 // node is in Running state and only if TS_AUTH_ONCE is set.
 func tailscaleSet(ctx context.Context, cfg *settings) error {
@@ -175,34 +175,34 @@ func tailscaleSet(ctx context.Context, cfg *settings) error {
 	if cfg.Hostname != "" {
 		args = append(args, "--hostname="+cfg.Hostname)
 	}
-	log.Printf("Running 'tailscale set'")
+	log.Printf("Running 'scaletail set'")
 	cmd := exec.CommandContext(ctx, "tailscale", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("tailscale set failed: %v", err)
+		return fmt.Errorf("scaletail set failed: %v", err)
 	}
 	return nil
 }
 
-func watchTailscaledConfigChanges(ctx context.Context, path string, lc *local.Client, errCh chan<- error) {
+func watchScaleTaildConfigChanges(ctx context.Context, path string, lc *local.Client, errCh chan<- error) {
 	var (
 		tickChan          <-chan time.Time
 		eventChan         <-chan fsnotify.Event
 		errChan           <-chan error
-		tailscaledCfgDir  = filepath.Dir(path)
-		prevTailscaledCfg []byte
+		scaletaildCfgDir  = filepath.Dir(path)
+		prevScaleTaildCfg []byte
 	)
 	if w, err := fsnotify.NewWatcher(); err != nil {
 		// Creating a new fsnotify watcher would fail for example if inotify was not able to create a new file descriptor.
 		// See https://github.com/tailscale/tailscale/issues/15081
-		log.Printf("tailscaled config watch: failed to create fsnotify watcher, timer-only mode: %v", err)
+		log.Printf("scaletaild config watch: failed to create fsnotify watcher, timer-only mode: %v", err)
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 		tickChan = ticker.C
 	} else {
 		defer w.Close()
-		if err := w.Add(tailscaledCfgDir); err != nil {
+		if err := w.Add(scaletaildCfgDir); err != nil {
 			errCh <- fmt.Errorf("failed to add fsnotify watch: %w", err)
 			return
 		}
@@ -214,13 +214,13 @@ func watchTailscaledConfigChanges(ctx context.Context, path string, lc *local.Cl
 		errCh <- fmt.Errorf("error reading configfile: %w", err)
 		return
 	}
-	prevTailscaledCfg = b
+	prevScaleTaildCfg = b
 	// kubelet mounts Secrets to Pods using a series of symlinks, one of
 	// which is <mount-dir>/..data that Kubernetes recommends consumers to
 	// use if they need to monitor changes
 	// https://github.com/kubernetes/kubernetes/blob/v1.28.1/pkg/volume/util/atomic_writer.go#L39-L61
 	const kubeletMountedCfg = "..data"
-	toWatch := filepath.Join(tailscaledCfgDir, kubeletMountedCfg)
+	toWatch := filepath.Join(scaletaildCfgDir, kubeletMountedCfg)
 	for {
 		select {
 		case <-ctx.Done():
@@ -239,20 +239,20 @@ func watchTailscaledConfigChanges(ctx context.Context, path string, lc *local.Cl
 			errCh <- fmt.Errorf("error reading configfile: %w", err)
 			return
 		}
-		// For some proxy types the mounted volume also contains tailscaled state and other files. We
+		// For some proxy types the mounted volume also contains scaletaild state and other files. We
 		// don't want to reload config unnecessarily on unrelated changes to these files.
-		if reflect.DeepEqual(b, prevTailscaledCfg) {
+		if reflect.DeepEqual(b, prevScaleTaildCfg) {
 			continue
 		}
-		prevTailscaledCfg = b
-		log.Printf("tailscaled config watch: ensuring that config is up to date")
+		prevScaleTaildCfg = b
+		log.Printf("scaletaild config watch: ensuring that config is up to date")
 		ok, err := lc.ReloadConfig(ctx)
 		if err != nil {
-			errCh <- fmt.Errorf("error reloading tailscaled config: %w", err)
+			errCh <- fmt.Errorf("error reloading scaletaild config: %w", err)
 			return
 		}
 		if ok {
-			log.Printf("tailscaled config watch: config was reloaded")
+			log.Printf("scaletaild config watch: config was reloaded")
 		}
 	}
 }

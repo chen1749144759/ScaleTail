@@ -38,7 +38,7 @@ var (
 
 // BenchmarkGiantTailnet measures the per-delta CPU cost of a tailnet client
 // processing peer-add/peer-remove deltas in steady state, with no IPN bus
-// subscribers attached. This represents the headless-tailscaled workload
+// subscribers attached. This represents the headless-scaletaild workload
 // (Linux subnet routers, container sidecars, ...) where the LocalBackend
 // does not pay for fanning Notify.NetMap out to GUI watchers.
 //

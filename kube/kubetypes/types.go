@@ -37,7 +37,7 @@ const (
 
 	// Keys that containerboot writes to state file that can be used to determine its state.
 	// fields set in Tailscale state Secret. These are mostly used by the Tailscale Kubernetes operator to determine
-	// the state of this tailscale device.
+	// the state of this scaletail device.
 	KeyDeviceID       = "device_id"        // node stable ID of the device
 	KeyDeviceFQDN     = "device_fqdn"      // device's tailnet hostname
 	KeyDeviceIPs      = "device_ips"       // device's tailnet IPs

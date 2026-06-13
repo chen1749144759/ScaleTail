@@ -280,7 +280,7 @@ func (ft *firewallTweaker) doAsyncSet() {
 // prefixes) to allow through the Windows firewall.
 // killswitch, if true, enables the wireguard-windows based internet
 // killswitch to prevent use of non-Tailscale default routes.
-// clear, if true, removes all tailscale address firewall rules before
+// clear, if true, removes all scaletail address firewall rules before
 // adding local.
 // procRule, if true, installs a firewall rule that permits the Tailscale
 // process to dial out as it pleases.

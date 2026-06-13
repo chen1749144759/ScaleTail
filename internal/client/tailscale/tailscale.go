@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package tailscale provides a minimal control plane API client for internal
+// Package scaletail provides a minimal control plane API client for internal
 // use. A full client for 3rd party use is available at
 // tailscale.com/client/tailscale/v2. The internal client is provided to avoid
 // having to import that whole package.

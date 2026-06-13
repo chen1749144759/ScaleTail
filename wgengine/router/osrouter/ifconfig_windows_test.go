@@ -183,9 +183,9 @@ func TestFilterRoutes(t *testing.T) {
 		{RouteData: W{ipnet4("192.168.1.127", 32), h0, 1}},
 		// Some random other route.
 		{RouteData: W{ipnet4("192.168.2.23", 32), h0, 1}},
-		// Our own tailscale address.
+		// Our own scaletail address.
 		{RouteData: W{ipnet4("100.100.100.100", 32), h0, 1}},
-		// Other tailscale addresses.
+		// Other scaletail addresses.
 		{RouteData: W{ipnet4("100.100.100.101", 32), h0, 1}},
 		{RouteData: W{ipnet4("100.100.100.102", 32), h0, 1}},
 	}

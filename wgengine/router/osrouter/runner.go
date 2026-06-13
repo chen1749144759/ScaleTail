@@ -32,7 +32,7 @@ type osCommandRunner struct {
 	// CAP_NET_ADMIN is required when running as non-root and executing cmds
 	// like `ip rule`. Even if our process has the capability, we need to
 	// explicitly grant it to the new process.
-	// We specifically need this for Synology DSM7 where tailscaled no longer
+	// We specifically need this for Synology DSM7 where scaletaild no longer
 	// runs as root.
 	ambientCapNetAdmin bool
 }

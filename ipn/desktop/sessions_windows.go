@@ -321,9 +321,9 @@ func (m *wtsSession) close() error {
 type sessionEventHandler func(id SessionID, event uint32)
 
 // TODO(nickkhyl): implement a sessionWatcher that does not use the message queue.
-// One possible approach is to have the tailscaled service register a HandlerEx function
-// and stream SERVICE_CONTROL_SESSIONCHANGE events to the tailscaled subprocess
-// (the actual tailscaled backend), exposing these events via [sessionWatcher]/[wtsManager].
+// One possible approach is to have the scaletaild service register a HandlerEx function
+// and stream SERVICE_CONTROL_SESSIONCHANGE events to the scaletaild subprocess
+// (the actual scaletaild backend), exposing these events via [sessionWatcher]/[wtsManager].
 //
 // See tailscale/corp#26477 for details and tracking.
 type sessionWatcher struct {

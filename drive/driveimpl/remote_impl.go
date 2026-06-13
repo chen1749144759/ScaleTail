@@ -264,7 +264,7 @@ func (s *FileSystemForRemote) Close() error {
 	return nil
 }
 
-// userServer runs tailscaled serve-taildrive to serve webdav content for the
+// userServer runs scaletaild serve-taildrive to serve webdav content for the
 // given Shares. All Shares are assumed to have the same Share.As, and the
 // content is served as that Share.As user.
 type userServer struct {
@@ -388,13 +388,13 @@ func (s *userServer) run() error {
 	// send the rest of stdout and stderr to logger to avoid blocking
 	go func() {
 		for stdoutScanner.Scan() {
-			s.logf("tailscaled serve-taildrive stdout: %v", stdoutScanner.Text())
+			s.logf("scaletaild serve-taildrive stdout: %v", stdoutScanner.Text())
 		}
 	}()
 	stderrScanner := bufio.NewScanner(stderr)
 	go func() {
 		for stderrScanner.Scan() {
-			s.logf("tailscaled serve-taildrive stderr: %v", stderrScanner.Text())
+			s.logf("scaletaild serve-taildrive stderr: %v", stderrScanner.Text())
 		}
 	}()
 	s.mu.Lock()

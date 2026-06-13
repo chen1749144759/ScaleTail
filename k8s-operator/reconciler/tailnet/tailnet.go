@@ -67,14 +67,14 @@ type (
 		Clock tstime.Clock
 		// The logger to use for this Reconciler.
 		Logger *zap.SugaredLogger
-		// ClientFunc is a function that takes tailscale credentials and returns an implementation for the Tailscale
+		// ClientFunc is a function that takes scaletail credentials and returns an implementation for the Tailscale
 		// HTTP API. This should generally be nil unless needed for testing.
 		ClientFunc func(*tsapi.Tailnet, *corev1.Secret) tsclient.Client
-		// Registry is used to store and share initialized tailscale clients for use by other reconcilers.
+		// Registry is used to store and share initialized scaletail clients for use by other reconcilers.
 		Registry ClientRegistry
 	}
 
-	// The ClientRegistry interface describes types that can store initialized tailscale clients for use by other
+	// The ClientRegistry interface describes types that can store initialized scaletail clients for use by other
 	// reconcilers.
 	ClientRegistry interface {
 		// Add should store the given tsclient.Client implementation for a specified tailnet.
@@ -166,7 +166,7 @@ func (r *Reconciler) createOrUpdate(ctx context.Context, tailnet *tsapi.Tailnet)
 	var secret corev1.Secret
 	err := r.Get(ctx, name, &secret)
 
-	// The referenced Secret does not exist within the tailscale namespace, so we'll mark the Tailnet as not ready
+	// The referenced Secret does not exist within the scaletail namespace, so we'll mark the Tailnet as not ready
 	// for use.
 	if apierrors.IsNotFound(err) {
 		operatorutils.SetTailnetCondition(
@@ -289,7 +289,7 @@ func (r *Reconciler) ensurePermissions(ctx context.Context, tsClient tsclient.Cl
 	}
 
 	if _, err := tsClient.VIPServices().List(ctx); err != nil {
-		errs = errors.Join(errs, fmt.Errorf("failed to list tailscale services: %w", err))
+		errs = errors.Join(errs, fmt.Errorf("failed to list scaletail services: %w", err))
 	}
 
 	if errs != nil {

@@ -163,7 +163,7 @@ func addTailscaleIdentityHeaders(lc *local.Client, r *httputil.ProxyRequest) {
 	r.Out.Header.Set("Tailscale-User-Profile-Pic", who.UserProfile.ProfilePicURL)
 }
 
-// encHeader mirrors the encoding tailscaled's serve path applies to
+// encHeader mirrors the encoding scaletaild's serve path applies to
 // user-provided strings destined for HTTP headers.
 func encHeader(v string) string {
 	if !utf8.ValidString(v) {

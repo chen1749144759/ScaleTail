@@ -80,7 +80,7 @@ func (r *KubeAPIServerTSServiceReconciler) Reconcile(ctx context.Context, req re
 	logger = logger.With("Tailscale Service", serviceName)
 	tsClient, err := r.clients.For(pg.Spec.Tailnet)
 	if err != nil {
-		return res, fmt.Errorf("failed to get tailscale client: %w", err)
+		return res, fmt.Errorf("failed to get scaletail client: %w", err)
 	}
 
 	if markedForDeletion(pg) {

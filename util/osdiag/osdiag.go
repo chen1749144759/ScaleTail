@@ -9,7 +9,7 @@ package osdiag
 type LogSupportInfoReason int
 
 const (
-	LogSupportInfoReasonStartup   LogSupportInfoReason = iota + 1 // tailscaled is starting up.
+	LogSupportInfoReasonStartup   LogSupportInfoReason = iota + 1 // scaletaild is starting up.
 	LogSupportInfoReasonBugReport                                 // a bugreport is in the process of being gathered.
 )
 

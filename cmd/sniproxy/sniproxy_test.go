@@ -109,7 +109,7 @@ func startNode(t *testing.T, ctx context.Context, controlURL, hostname string) (
 	if err != nil {
 		t.Fatal(err)
 	}
-	return s, status.Self.PublicKey, status.TailscaleIPs[0]
+	return s, status.Self.PublicKey, status.ScaleTailIPs[0]
 }
 
 func TestSNIProxyWithNetmapConfig(t *testing.T) {

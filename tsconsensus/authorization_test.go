@@ -30,7 +30,7 @@ func makeAuthTestPeer(i int, tags views.Slice[string]) *ipnstate.PeerStatus {
 	return &ipnstate.PeerStatus{
 		ID:   tailcfg.StableNodeID(fmt.Sprintf("%d", i)),
 		Tags: &tags,
-		TailscaleIPs: []netip.Addr{
+		ScaleTailIPs: []netip.Addr{
 			netip.AddrFrom4([4]byte{100, 0, 0, byte(i)}),
 			netip.MustParseAddr(fmt.Sprintf("fd7a:115c:a1e0:0::%d", i)),
 		},
@@ -159,8 +159,8 @@ func TestAuthAllowsHost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// test we get the expected result for any of the peers TailscaleIPs
-			for _, addr := range tt.peerStatus.TailscaleIPs {
+			// test we get the expected result for any of the peers ScaleTailIPs
+			for _, addr := range tt.peerStatus.ScaleTailIPs {
 				got := a.AllowsHost(addr)
 				if got != tt.expected {
 					t.Fatalf("allowed for peer with tags: %v, expected: %t, got %t", tt.peerStatus.Tags, tt.expected, got)

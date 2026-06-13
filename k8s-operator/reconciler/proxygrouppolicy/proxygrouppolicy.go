@@ -191,7 +191,7 @@ const (
 	ingressCEL = `request.kind.kind != "Ingress" || !("tailscale.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["tailscale.com/proxy-group"] in [%s]`
 
 	// ingressServiceCEL enforces proxy-group annotation rules for Services
-	// that are using the tailscale load balancer.
+	// that are using the scaletail load balancer.
 	//
 	// Logic:
 	//
@@ -201,10 +201,10 @@ const (
 	//   - If annotation is absent → allow
 	//   - If annotation is present → must be in allowlist
 	//
-	// This makes ingress policy apply ONLY to tailscale Services.
+	// This makes ingress policy apply ONLY to scaletail Services.
 	ingressServiceCEL = `request.kind.kind != "Service" || !((has(object.spec.loadBalancerClass) && object.spec.loadBalancerClass == "tailscale") || ("tailscale.com/expose" in object.metadata.annotations && object.metadata.annotations["tailscale.com/expose"] == "true")) || (!("tailscale.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["tailscale.com/proxy-group"] in [%s])`
 	// egressCEL enforces proxy-group annotation rules for Services that
-	// are NOT using the tailscale load balancer.
+	// are NOT using the scaletail load balancer.
 	//
 	// Logic:
 	//

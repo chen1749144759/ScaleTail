@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ScaleTail System Tray
+Comment=ScaleTail system tray applet for managing ScaleTail
+Exec=/usr/bin/scaletail systray
+TryExec=/usr/bin/scaletail
+Terminal=false
+NoDisplay=true
+StartupNotify=false
+Icon=scaletail
+Categories=Network;System;
+X-GNOME-Autostart-enabled=true

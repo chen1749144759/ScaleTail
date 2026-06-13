@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// The genreadme tool generates/updates README.md files in the tailscale repo.
+// The genreadme tool generates/updates README.md files in the scaletail repo.
 //
 // # Running
 //

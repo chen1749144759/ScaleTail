@@ -161,7 +161,7 @@ func likelyHomeRouterIPHelper() (ret netip.Addr, _ netip.Addr, ok bool) {
 	return ret, netip.Addr{}, ret.IsValid()
 }
 
-// UpdateLastKnownDefaultRouteInterface is called by libtailscale in the Android app when
+// UpdateLastKnownDefaultRouteInterface is called by libscaletail in the Android app when
 // the connectivity manager detects a network path transition. If ifName is "", network has been lost.
 // After updating the interface, Android calls Monitor.InjectEvent(), triggering a link change.
 func UpdateLastKnownDefaultRouteInterface(ifName string) {

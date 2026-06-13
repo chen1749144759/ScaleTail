@@ -36,7 +36,7 @@ const (
 	LinuxSubnetRouteMark    = "0x40000"
 	LinuxSubnetRouteMarkNum = 0x40000
 
-	// Packet was originated by tailscaled itself, and must not be
+	// Packet was originated by scaletaild itself, and must not be
 	// routed over the Tailscale network.
 	LinuxBypassMark    = "0x80000"
 	LinuxBypassMarkNum = 0x80000

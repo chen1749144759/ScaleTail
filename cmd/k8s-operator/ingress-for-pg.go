@@ -129,7 +129,7 @@ func (r *HAIngressReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 
 	tsClient, err := r.clients.For(pg.Spec.Tailnet)
 	if err != nil {
-		return res, fmt.Errorf("failed to get tailscale client: %w", err)
+		return res, fmt.Errorf("failed to get scaletail client: %w", err)
 	}
 
 	// needsRequeue is set to true if the underlying Tailscale Service has
@@ -170,7 +170,7 @@ func (r *HAIngressReconciler) maybeProvision(ctx context.Context, hostname strin
 	}
 
 	if err = validateIngressClass(ctx, r.Client, r.ingressClassName); err != nil {
-		logger.Infof("error validating tailscale IngressClass: %v.", err)
+		logger.Infof("error validating scaletail IngressClass: %v.", err)
 		return false, nil
 	}
 	// Get and validate ProxyGroup readiness
@@ -364,14 +364,14 @@ func (r *HAIngressReconciler) maybeProvision(ctx context.Context, hostname strin
 		}
 	}
 
-	// 5. Update tailscaled's AdvertiseServices config, which should add the Tailscale Service
+	// 5. Update scaletaild's AdvertiseServices config, which should add the Tailscale Service
 	// IPs to the ProxyGroup Pods' AllowedIPs in the next netmap update if approved.
 	mode := serviceAdvertisementHTTPS
 	if isHTTPEndpointEnabled(ing) || isHTTPRedirectEnabled(ing) {
 		mode = serviceAdvertisementHTTPAndHTTPS
 	}
 	if err = r.maybeUpdateAdvertiseServicesConfig(ctx, serviceName, mode, pg); err != nil {
-		return false, fmt.Errorf("failed to update tailscaled config: %w", err)
+		return false, fmt.Errorf("failed to update scaletaild config: %w", err)
 	}
 
 	// 6. Update Ingress status if ProxyGroup Pods are ready.
@@ -484,9 +484,9 @@ func (r *HAIngressReconciler) maybeCleanupProxyGroup(ctx context.Context, logger
 				return false, fmt.Errorf("deleting Tailscale Service %q: %w", tsSvcName, err)
 			}
 
-			// Make sure the Tailscale Service is not advertised in tailscaled or serve config.
+			// Make sure the Tailscale Service is not advertised in scaletaild or serve config.
 			if err = r.maybeUpdateAdvertiseServicesConfig(ctx, tsSvcName, serviceAdvertisementOff, pg); err != nil {
-				return false, fmt.Errorf("failed to update tailscaled config services: %w", err)
+				return false, fmt.Errorf("failed to update scaletaild config services: %w", err)
 			}
 
 			_, ok := cfg.Services[tsSvcName]
@@ -572,9 +572,9 @@ func (r *HAIngressReconciler) maybeCleanup(ctx context.Context, hostname string,
 		return svcChanged, nil
 	}
 
-	// 4. Unadvertise the Tailscale Service in tailscaled config.
+	// 4. Unadvertise the Tailscale Service in scaletaild config.
 	if err = r.maybeUpdateAdvertiseServicesConfig(ctx, serviceName, serviceAdvertisementOff, pg); err != nil {
-		return false, fmt.Errorf("failed to update tailscaled config services: %w", err)
+		return false, fmt.Errorf("failed to update scaletaild config services: %w", err)
 	}
 
 	// 5. Remove the Tailscale Service from the serve config for the ProxyGroup.

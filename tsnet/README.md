@@ -4,11 +4,11 @@
 
 [![Go Reference](https://pkg.go.dev/badge/tailscale.com/tsnet.svg)](https://pkg.go.dev/tailscale.com/tsnet)
 
-Package tsnet embeds a Tailscale node directly into a Go program, allowing it to join a tailnet and accept or dial connections without running a separate tailscaled daemon or requiring any system-level configuration.
+Package tsnet embeds a Tailscale node directly into a Go program, allowing it to join a tailnet and accept or dial connections without running a separate scaletaild daemon or requiring any system-level configuration.
 
 ## Overview
 
-Normally, Tailscale runs as a background system service (tailscaled) that manages a virtual network interface for the whole machine. tsnet takes a different approach: it runs a fully self-contained Tailscale node inside your process using a userspace TCP/IP stack (gVisor). This means:
+Normally, Tailscale runs as a background system service (scaletaild) that manages a virtual network interface for the whole machine. tsnet takes a different approach: it runs a fully self-contained Tailscale node inside your process using a userspace TCP/IP stack (gVisor). This means:
 
   - No root privileges required.
   - No system daemons to install or manage.

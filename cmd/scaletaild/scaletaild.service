@@ -1,0 +1,23 @@
+[Unit]
+Description=ScaleTail node agent
+Documentation=https://github.com/chen1749144759/ScaleTail
+Wants=network-pre.target
+After=network-pre.target NetworkManager.service systemd-resolved.service
+
+[Service]
+EnvironmentFile=/etc/default/scaletaild
+ExecStart=/usr/sbin/scaletaild --state=/var/lib/scaletail/scaletaild.state --socket=/run/scaletail/scaletaild.sock --port=${PORT} $FLAGS
+ExecStopPost=/usr/sbin/scaletaild --cleanup
+
+Restart=on-failure
+
+RuntimeDirectory=scaletail
+RuntimeDirectoryMode=0755
+StateDirectory=scaletail
+StateDirectoryMode=0700
+CacheDirectory=scaletail
+CacheDirectoryMode=0750
+Type=notify
+
+[Install]
+WantedBy=multi-user.target

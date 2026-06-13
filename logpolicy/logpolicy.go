@@ -210,11 +210,11 @@ func LogsDir(logf logger.Logf) string {
 
 	switch runtime.GOOS {
 	case "windows":
-		if version.CmdName() == "tailscaled" {
-			// In the common case, when tailscaled is run as the Local System (as a service),
+		if version.CmdName() == "scaletaild" {
+			// In the common case, when scaletaild is run as the Local System (as a service),
 			// we want to use %ProgramData% (C:\ProgramData\ScaleTail), aside the
 			// system state config with the machine key, etc. But if that directory's
-			// not accessible, then it's probably because the user is running tailscaled
+			// not accessible, then it's probably because the user is running scaletaild
 			// as a regular user (perhaps in userspace-networking/SOCK5 mode) and we should
 			// just use the %LocalAppData% instead. In a user context, %LocalAppData% isn't
 			// subject to random deletions from Windows system updates.
@@ -243,9 +243,9 @@ func LogsDir(logf logger.Logf) string {
 		return ""
 	}
 
-	// Default to e.g. /var/lib/tailscale or /var/db/tailscale on Unix.
-	if d := paths.DefaultTailscaledStateFile(); d != "" {
-		d = filepath.Dir(d) // directory of e.g. "/var/lib/tailscale/tailscaled.state"
+	// Default to e.g. /var/lib/scaletail or /var/db/scaletail on Unix.
+	if d := paths.DefaultScaleTaildStateFile(); d != "" {
+		d = filepath.Dir(d) // directory of e.g. "/var/lib/tailscale/scaletaild.state"
 		if err := os.MkdirAll(d, 0700); err == nil {
 			logf("logpolicy: using system state directory %q", d)
 			return d
@@ -270,7 +270,7 @@ func LogsDir(logf logger.Logf) string {
 	// No idea where to put stuff. Try to create a temp dir. It'll
 	// mean we might lose some logs and rotate through log IDs, but
 	// it's something.
-	tmp, err := os.MkdirTemp("", "tailscaled-log-*")
+	tmp, err := os.MkdirTemp("", "scaletaild-log-*")
 	if err != nil {
 		panic("no safe place found to store log state")
 	}
@@ -521,7 +521,7 @@ type Options struct {
 // Policy.
 func (opts Options) init(disableLogging bool) (*logtail.Config, *Policy) {
 	if hostinfo.IsNATLabGuestVM() {
-		// In NATLab Gokrazy instances, tailscaled comes up concurently with
+		// In NATLab Gokrazy instances, scaletaild comes up concurently with
 		// DHCP and the doesn't have DNS for a while. Wait for DHCP first.
 		awaitGokrazyNetwork()
 	}
@@ -564,10 +564,10 @@ func (opts Options) init(disableLogging bool) (*logtail.Config, *Policy) {
 
 	if runtime.GOOS == "windows" {
 		switch opts.CmdName {
-		case "tailscaled":
+		case "scaletaild":
 			// Tailscale 1.14 and before stored state under %LocalAppData%
 			// (usually "C:\WINDOWS\system32\config\systemprofile\AppData\Local"
-			// when tailscaled.exe is running as a non-user system service).
+			// when scaletaild.exe is running as a non-user system service).
 			// However it is frequently cleared for almost any reason: Windows
 			// updates, System Restore, even various System Cleaner utilities.
 			//
@@ -576,14 +576,14 @@ func (opts Options) init(disableLogging bool) (*logtail.Config, *Policy) {
 			// log conf named %LocalAppData%\tailscale-ipn.log.conf
 			//
 			// Machines which started using Tailscale more recently will have
-			// %LocalAppData%\tailscaled.log.conf
+			// %LocalAppData%\scaletaild.log.conf
 			//
 			// Attempt to migrate the log conf to C:\ProgramData\ScaleTail
 			oldDir := filepath.Join(os.Getenv("LocalAppData"), "Tailscale")
 
-			oldPath := filepath.Join(oldDir, "tailscaled.log.conf")
+			oldPath := filepath.Join(oldDir, "scaletaild.log.conf")
 			if fi, err := os.Stat(oldPath); err != nil || !fi.Mode().IsRegular() {
-				// *Only* if tailscaled.log.conf does not exist,
+				// *Only* if scaletaild.log.conf does not exist,
 				// check for tailscale-ipn.log.conf
 				oldPathOldCmd := filepath.Join(oldDir, "tailscale-ipn.log.conf")
 				if fi, err := os.Stat(oldPathOldCmd); err == nil && fi.Mode().IsRegular() {
@@ -668,7 +668,7 @@ func (opts Options) init(disableLogging bool) (*logtail.Config, *Policy) {
 	if runtime.GOOS == "windows" && conf.Collection == logtail.CollectionNode {
 		logID := newc.PublicID.String()
 		exe, _ := os.Executable()
-		if strings.EqualFold(filepath.Base(exe), "tailscaled.exe") {
+		if strings.EqualFold(filepath.Base(exe), "scaletaild.exe") {
 			diskLogf := filelogger.New("tailscale-service", logID, lw.Logf)
 			logOutput = logger.FuncWriter(diskLogf)
 		}
@@ -741,7 +741,7 @@ func attachFilchBuffer(conf *logtail.Config, dir, cmdName string, maxFileSize in
 // own dialing.
 //
 // By default it goes nowhere and is only enabled when
-// tailscaled's in verbose mode.
+// scaletaild's in verbose mode.
 //
 // log.Printf isn't used so its own logs don't loop back into logtail
 // in the happy path, thus generating more logs.
@@ -784,7 +784,7 @@ func (p *Policy) Shutdown(ctx context.Context) error {
 //     for the benefit of older OS platforms which might not include it.
 //
 // The netMon parameter is optional. It should be specified in environments where
-// Tailscaled is manipulating the routing table.
+// ScaleTaild is manipulating the routing table.
 func MakeDialFunc(netMon *netmon.Monitor, logf logger.Logf) netx.DialFunc {
 	if netMon == nil {
 		netMon = netmon.NewStatic()
@@ -816,10 +816,10 @@ func dialContext(ctx context.Context, netw, addr string, netMon *netmon.Monitor,
 				err = errors.New(res.Status)
 			}
 			if err != nil {
-				logf("logtail: CONNECT response error from tailscaled: %v", err)
+				logf("logtail: CONNECT response error from scaletaild: %v", err)
 				c.Close()
 			} else {
-				dialLog.Printf("connected via tailscaled")
+				dialLog.Printf("connected via scaletaild")
 				return c, nil
 			}
 		}

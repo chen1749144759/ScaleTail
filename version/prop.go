@@ -58,7 +58,7 @@ func OS() string {
 }
 
 // IsMacGUIVariant reports whether runtime.GOOS=="darwin" and this one of the
-// two GUI variants (that is, not tailscaled-on-macOS).
+// two GUI variants (that is, not scaletaild-on-macOS).
 // This predicate should not be used to determine sandboxing properties. It's
 // meant for callers to determine whether the NetworkExtension-like auto-netns
 // is in effect.
@@ -69,7 +69,7 @@ func IsMacGUIVariant() bool {
 // IsSandboxedMacOS reports whether this process is a sandboxed macOS
 // process (either the app or the extension). It is true for the Mac App Store
 // and macsys (only its System Extension) variants on macOS, and false for
-// tailscaled and the macsys GUI process on macOS.
+// scaletaild and the macsys GUI process on macOS.
 func IsSandboxedMacOS() bool {
 	return IsMacAppStore() || IsMacSysExt()
 }
@@ -278,7 +278,7 @@ type Meta struct {
 	UnstableBranch bool `json:"unstableBranch,omitempty"`
 
 	// GitCommit, if non-empty, is the git commit of the
-	// github.com/tailscale/tailscale repository at which Tailscale was
+	// github.com/tailscale/scaletail repository at which Tailscale was
 	// built. Its format is the one returned by `git describe --always
 	// --exclude "*" --dirty --abbrev=200`.
 	GitCommit string `json:"gitCommit,omitempty"`
@@ -305,7 +305,7 @@ type Meta struct {
 	// build.
 	ExtraGitCommit string `json:"extraGitCommit,omitempty"`
 
-	// DaemonLong is the version number from the tailscaled
+	// DaemonLong is the version number from the scaletaild
 	// daemon, if requested.
 	DaemonLong string `json:"daemonLong,omitempty"`
 

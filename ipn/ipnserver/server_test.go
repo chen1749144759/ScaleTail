@@ -263,22 +263,22 @@ func TestShutdownViaLocalAPI(t *testing.T) {
 
 	tests := []struct {
 		name                   string
-		allowTailscaledRestart *bool
+		allowScaleTaildRestart *bool
 		wantErr                error
 	}{
 		{
-			name:                   "AllowTailscaledRestart/NotConfigured",
-			allowTailscaledRestart: nil,
+			name:                   "AllowScaleTaildRestart/NotConfigured",
+			allowScaleTaildRestart: nil,
 			wantErr:                errAccessDeniedByPolicy,
 		},
 		{
-			name:                   "AllowTailscaledRestart/False",
-			allowTailscaledRestart: new(false),
+			name:                   "AllowScaleTaildRestart/False",
+			allowScaleTaildRestart: new(false),
 			wantErr:                errAccessDeniedByPolicy,
 		},
 		{
-			name:                   "AllowTailscaledRestart/True",
-			allowTailscaledRestart: new(true),
+			name:                   "AllowScaleTaildRestart/True",
+			allowScaleTaildRestart: new(true),
 			wantErr:                nil, // shutdown should be allowed
 		},
 	}
@@ -290,15 +290,15 @@ func TestShutdownViaLocalAPI(t *testing.T) {
 			sys := tsd.NewSystem()
 
 			var pol policytest.Config
-			if tt.allowTailscaledRestart != nil {
-				pol.Set(pkey.AllowTailscaledRestart, *tt.allowTailscaledRestart)
+			if tt.allowScaleTaildRestart != nil {
+				pol.Set(pkey.AllowScaleTaildRestart, *tt.allowScaleTaildRestart)
 			}
 			sys.Set(pol)
 
 			server := lapitest.NewServer(t, lapitest.WithSys(sys))
 			lc := server.ClientWithName("User")
 
-			err := lc.ShutdownTailscaled(t.Context())
+			err := lc.ShutdownScaleTaild(t.Context())
 			checkError(t, err, tt.wantErr)
 		})
 	}

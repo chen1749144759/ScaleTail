@@ -33,7 +33,7 @@ func NewOSConfigurator(logf logger.Logf, _ *health.Tracker, _ *eventbus.Bus, _ p
 	}, nil
 }
 
-// darwinConfigurator is the tailscaled-on-macOS DNS OS configurator that
+// darwinConfigurator is the scaletaild-on-macOS DNS OS configurator that
 // maintains the Split DNS nameserver entries pointing MagicDNS DNS suffixes
 // to 100.100.100.100 using the macOS /etc/resolver/$SUFFIX files.
 type darwinConfigurator struct {
@@ -154,7 +154,7 @@ func (c *darwinConfigurator) GetBaseConfig() (OSConfig, error) {
 	return cfg, nil
 }
 
-const macResolverFileHeader = "# Added by tailscaled\n"
+const macResolverFileHeader = "# Added by scaletaild\n"
 
 // removeResolverFiles deletes all files in /etc/resolver for which the shouldDelete
 // func returns true.

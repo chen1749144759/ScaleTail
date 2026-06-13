@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package tsclient provides a mockable wrapper around the tailscale-client-go-v2 package for use by the Kubernetes
-// operator. It also contains the Provider type used to manage multiple instances of tailscale clients for different
+// operator. It also contains the Provider type used to manage multiple instances of scaletail clients for different
 // tailnets.
 package tsclient
 

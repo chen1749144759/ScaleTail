@@ -75,19 +75,19 @@ func registerMetrics(reg *usermetric.Registry) *metrics {
 	var (
 		uMetricForwardedPackets = usermetric.NewMultiLabelMapWithRegistry[forwardedLabel](
 			reg,
-			"tailscaled_peer_relay_forwarded_packets_total",
+			"scaletaild_peer_relay_forwarded_packets_total",
 			"counter",
 			"Number of packets forwarded via Peer Relay",
 		)
 		uMetricForwardedBytes = usermetric.NewMultiLabelMapWithRegistry[forwardedLabel](
 			reg,
-			"tailscaled_peer_relay_forwarded_bytes_total",
+			"scaletaild_peer_relay_forwarded_bytes_total",
 			"counter",
 			"Number of bytes forwarded via Peer Relay",
 		)
 		uMetricEndpoints = usermetric.NewMultiLabelMapWithRegistry[endpointLabel](
 			reg,
-			"tailscaled_peer_relay_endpoints",
+			"scaletaild_peer_relay_endpoints",
 			"gauge",
 			"Number of allocated Peer Relay endpoints",
 		)

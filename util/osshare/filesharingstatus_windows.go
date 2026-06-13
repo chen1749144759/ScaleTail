@@ -34,7 +34,7 @@ func getIpnExePath(logf logger.Logf) string {
 
 func findGUIInSameDirAsThisExe(logf logger.Logf) string {
 	// Find the absolute path of the GUI, assuming that it's in the same
-	// directory as this executable (tailscaled.exe).
+	// directory as this executable (scaletaild.exe).
 	p, err := os.Executable()
 	if err != nil {
 		logf("os.Executable error: %v", err)

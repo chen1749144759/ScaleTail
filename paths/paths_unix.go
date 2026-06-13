@@ -22,17 +22,17 @@ func init() {
 
 func statePath() string {
 	if runtime.GOOS == "linux" && distro.Get() == distro.JetKVM {
-		return "/userdata/tailscale/var/tailscaled.state"
+		return "/userdata/scaletail/var/scaletaild.state"
 	}
 	switch runtime.GOOS {
 	case "linux", "illumos", "solaris":
-		return "/var/lib/tailscale/tailscaled.state"
+		return "/var/lib/scaletail/scaletaild.state"
 	case "freebsd", "openbsd":
-		return "/var/db/tailscale/tailscaled.state"
+		return "/var/db/scaletail/scaletaild.state"
 	case "darwin":
-		return "/Library/Tailscale/tailscaled.state"
+		return "/Library/ScaleTail/scaletaild.state"
 	case "aix":
-		return "/var/tailscale/tailscaled.state"
+		return "/var/scaletail/scaletaild.state"
 	default:
 		return ""
 	}
@@ -40,7 +40,7 @@ func statePath() string {
 
 func stateFileUnix() string {
 	if distro.Get() == distro.Gokrazy {
-		return "/perm/tailscaled/tailscaled.state"
+		return "/perm/scaletaild/scaletaild.state"
 	}
 	path := statePath()
 	if path == "" {
@@ -48,7 +48,7 @@ func stateFileUnix() string {
 	}
 
 	try := path
-	for range 3 { // check writability of the file, /var/lib/tailscale, and /var/lib
+	for range 3 { // check writability of the file, /var/lib/scaletail, and /var/lib
 		err := unix.Access(try, unix.O_RDWR)
 		if err == nil {
 			return path
@@ -60,8 +60,8 @@ func stateFileUnix() string {
 		return ""
 	}
 
-	// For non-root users, fall back to $XDG_DATA_HOME/tailscale/*.
-	return filepath.Join(xdgDataHome(), "tailscale", "tailscaled.state")
+	// For non-root users, fall back to $XDG_DATA_HOME/scaletail/*.
+	return filepath.Join(xdgDataHome(), "scaletail", "scaletaild.state")
 }
 
 func xdgDataHome() string {
@@ -72,7 +72,7 @@ func xdgDataHome() string {
 }
 
 func ensureStateDirPermsUnix(dir string) error {
-	if filepath.Base(dir) != "tailscale" {
+	if filepath.Base(dir) != "scaletail" {
 		return nil
 	}
 	fi, err := os.Stat(dir)

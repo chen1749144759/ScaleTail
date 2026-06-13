@@ -86,7 +86,7 @@ func TestPacketSideEffects(t *testing.T) {
 				},
 				{
 					name: "syslog-v4",
-					pkt:  mkSyslogPacket(clientIPv4(1), "<6>2024-08-30T10:36:06-07:00 natlabapp tailscaled[1]: 2024/08/30 10:36:06 some-message"),
+					pkt:  mkSyslogPacket(clientIPv4(1), "<6>2024-08-30T10:36:06-07:00 natlabapp scaletaild[1]: 2024/08/30 10:36:06 some-message"),
 					check: all(
 						numPkts(0),
 						logSubstr("some-message"),
@@ -94,7 +94,7 @@ func TestPacketSideEffects(t *testing.T) {
 				},
 				{
 					name: "syslog-v6",
-					pkt:  mkSyslogPacket(nodeWANIP6(1), "<6>2024-08-30T10:36:06-07:00 natlabapp tailscaled[1]: 2024/08/30 10:36:06 some-message"),
+					pkt:  mkSyslogPacket(nodeWANIP6(1), "<6>2024-08-30T10:36:06-07:00 natlabapp scaletaild[1]: 2024/08/30 10:36:06 some-message"),
 					check: all(
 						numPkts(0),
 						logSubstr("some-message"),

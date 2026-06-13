@@ -133,7 +133,7 @@ var lsofFailed atomic.Bool
 //
 // This fails in a macOS sandbox (i.e. in the Mac App Store or System
 // Extension GUI build), but does at least work in the
-// tailscaled-on-macos mode.
+// scaletaild-on-macos mode.
 func (im *macOSImpl) addProcesses() error {
 	if lsofFailed.Load() {
 		// This previously failed in the macOS sandbox, so don't try again.

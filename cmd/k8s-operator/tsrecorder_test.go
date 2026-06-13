@@ -135,7 +135,7 @@ func TestRecorder(t *testing.T) {
 
 		expectReconciled(t, reconciler, "", tsr.Name)
 
-		msg := `Recorder is invalid: custom ServiceAccount name "pre-existing-sa" specified but conflicts with a pre-existing ServiceAccount in the tailscale namespace`
+		msg := `Recorder is invalid: custom ServiceAccount name "pre-existing-sa" specified but conflicts with a pre-existing ServiceAccount in the scaletail namespace`
 		tsoperator.SetRecorderCondition(tsr, tsapi.RecorderReady, metav1.ConditionFalse, reasonRecorderInvalid, msg, 0, cl, zl.Sugar())
 		expectEqual(t, fc, tsr)
 		if expected := 0; reconciler.recorders.Len() != expected {

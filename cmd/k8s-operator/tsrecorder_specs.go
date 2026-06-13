@@ -108,7 +108,7 @@ func tsrStatefulSet(tsr *tsapi.Recorder, namespace string, loginServer string) *
 		ss.Spec.Template.Spec.Containers[0].VolumeMounts = append(ss.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
 			Name:      volumeName,
 			ReadOnly:  true,
-			MountPath: fmt.Sprintf("/etc/tailscaled/%s-%d", ss.Name, replica),
+			MountPath: fmt.Sprintf("/etc/scaletaild/%s-%d", ss.Name, replica),
 		})
 
 		ss.Spec.Template.Spec.Volumes = append(ss.Spec.Template.Spec.Volumes, corev1.Volume{
@@ -260,7 +260,7 @@ func tsrEnv(tsr *tsapi.Recorder, loginServer string) []corev1.EnvVar {
 		},
 		{
 			Name:  "TS_AUTHKEY_FILE",
-			Value: "/etc/tailscaled/$(POD_NAME)/authkey",
+			Value: "/etc/scaletaild/$(POD_NAME)/authkey",
 		},
 		{
 			Name:  "TS_STATE",

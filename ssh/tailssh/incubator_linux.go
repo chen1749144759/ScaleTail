@@ -112,7 +112,7 @@ type createSessionResp struct {
 func createSession(uid uint32, remoteUser, remoteHost, tty string) (createSessionResp, error) {
 	a := createSessionArgs{
 		uid:        uid,
-		service:    "tailscaled",
+		service:    "scaletaild",
 		typ:        "tty",
 		class:      "user",
 		tty:        tty,
@@ -153,7 +153,7 @@ func maybeStartLoginSessionLinux(dlogf logger.Logf, ia incubatorArgs) func() err
 	dlogf("starting session for user %d", ia.uid)
 	// The only way we can actually start a new session is if we are
 	// running outside one and are root, which is typically the case
-	// for systemd managed tailscaled.
+	// for systemd managed scaletaild.
 	resp, err := createSession(uint32(ia.uid), ia.remoteUser, ia.remoteIP, ia.ttyName)
 	if err != nil {
 		// TODO(maisem): figure out if we are running in a session.

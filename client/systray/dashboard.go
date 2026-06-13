@@ -1,4 +1,4 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package systray
@@ -363,7 +363,7 @@ func (ds *DashboardServer) serveNetcheck(w http.ResponseWriter, r *http.Request)
 
 func (ds *DashboardServer) ensureBackend(ctx context.Context) error {
 	if _, err := ds.lc.StatusWithoutPeers(ctx); err != nil {
-		return fmt.Errorf("无法连接 tailscaled，本地服务未运行或 LocalAPI 不可用。请确认 Tailscale 服务已安装并启动: %w", err)
+		return fmt.Errorf("无法连接 scaletaild，本地服务未运行或 LocalAPI 不可用。请确认 ScaleTail 服务已安装并启动: %w", err)
 	}
 	return nil
 }
@@ -489,7 +489,7 @@ const connectHTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tailscale 服务端配置</title>
+<title>ScaleTail 服务端配置</title>
 <style>
 :root{color-scheme:light;--bg:#f6f8fb;--panel:#fff;--text:#172033;--muted:#667085;--line:#d8dee9;--blue:#2563eb;--blue2:#1d4ed8;--red:#dc2626;--green:#15803d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Segoe UI",system-ui,sans-serif;color:var(--text)}
@@ -508,7 +508,7 @@ button.danger{border-color:#fecaca;color:var(--red);background:#fff}
 <body>
 <div class="wrap">
   <div class="top">
-    <div class="brand">Tailscale</div>
+    <div class="brand">ScaleTail</div>
     <div class="state" id="state">读取状态中...</div>
   </div>
   <div class="panel">
@@ -556,16 +556,16 @@ const $ = id => document.getElementById(id);
 if(!initPanelWindow()){ throw new Error('panel already open'); }
 let connected = false;
 function initPanelWindow(){
-  const idKey = 'tailscale-dev-panel-id';
-  const activeKey = 'tailscale-dev-panel-active';
-  const commandKey = 'tailscale-dev-panel-command';
+  const idKey = 'scaletail-panel-id';
+  const activeKey = 'scaletail-panel-active';
+  const commandKey = 'scaletail-panel-command';
   let id = sessionStorage.getItem(idKey);
   if(!id){ id = Date.now() + '-' + Math.random(); sessionStorage.setItem(idKey, id); }
   try{
     const active = JSON.parse(localStorage.getItem(activeKey) || '{}');
     if(active.id && active.id !== id && Date.now() - active.ts < 5000){
       localStorage.setItem(commandKey, JSON.stringify({id, target:location.pathname, ts:Date.now()}));
-      document.body.innerHTML = '<div class="wrap"><div class="panel"><h1>仪表台已打开</h1><p>已有一个 Tailscale 窗口正在运行，本窗口会自动关闭。</p></div></div>';
+      document.body.innerHTML = '<div class="wrap"><div class="panel"><h1>仪表台已打开</h1><p>已有一个 ScaleTail 窗口正在运行，本窗口会自动关闭。</p></div></div>';
       setTimeout(() => window.close(), 120);
       return false;
     }
@@ -631,7 +631,7 @@ function refreshPreview(){
   const url = currentURL();
   const key = $('authKey').value.trim();
   const hostname = $('hostname').value.trim();
-  const args = ['tailscale','up','--login-server=' + quoteArg(url),'--accept-routes=' + ($('acceptRoutes').checked ? 'true' : 'false')];
+  const args = ['scaletail','up','--login-server=' + quoteArg(url),'--accept-routes=' + ($('acceptRoutes').checked ? 'true' : 'false')];
   if(hostname) args.push('--hostname=' + quoteArg(hostname));
   if(key) args.push('--auth-key=' + quoteArg(key));
   $('preview').textContent = url;
@@ -736,7 +736,7 @@ const dashboardHTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tailscale 仪表台</title>
+<title>ScaleTail 仪表台</title>
 <style>
 :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#667085;--line:#d8dee9;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Segoe UI",system-ui,sans-serif;color:var(--text)}.wrap{max-width:1180px;margin:0 auto;padding:24px}
@@ -753,7 +753,7 @@ h2{font-size:15px;margin:0 0 12px}.rows{display:grid;grid-template-columns:150px
     <div class="title">
       <div class="dot" id="dot"></div>
       <div>
-        <h1>Tailscale 仪表台</h1>
+        <h1>ScaleTail 仪表台</h1>
         <div class="sub" id="summary">读取中...</div>
       </div>
     </div>
@@ -808,16 +808,16 @@ if(!initPanelWindow()){ throw new Error('panel already open'); }
 let exitNodeTouched = false;
 let lastExitNodeSignature = '';
 function initPanelWindow(){
-  const idKey = 'tailscale-dev-panel-id';
-  const activeKey = 'tailscale-dev-panel-active';
-  const commandKey = 'tailscale-dev-panel-command';
+  const idKey = 'scaletail-panel-id';
+  const activeKey = 'scaletail-panel-active';
+  const commandKey = 'scaletail-panel-command';
   let id = sessionStorage.getItem(idKey);
   if(!id){ id = Date.now() + '-' + Math.random(); sessionStorage.setItem(idKey, id); }
   try{
     const active = JSON.parse(localStorage.getItem(activeKey) || '{}');
     if(active.id && active.id !== id && Date.now() - active.ts < 5000){
       localStorage.setItem(commandKey, JSON.stringify({id, target:location.pathname, ts:Date.now()}));
-      document.body.innerHTML = '<div class="wrap"><div class="panel"><h1>仪表台已打开</h1><p>已有一个 Tailscale 窗口正在运行，本窗口会自动关闭。</p></div></div>';
+      document.body.innerHTML = '<div class="wrap"><div class="panel"><h1>仪表台已打开</h1><p>已有一个 ScaleTail 窗口正在运行，本窗口会自动关闭。</p></div></div>';
       setTimeout(() => window.close(), 120);
       return false;
     }
@@ -920,7 +920,7 @@ async function refresh(manual){
     $('state').textContent = stateText;
     $('summary').textContent = (st.CurrentTailnet && st.CurrentTailnet.Name ? st.CurrentTailnet.Name : '未加入网络') + ' / ' + stateText;
     const self = st.Self || {};
-    const ips = self.TailscaleIPs || [];
+    const ips = self.ScaleTailIPs || [];
     const peers = Object.values(st.Peer || {});
     const total = peers.reduce((acc, p) => {
       acc.rx += Number(p.RxBytes || 0);
@@ -934,7 +934,7 @@ async function refresh(manual){
     rows($('selfRows'), [
       ['主机名', self.HostName],
       ['DNS 名称', self.DNSName],
-      ['Tailscale IP', ips.join(', ')],
+      ['ScaleTail IP', ips.join(', ')],
       ['在线', self.Online === false ? '否' : '是']
     ]);
     rows($('prefsRows'), [
@@ -946,13 +946,13 @@ async function refresh(manual){
     renderExitNodeOptions(st, peers);
     $('peers').innerHTML = peers.length ? peers.map(p => {
       const name = nodeName(p);
-      const ip = (p.TailscaleIPs || []).join(', ');
+      const ip = (p.ScaleTailIPs || []).join(', ');
       const traffic = '接收 ' + fmtBytes(p.RxBytes) + ' / 发送 ' + fmtBytes(p.TxBytes);
       const conn = p.Relay ? ('DERP ' + p.Relay) : (p.CurAddr || '-');
       return '<tr><td>' + (p.Online ? '<span class="ok">在线</span>' : '离线') + '</td><td>' + name + '</td><td class="mono">' + ip + '</td><td>' + traffic + '</td><td>' + conn + '</td></tr>';
     }).join('') : '<tr><td colspan="5" class="muted">暂无节点</td></tr>';
   }catch(e){
-    $('summary').textContent = '无法连接 tailscaled：' + e.message;
+    $('summary').textContent = '无法连接 scaletaild：' + e.message;
   }finally{
     if(manual){
       btn.disabled = false;
@@ -1005,7 +1005,7 @@ async function runNetcheck(){
   }
 }
 async function disconnect(){
-  if(!confirm('确定要断开 Tailscale 吗？')) return;
+  if(!confirm('确定要断开 ScaleTail 吗？')) return;
   await getJSON('/api/disconnect', {method:'POST'}).catch(e => alert(e.message));
   refresh(false);
 }

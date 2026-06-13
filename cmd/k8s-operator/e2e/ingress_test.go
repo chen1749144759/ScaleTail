@@ -338,7 +338,7 @@ func TestL7HAIngressMultiTailnet(t *testing.T) {
 	})
 	createAndCleanup(t, kubeClient, ingress)
 
-	// Check that the tailscale (VIP) Service has been created in the expected Tailnet.
+	// Check that the scaletail (VIP) Service has been created in the expected Tailnet.
 	svcName := "svc:" + ingress.Name
 	if err := tstest.WaitFor(3*time.Minute, func() error {
 		_, err := secondTSClient.VIPServices().Get(t.Context(), svcName)

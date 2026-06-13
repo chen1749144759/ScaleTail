@@ -66,7 +66,7 @@ func serveConnect(s *derpserver.Server, w http.ResponseWriter, r *http.Request) 
 				return fmt.Errorf("only ports 443 and 80 are allowed")
 			}
 			// TODO(bradfitz): make policy configurable from flags and/or come
-			// from local tailscaled nodeAttrs
+			// from local scaletaild nodeAttrs
 			if !strings.HasSuffix(host, ".tailscale.com") || strings.Contains(host, "derp") {
 				return errors.New("bad host")
 			}

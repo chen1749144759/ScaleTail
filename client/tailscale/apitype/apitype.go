@@ -11,7 +11,7 @@ import (
 )
 
 // LocalAPIHost is the Host header value used by the LocalAPI.
-const LocalAPIHost = "local-tailscaled.sock"
+const LocalAPIHost = "local-scaletaild.sock"
 
 // RequestReasonHeader is the header used to pass justification for a LocalAPI request,
 // such as when a user wants to perform an action they don't have permission for,
@@ -30,7 +30,7 @@ const RequestReasonHeader = "X-Tailscale-Reason"
 // See tailscale/corp#26146.
 var RequestReasonKey = ctxkey.New(RequestReasonHeader, "")
 
-// WhoIsResponse is the JSON type returned by tailscaled debug server's /whois?ip=$IP handler.
+// WhoIsResponse is the JSON type returned by scaletaild debug server's /whois?ip=$IP handler.
 // In successful whois responses, Node and UserProfile are never nil.
 type WhoIsResponse struct {
 	Node        *tailcfg.Node

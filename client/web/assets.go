@@ -84,7 +84,7 @@ func startDevServer() (cleanup func()) {
 	log.Printf("installing JavaScript deps using %s...", yarn)
 	out, err := exec.Command(yarn, "--non-interactive", "-s", "--cwd", webClientPath, "install").CombinedOutput()
 	if err != nil {
-		log.Fatalf("error running tailscale web's yarn install: %v, %s", err, out)
+		log.Fatalf("error running scaletail web's yarn install: %v, %s", err, out)
 	}
 	log.Printf("starting JavaScript dev server...")
 	cmd := exec.Command(node, vite)

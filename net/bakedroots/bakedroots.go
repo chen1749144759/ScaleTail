@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package bakedroots contains WebPKI CA roots we bake into the tailscaled binary,
+// Package bakedroots contains WebPKI CA roots we bake into the scaletaild binary,
 // lest the system's CA roots be missing them (or entirely empty).
 package bakedroots
 
@@ -87,7 +87,7 @@ To test that this code is working on Debian/Ubuntu:
 $ sudo mv /usr/share/ca-certificates/mozilla/ISRG_Root_X1.crt{,.old}
 $ sudo update-ca-certificates
 
-Then restart tailscaled. To also test dnsfallback's use of it, nuke
+Then restart scaletaild. To also test dnsfallback's use of it, nuke
 your /etc/resolv.conf and it should still start & run fine.
 */
 const letsEncryptX1 = `

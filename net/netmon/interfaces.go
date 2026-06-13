@@ -16,8 +16,8 @@ type ifProps struct {
 	index int    // interface index, if known/set
 }
 
-// tsIfProps tracks the properties (name and index) of the tailscale interface.
-// There is only one tailscale interface per tailscaled instance.
+// tsIfProps tracks the properties (name and index) of the scaletail interface.
+// There is only one scaletail interface per scaletaild instance.
 var tsIfProps ifProps
 
 func (p *ifProps) tsIfName() string {
@@ -54,7 +54,7 @@ func (m *Monitor) SetTailscaleInterfaceName(ifName string) {
 // If this method is called, it is the responsibility of the caller to
 // update the interface name and index if they change.
 //
-// This should be called as early as possible during tailscaled startup.
+// This should be called as early as possible during scaletaild startup.
 func SetTailscaleInterfaceProps(ifName string, ifIndex int) {
 	if ifIndex != 0 {
 		tsIfProps.set(ifName, ifIndex)

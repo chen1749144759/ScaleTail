@@ -2845,7 +2845,7 @@ spec:
                                                         properties:
                                                             enable:
                                                                 description: |-
-                                                                    Enable tailscaled's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
+                                                                    Enable scaletaild's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
                                                                     and internal debug metrics endpoint at <pod-ip>:9001/debug/metrics, where
                                                                     9001 is a container port named "debug". The endpoints and their responses
                                                                     may change in backwards incompatible ways in the future, and should not
@@ -3186,7 +3186,7 @@ spec:
                                                         properties:
                                                             enable:
                                                                 description: |-
-                                                                    Enable tailscaled's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
+                                                                    Enable scaletaild's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
                                                                     and internal debug metrics endpoint at <pod-ip>:9001/debug/metrics, where
                                                                     9001 is a container port named "debug". The endpoints and their responses
                                                                     may change in backwards incompatible ways in the future, and should not

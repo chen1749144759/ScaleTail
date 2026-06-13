@@ -155,7 +155,7 @@ func WithMeshKey(meshKey key.DERPMesh) DERPOpt {
 // DERP creates a new derpProber.
 //
 // If derpMapURL is "local", the DERPMap is fetched via
-// the local machine's tailscaled.
+// the local machine's scaletaild.
 func DERP(p *Prober, derpMapURL string, opts ...DERPOpt) (*derpProber, error) {
 	d := &derpProber{
 		p:          p,

@@ -79,7 +79,7 @@ let
     # built the binaries.
     phases = "installPhase";
 
-    # We need to wrap tailscaled such that it has iptables in its $PATH.
+    # We need to wrap scaletaild such that it has iptables in its $PATH.
     nativeBuildInputs = [ pkgs.makeWrapper ];
 
     # The install instructions for this package ('' ''defines a multi-line string).
@@ -92,18 +92,18 @@ let
       mkdir -p $out/bin
 
       # Install tailscale{,d}
-      cp $src/tailscale $out/bin/tailscale
-      cp $src/tailscaled $out/bin/tailscaled
+      cp $src/scaletail $out/bin/tailscale
+      cp $src/scaletaild $out/bin/scaletaild
 
-      # Wrap tailscaled with the ip and iptables commands.
-      wrapProgram $out/bin/tailscaled --prefix PATH : ${
+      # Wrap scaletaild with the ip and iptables commands.
+      wrapProgram $out/bin/scaletaild --prefix PATH : ${
         lib.makeBinPath [ iproute2 iptables ]
       }
 
       # Install systemd unit.
-      cp $src/systemd/tailscaled.service .
-      sed -i -e "s#/usr/sbin#$out/bin#" -e "/^EnvironmentFile/d" ./tailscaled.service
-      install -D -m0444 -t $out/lib/systemd/system ./tailscaled.service
+      cp $src/systemd/scaletaild.service .
+      sed -i -e "s#/usr/sbin#$out/bin#" -e "/^EnvironmentFile/d" ./scaletaild.service
+      install -D -m0444 -t $out/lib/systemd/system ./scaletaild.service
     '';
   };
 in {
@@ -141,7 +141,7 @@ in {
   services.openssh.enable = true;
 
   # Tailscale settings:
-  services.tailscale = {
+  services.scaletail = {
     # We want Tailscale to start at boot.
     enable = true;
 
@@ -150,18 +150,18 @@ in {
   };
 
   # Override TS_LOG_TARGET to our private logcatcher.
-  systemd.services.tailscaled.environment."TS_LOG_TARGET" = "{{.LogTarget}}";
+  systemd.services.scaletaild.environment."TS_LOG_TARGET" = "{{.LogTarget}}";
 }`
 
 func (h *Harness) copyUnit(t *testing.T) {
 	t.Helper()
 
-	data, err := os.ReadFile("../../../cmd/tailscaled/tailscaled.service")
+	data, err := os.ReadFile("../../../cmd/scaletaild/scaletaild.service")
 	if err != nil {
 		t.Fatal(err)
 	}
 	os.MkdirAll(filepath.Join(h.binaryDir, "systemd"), 0755)
-	err = os.WriteFile(filepath.Join(h.binaryDir, "systemd", "tailscaled.service"), data, 0666)
+	err = os.WriteFile(filepath.Join(h.binaryDir, "systemd", "scaletaild.service"), data, 0666)
 	if err != nil {
 		t.Fatal(err)
 	}

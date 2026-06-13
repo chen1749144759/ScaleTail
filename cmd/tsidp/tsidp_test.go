@@ -810,7 +810,7 @@ func TestExtraUserInfo(t *testing.T) {
 	}
 	token := "valid-token"
 
-	// Create a fake tailscale Node
+	// Create a fake scaletail Node
 	node := &tailcfg.Node{
 		ID:   123,
 		Name: "test-node.test.ts.net.",

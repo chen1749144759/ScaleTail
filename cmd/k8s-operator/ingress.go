@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	tailscaleIngressControllerName = "tailscale.com/ts-ingress"                    // ingressClass.spec.controllerName for tailscale IngressClass resource
+	tailscaleIngressControllerName = "tailscale.com/ts-ingress"                    // ingressClass.spec.controllerName for scaletail IngressClass resource
 	ingressClassDefaultAnnotation  = "ingressclass.kubernetes.io/is-default-class" // we do not support this https://kubernetes.io/docs/concepts/services-networking/ingress/#default-ingress-class
 	indexIngressProxyClass         = ".metadata.annotations.ingress-proxy-class"
 )
@@ -116,7 +116,7 @@ func (a *IngressReconciler) maybeCleanup(ctx context.Context, logger *zap.Sugare
 
 	// Unlike most log entries in the reconcile loop, this will get printed
 	// exactly once at the very end of cleanup, because the final step of
-	// cleanup removes the tailscale finalizer, which will make all future
+	// cleanup removes the scaletail finalizer, which will make all future
 	// reconciles exit early.
 	logger.Infof("unexposed ingress from tailnet")
 	a.mu.Lock()
@@ -133,7 +133,7 @@ func (a *IngressReconciler) maybeCleanup(ctx context.Context, logger *zap.Sugare
 // deprovisioning later.
 func (a *IngressReconciler) maybeProvision(ctx context.Context, logger *zap.SugaredLogger, ing *networkingv1.Ingress) error {
 	if err := validateIngressClass(ctx, a.Client, a.ingressClassName); err != nil {
-		logger.Warnf("error validating tailscale IngressClass: %v. In future this might be a terminal error.", err)
+		logger.Warnf("error validating scaletail IngressClass: %v. In future this might be a terminal error.", err)
 	}
 	if !slices.Contains(ing.Finalizers, FinalizerName) {
 		// This log line is printed exactly once during initial provisioning,
@@ -312,7 +312,7 @@ func validateIngressClass(ctx context.Context, cl client.Client, ingressClassNam
 		return fmt.Errorf("error retrieving 'tailscale' IngressClass: %w", err)
 	}
 	if ic.Spec.Controller != tailscaleIngressControllerName {
-		return fmt.Errorf("'tailscale' Ingress class controller name %s does not match tailscale Ingress controller name %s. Ensure that you are using 'tailscale' IngressClass from latest Tailscale installation manifests", ic.Spec.Controller, tailscaleIngressControllerName)
+		return fmt.Errorf("'tailscale' Ingress class controller name %s does not match scaletail Ingress controller name %s. Ensure that you are using 'tailscale' IngressClass from latest Tailscale installation manifests", ic.Spec.Controller, tailscaleIngressControllerName)
 	}
 	if ic.GetAnnotations()[ingressClassDefaultAnnotation] != "" {
 		return fmt.Errorf("%s annotation is set on 'tailscale' IngressClass, but Tailscale Ingress controller does not support default Ingress class. Ensure that you are using 'tailscale' IngressClass from latest Tailscale installation manifests", ingressClassDefaultAnnotation)

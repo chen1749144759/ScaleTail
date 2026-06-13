@@ -13,7 +13,7 @@
 //
 // Since we publish to both Docker Hub and ghcr.io, we use this program in a
 // Github action to effectively rsync from docker hub into ghcr.io, so that we
-// can continue to forbid dangerous Personal Access Tokens in the tailscale org.
+// can continue to forbid dangerous Personal Access Tokens in the scaletail org.
 package main
 
 import (

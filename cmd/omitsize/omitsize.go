@@ -70,27 +70,27 @@ func main() {
 		}
 	}
 
-	minD := measure("tailscaled", allOmittable()...)
+	minD := measure("scaletaild", allOmittable()...)
 	minC := measure("tailscale", allOmittable()...)
-	minBoth := measure("tailscaled", append(slices.Clone(allOmittable()), "ts_include_cli")...)
+	minBoth := measure("scaletaild", append(slices.Clone(allOmittable()), "ts_include_cli")...)
 
 	if *showRemovals {
-		baseD := measure("tailscaled")
+		baseD := measure("scaletaild")
 		baseC := measure("tailscale")
-		baseBoth := measure("tailscaled", "ts_include_cli")
+		baseBoth := measure("scaletaild", "ts_include_cli")
 
 		fmt.Printf("Starting with everything and removing a feature...\n\n")
 
-		fmt.Printf("%9s %9s %9s\n", "tailscaled", "tailscale", "combined (linux/amd64)")
+		fmt.Printf("%9s %9s %9s\n", "scaletaild", "tailscale", "combined (linux/amd64)")
 		fmt.Printf("%9d %9d %9d\n", baseD, baseC, baseBoth)
 
 		fmt.Printf("-%8d -%8d -%8d .. remove *\n", baseD-minD, baseC-minC, baseBoth-minBoth)
 
 		for _, s := range rows {
 			title, tags := computeRemove(s)
-			sizeD := measure("tailscaled", tags...)
+			sizeD := measure("scaletaild", tags...)
 			sizeC := measure("tailscale", tags...)
-			sizeBoth := measure("tailscaled", append(slices.Clone(tags), "ts_include_cli")...)
+			sizeBoth := measure("scaletaild", append(slices.Clone(tags), "ts_include_cli")...)
 			saveD := max(baseD-sizeD, 0)
 			saveC := max(baseC-sizeC, 0)
 			saveBoth := max(baseBoth-sizeBoth, 0)
@@ -100,13 +100,13 @@ func main() {
 	}
 
 	fmt.Printf("\nStarting at a minimal binary and adding one feature back...\n\n")
-	fmt.Printf("%9s %9s %9s\n", "tailscaled", "tailscale", "combined (linux/amd64)")
+	fmt.Printf("%9s %9s %9s\n", "scaletaild", "tailscale", "combined (linux/amd64)")
 	fmt.Printf("%9d %9d %9d omitting everything\n", minD, minC, minBoth)
 	for _, s := range rows {
 		title, tags := computeAdd(s)
-		sizeD := measure("tailscaled", tags...)
+		sizeD := measure("scaletaild", tags...)
 		sizeC := measure("tailscale", tags...)
-		sizeBoth := measure("tailscaled", append(tags, "ts_include_cli")...)
+		sizeBoth := measure("scaletaild", append(tags, "ts_include_cli")...)
 
 		fmt.Printf("+%8d +%8d +%8d .. add %s\n", max(sizeD-minD, 0), max(sizeC-minC, 0), max(sizeBoth-minBoth, 0), title)
 	}

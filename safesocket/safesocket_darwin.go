@@ -54,17 +54,17 @@ var ssd = safesocketDarwin{
 // built or downloaded.
 //
 // The macOS and macsys binaries can communicate directly via XPC with
-// the NEPacketTunnelProvider managed tailscaled process and are responsible for
+// the NEPacketTunnelProvider managed scaletaild process and are responsible for
 // calling SetCredentials when they need to operate as a CLI.
 
 // A built/downloaded CLI binary will not be managing the NEPacketTunnelProvider
-// hosting tailscaled directly and must source the credentials from a 'sameuserproof' file.
-// This file is written to sharedDir when tailscaled/NEPacketTunnelProvider
+// hosting scaletaild directly and must source the credentials from a 'sameuserproof' file.
+// This file is written to sharedDir when scaletaild/NEPacketTunnelProvider
 // calls InitListenerDarwin.
 
 // localTCPPortAndTokenDarwin returns the localhost TCP port number and auth token
 // either from the sameuserproof mechanism, or source and set directly from the
-// NEPacketTunnelProvider managed tailscaled process when the CLI is invoked
+// NEPacketTunnelProvider managed scaletaild process when the CLI is invoked
 // from the Tailscale.app GUI.
 func localTCPPortAndTokenDarwin() (port int, token string, err error) {
 	ssd.mu.Lock()
@@ -75,9 +75,9 @@ func localTCPPortAndTokenDarwin() (port int, token string, err error) {
 		// If something has explicitly set our credentials (typically non-standalone macos binary), use them.
 		return ssd.port, ssd.token, nil
 	case !ssd.isMacGUIApp():
-		// We're not a GUI app (probably cmd/tailscale), so try falling back to sameuserproof.
-		// If portAndTokenFromSameUserProof returns an error here, cmd/tailscale will
-		// attempt to use the default unix socket mechanism supported by tailscaled.
+		// We're not a GUI app (probably cmd/scaletail), so try falling back to sameuserproof.
+		// If portAndTokenFromSameUserProof returns an error here, cmd/scaletail will
+		// attempt to use the default unix socket mechanism supported by scaletaild.
 		return portAndTokenFromSameUserProof()
 	default:
 		return 0, "", ErrTokenNotFound
@@ -85,7 +85,7 @@ func localTCPPortAndTokenDarwin() (port int, token string, err error) {
 }
 
 // SetCredentials sets an token and port used to authenticate safesocket generated
-// by the NEPacketTunnelProvider tailscaled process.  This is only used when running
+// by the NEPacketTunnelProvider scaletaild process.  This is only used when running
 // the CLI via Tailscale.app.
 func SetCredentials(token string, port int) {
 	ssd.mu.Lock()
@@ -210,7 +210,7 @@ func getToken() (string, error) {
 //
 // "sameuserproof" is intended to convey that the user attempting to read
 // the credentials from the file is the same user that wrote them.  For
-// standalone macsys where tailscaled is running as root, we set group
+// standalone macsys where scaletaild is running as root, we set group
 // permissions to allow users in the admin group to read the file.
 func initSameUserProofToken(sharedDir string, port int, token string) error {
 	var err error
@@ -344,10 +344,10 @@ func readMacosSameUserProof() (port int, token string, err error) {
 }
 
 func portAndTokenFromSameUserProof() (port int, token string, err error) {
-	// When we're cmd/tailscale, we have no idea what tailscaled is, so we'll try
-	// macos, then macsys and finally, fallback to tailscaled via a unix socket
+	// When we're cmd/scaletail, we have no idea what scaletaild is, so we'll try
+	// macos, then macsys and finally, fallback to scaletaild via a unix socket
 	// if both of those return an error.   You can run macos or macsys and
-	// tailscaled at the same time, but we are forced to choose one and the GUI
+	// scaletaild at the same time, but we are forced to choose one and the GUI
 	// clients are first in line here.  You cannot run macos and macsys simultaneously.
 	if port, token, err := readMacosSameUserProof(); err == nil {
 		return port, token, nil

@@ -20,7 +20,7 @@ import (
 func connect(ctx context.Context, path string) (net.Conn, error) {
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	// We use the identification impersonation level so that tailscaled may
+	// We use the identification impersonation level so that scaletaild may
 	// obtain information about our token for access control purposes.
 	return winio.DialPipeAccessImpLevel(ctx, path, windows.GENERIC_READ|windows.GENERIC_WRITE, winio.PipeImpLevelIdentification)
 }

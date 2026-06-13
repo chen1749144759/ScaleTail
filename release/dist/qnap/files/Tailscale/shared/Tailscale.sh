@@ -16,22 +16,22 @@ case "$1" in
     mkdir -p /home/httpd/cgi-bin/qpkg
     ln -sf ${QPKG_ROOT}/ui /home/httpd/cgi-bin/qpkg/${QPKG_NAME}
     mkdir -p -m 0755 /tmp/tailscale
-    if [ -e /tmp/tailscale/tailscaled.pid ]; then
-        PID=$(cat /tmp/tailscale/tailscaled.pid)
+    if [ -e /tmp/tailscale/scaletaild.pid ]; then
+        PID=$(cat /tmp/tailscale/scaletaild.pid)
         if [ -d /proc/${PID}/ ]; then
           echo "${QPKG_NAME} is already running."
           exit 0
         fi
     fi
-    ${QPKG_ROOT}/tailscaled --port ${QPKG_PORT} --statedir=${QPKG_ROOT}/state --socket=/tmp/tailscale/tailscaled.sock 2> /dev/null &
-    echo $! > /tmp/tailscale/tailscaled.pid
+    ${QPKG_ROOT}/scaletaild --port ${QPKG_PORT} --statedir=${QPKG_ROOT}/state --socket=/tmp/tailscale/scaletaild.sock 2> /dev/null &
+    echo $! > /tmp/tailscale/scaletaild.pid
     ;;
 
   stop)
-    if [ -e /tmp/tailscale/tailscaled.pid ]; then
-      PID=$(cat /tmp/tailscale/tailscaled.pid)
+    if [ -e /tmp/tailscale/scaletaild.pid ]; then
+      PID=$(cat /tmp/tailscale/scaletaild.pid)
       kill -9 ${PID} || true
-      rm -f /tmp/tailscale/tailscaled.pid
+      rm -f /tmp/tailscale/scaletaild.pid
     fi
     ;;
 

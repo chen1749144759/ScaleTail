@@ -127,9 +127,9 @@ func logSSHLogin(logf logger.Logf, c *conn) {
 		return
 	}
 
-	exePath := c.srv.tailscaledPath
+	exePath := c.srv.scaletaildPath
 	if exePath == "" {
-		exePath = "tailscaled"
+		exePath = "scaletaild"
 	}
 
 	srcIP := c.info.src.Addr().String()

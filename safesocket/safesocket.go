@@ -35,34 +35,34 @@ func ConnCloseWrite(c net.Conn) error {
 
 var processStartTime = time.Now()
 
-var tailscaledProcExists feature.Hook[func() bool]
+var scaletaildProcExists feature.Hook[func() bool]
 
-// tailscaledStillStarting reports whether tailscaled is probably
+// scaletaildStillStarting reports whether scaletaild is probably
 // still starting up. That is, it reports whether the caller should
 // keep retrying to connect.
-func tailscaledStillStarting() bool {
+func scaletaildStillStarting() bool {
 	d := time.Since(processStartTime)
 	if d < 2*time.Second {
 		// Without even checking the process table, assume
-		// that for the first two seconds that tailscaled is
+		// that for the first two seconds that scaletaild is
 		// probably still starting.  That is, assume they're
-		// running "tailscaled & tailscale up ...." and make
-		// the tailscale client block for a bit for tailscaled
+		// running "scaletaild & scaletail up ...." and make
+		// the scaletail client block for a bit for scaletaild
 		// to start accepting on the socket.
 		return true
 	}
 	if d > 5*time.Second {
 		return false
 	}
-	f, ok := tailscaledProcExists.GetOk()
+	f, ok := scaletaildProcExists.GetOk()
 	return ok && f()
 }
 
-// ConnectContext connects to tailscaled using a unix socket or named pipe.
+// ConnectContext connects to scaletaild using a unix socket or named pipe.
 func ConnectContext(ctx context.Context, path string) (net.Conn, error) {
 	for {
 		c, err := connect(ctx, path)
-		if err != nil && tailscaledStillStarting() {
+		if err != nil && scaletaildStillStarting() {
 			if ctx.Err() != nil {
 				return nil, ctx.Err()
 			}
@@ -77,7 +77,7 @@ func ConnectContext(ctx context.Context, path string) (net.Conn, error) {
 	}
 }
 
-// Connect connects to tailscaled using a unix socket or named pipe.
+// Connect connects to scaletaild using a unix socket or named pipe.
 // Deprecated: use ConnectContext instead.
 func Connect(path string) (net.Conn, error) {
 	return ConnectContext(context.Background(), path)
@@ -98,7 +98,7 @@ var localTCPPortAndToken func() (port int, token string, err error)
 
 // LocalTCPPortAndToken returns the port number and auth token to connect to
 // the local Tailscale daemon. It's currently only applicable on macOS
-// when tailscaled is being run in the Mac Sandbox from the App Store version
+// when scaletaild is being run in the Mac Sandbox from the App Store version
 // of Tailscale.
 func LocalTCPPortAndToken() (port int, token string, err error) {
 	if localTCPPortAndToken == nil {

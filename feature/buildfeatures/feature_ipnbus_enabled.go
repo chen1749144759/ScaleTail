@@ -7,7 +7,7 @@
 
 package buildfeatures
 
-// HasIPNBus is whether the binary was built with support for modular feature "IPN notification bus (watch-ipn-bus) support, used by GUIs, debugging, and nicer 'tailscale up' support".
+// HasIPNBus is whether the binary was built with support for modular feature "IPN notification bus (watch-ipn-bus) support, used by GUIs, debugging, and nicer 'scaletail up' support".
 // Specifically, it's whether the binary was NOT built with the "ts_omit_ipnbus" build tag.
 // It's a const so it can be used for dead code elimination.
 const HasIPNBus = true

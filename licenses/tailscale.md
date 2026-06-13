@@ -1,11 +1,11 @@
 # Tailscale CLI and daemon dependencies
 
 The following open source dependencies are used to build the [tailscale][] and
-[tailscaled][] commands. These are primarily used on Linux and BSD variants as
+[scaletaild][] commands. These are primarily used on Linux and BSD variants as
 well as an [option for macOS][].
 
-[tailscale]: https://pkg.go.dev/tailscale.com/cmd/tailscale
-[tailscaled]: https://pkg.go.dev/tailscale.com/cmd/tailscaled
+[tailscale]: https://pkg.go.dev/tailscale.com/cmd/scaletail
+[scaletaild]: https://pkg.go.dev/tailscale.com/cmd/scaletaild
 [option for macOS]: https://tailscale.com/kb/1065/macos-variants/
 
 ## Go Packages

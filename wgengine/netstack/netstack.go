@@ -191,7 +191,7 @@ type Impl struct {
 	// It can only be set before calling Start.
 	// TODO(raggi): refactor the way we handle both CheckLocalTransportEndpoints
 	// and the earlier netstack registrations for serve, funnel, peerAPI and so
-	// on. Currently this optimizes away cost for tailscaled in TUN mode, while
+	// on. Currently this optimizes away cost for scaletaild in TUN mode, while
 	// enabling extension support when using tsnet in TUN mode. See #18423.
 	CheckLocalTransportEndpoints bool
 
@@ -286,7 +286,7 @@ const nicID = 1
 
 // maxUDPPacketSize is the maximum size of a UDP packet we copy in
 // startPacketCopy when relaying UDP packets. The user can configure
-// the tailscale MTU to anything up to this size so we can potentially
+// the scaletail MTU to anything up to this size so we can potentially
 // have a UDP packet as big as the MTU.
 const maxUDPPacketSize = tstun.MaxPacketSize
 
@@ -832,7 +832,7 @@ func (ns *Impl) isLoopbackPort(port uint16) bool {
 }
 
 // handleLocalPackets is hooked into the tun datapath for packets leaving
-// the host and arriving at tailscaled. This method returns filter.DropSilently
+// the host and arriving at scaletaild. This method returns filter.DropSilently
 // to intercept a packet for handling, for instance traffic to quad-100.
 // Caution: can be called before Start
 func (ns *Impl) handleLocalPackets(p *packet.Parsed, t *tstun.Wrapper, gro *gro.GRO) (filter.Response, *gro.GRO) {
@@ -1672,7 +1672,7 @@ func (ns *Impl) acceptTCP(r *tcp.ForwarderRequest) {
 		//
 		// Without this explicit guard, execution would fall through
 		// to the isTailscaleIP case below (quad-100 is in the
-		// tailscale IP range), rewriting the dial target to
+		// scaletail IP range), rewriting the dial target to
 		// 127.0.0.1:<port> and forwardTCP'ing the connection onto
 		// whatever random service happens to be listening on the
 		// host's loopback at that port. Reject cleanly with a RST

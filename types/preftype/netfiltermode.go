@@ -14,9 +14,9 @@ type NetfilterMode int
 // These numbers are persisted to disk in JSON files and thus can't be
 // renumbered or repurposed.
 const (
-	NetfilterOff      NetfilterMode = 0 // remove all tailscale netfilter state
-	NetfilterNoDivert NetfilterMode = 1 // manage tailscale chains, but don't call them
-	NetfilterOn       NetfilterMode = 2 // manage tailscale chains and call them from main chains
+	NetfilterOff      NetfilterMode = 0 // remove all scaletail netfilter state
+	NetfilterNoDivert NetfilterMode = 1 // manage scaletail chains, but don't call them
+	NetfilterOn       NetfilterMode = 2 // manage scaletail chains and call them from main chains
 )
 
 func ParseNetfilterMode(s string) (NetfilterMode, error) {

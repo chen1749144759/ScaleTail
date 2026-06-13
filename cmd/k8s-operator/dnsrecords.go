@@ -40,7 +40,7 @@ const (
 // dnsRecordsReconciler knows how to update dnsrecords ConfigMap with DNS
 // records.
 // The records that it creates are:
-//   - For tailscale Ingress, a mapping of the Ingress's MagicDNSName to the IP addresses
+//   - For scaletail Ingress, a mapping of the Ingress's MagicDNSName to the IP addresses
 //     (both IPv4 and IPv6) of the ingress proxy Pod.
 //   - For egress proxies configured via tailscale.com/tailnet-fqdn annotation, a
 //     mapping of the tailnet FQDN to the IP addresses (both IPv4 and IPv6) of the egress proxy Pod.
@@ -50,13 +50,13 @@ const (
 // that there is a ts.net nameserver deployed in the cluster).
 type dnsRecordsReconciler struct {
 	client.Client
-	tsNamespace           string // namespace in which we provision tailscale resources
+	tsNamespace           string // namespace in which we provision scaletail resources
 	logger                *zap.SugaredLogger
 	isDefaultLoadBalancer bool // true if operator is the default ingress controller in this cluster
 }
 
 // Reconcile takes a reconcile.Request for a Service fronting a
-// tailscale proxy and updates DNS Records in dnsrecords ConfigMap for the
+// scaletail proxy and updates DNS Records in dnsrecords ConfigMap for the
 // in-cluster ts.net nameserver if required.
 func (dnsRR *dnsRecordsReconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
 	logger := dnsRR.logger.With("Service", req.NamespacedName)
@@ -73,7 +73,7 @@ func (dnsRR *dnsRecordsReconciler) Reconcile(ctx context.Context, req reconcile.
 		return reconcile.Result{}, fmt.Errorf("failed to get Service: %w", err)
 	}
 	if !(isManagedByType(proxySvc, serviceTypeSvc) || isManagedByType(proxySvc, serviceTypeIngress)) {
-		logger.Debugf("Service is not a proxy Service for a tailscale ingress or egress proxy; do nothing")
+		logger.Debugf("Service is not a proxy Service for a scaletail ingress or egress proxy; do nothing")
 		return reconcile.Result{}, nil
 	}
 
@@ -116,7 +116,7 @@ func (dnsRR *dnsRecordsReconciler) Reconcile(ctx context.Context, req reconcile.
 
 // maybeProvision ensures that dnsrecords ConfigMap contains a record for the
 // proxy associated with the Service.
-// The record is only provisioned if the proxy is for a tailscale Ingress or
+// The record is only provisioned if the proxy is for a scaletail Ingress or
 // egress configured via tailscale.com/tailnet-fqdn annotation.
 //
 // For Ingress, the record is a mapping between the MagicDNSName of the Ingress, retrieved from
@@ -268,8 +268,8 @@ func (dnsRR *dnsRecordsReconciler) removeProxySvcFinalizer(ctx context.Context, 
 }
 
 // fqdnForDNSRecord returns MagicDNS name associated with a given proxy Service.
-// If the proxy Service is for a tailscale Ingress proxy, returns ingress.status.loadBalancer.ingress.hostname.
-// If the proxy Service is for an tailscale egress proxy configured via tailscale.com/tailnet-fqdn annotation, returns the annotation value.
+// If the proxy Service is for a scaletail Ingress proxy, returns ingress.status.loadBalancer.ingress.hostname.
+// If the proxy Service is for an scaletail egress proxy configured via tailscale.com/tailnet-fqdn annotation, returns the annotation value.
 // For ProxyGroup egress Services, returns the tailnet-fqdn annotation from the parent Service.
 // This function is not expected to be called with proxy Services for other
 // proxy types, or any other Services, but it just returns an empty string if
@@ -328,7 +328,7 @@ func (dnsRR *dnsRecordsReconciler) updateDNSConfig(ctx context.Context, update f
 }
 
 // isSvcForFQDNEgressProxy returns true if the Service is a headless Service
-// created for a proxy for a tailscale egress Service configured via
+// created for a proxy for a scaletail egress Service configured via
 // tailscale.com/tailnet-fqdn annotation.
 func (dnsRR *dnsRecordsReconciler) isSvcForFQDNEgressProxy(ctx context.Context, svc *corev1.Service) (bool, error) {
 	if !isManagedByType(svc, "svc") {

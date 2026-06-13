@@ -144,7 +144,7 @@ var rateFree = []string{
 	"SetPrefs: %v",
 	"peer keys: %s",
 	"v%v peers: %v",
-	// debug messages printed by 'tailscale bugreport'
+	// debug messages printed by 'scaletail bugreport'
 	"diag: ",
 }
 

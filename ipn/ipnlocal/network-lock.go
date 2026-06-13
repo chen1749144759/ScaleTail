@@ -109,7 +109,7 @@ func (b *LocalBackend) initTKALocked() error {
 
 // noNetworkLockStateDirWarnable is a Warnable to warn the user that Tailnet Lock data
 // (in particular, the list of AUMs in the TKA state) is being stored in memory and will
-// be lost when tailscaled restarts.
+// be lost when scaletaild restarts.
 var noNetworkLockStateDirWarnable = health.Register(&health.Warnable{
 	Code:     "no-tailnet-lock-state-dir",
 	Title:    "No statedir for Tailnet Lock",
@@ -609,12 +609,12 @@ func tkaStateFromPeer(p tailcfg.NodeView) ipnstate.TKAPeer {
 		Name:         p.Name(),
 		ID:           p.ID(),
 		StableID:     p.StableID(),
-		TailscaleIPs: make([]netip.Addr, 0, p.Addresses().Len()),
+		ScaleTailIPs: make([]netip.Addr, 0, p.Addresses().Len()),
 		NodeKey:      p.Key(),
 	}
 	for _, addr := range p.Addresses().All() {
 		if addr.IsSingleIP() && tsaddr.IsTailscaleIP(addr.Addr()) {
-			fp.TailscaleIPs = append(fp.TailscaleIPs, addr.Addr())
+			fp.ScaleTailIPs = append(fp.ScaleTailIPs, addr.Addr())
 		}
 	}
 	var decoded tka.NodeKeySignature
@@ -645,7 +645,7 @@ func (b *LocalBackend) NetworkLockInit(keys []tka.Key, disablementValues [][]byt
 	b.mu.Unlock()
 
 	if ourNodeKey.IsZero() || nlPriv.IsZero() {
-		return errors.New("no node-key: is tailscale logged in?")
+		return errors.New("no node-key: is scaletail logged in?")
 	}
 
 	var entropy [16]byte
@@ -819,7 +819,7 @@ func (b *LocalBackend) NetworkLockModify(addKeys, removeKeys []tka.Key) (err err
 		ourNodeKey = p.Persist().PublicNodeKey()
 	}
 	if ourNodeKey.IsZero() {
-		return errors.New("no node-key: is tailscale logged in?")
+		return errors.New("no node-key: is scaletail logged in?")
 	}
 
 	var nlPriv key.NLPrivate
@@ -909,7 +909,7 @@ func (b *LocalBackend) NetworkLockDisable(secret []byte) error {
 	}
 
 	if ourNodeKey.IsZero() {
-		return errors.New("no node-key: is tailscale logged in?")
+		return errors.New("no node-key: is scaletail logged in?")
 	}
 	_, err = b.tkaDoDisablement(ourNodeKey, head, secret)
 	return err
@@ -1088,7 +1088,7 @@ func (b *LocalBackend) NetworkLockSubmitRecoveryAUM(aum *tka.AUM) error {
 		ourNodeKey = p.Persist().PublicNodeKey()
 	}
 	if ourNodeKey.IsZero() {
-		return errors.New("no node-key: is tailscale logged in?")
+		return errors.New("no node-key: is scaletail logged in?")
 	}
 
 	b.mu.Unlock()

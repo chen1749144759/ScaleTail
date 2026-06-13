@@ -13,7 +13,7 @@ let offDaemon: (() => void) | undefined;
 
 const peers = computed(() => Object.values(status.value?.Peer || {}));
 const selfName = computed(() => status.value?.Self?.HostName || status.value?.Self?.DNSName?.split(".")[0] || "-");
-const selfIPs = computed(() => (status.value?.TailscaleIPs || status.value?.Self?.TailscaleIPs || []).join(", ") || "-");
+const selfIPs = computed(() => (status.value?.ScaleTailIPs || status.value?.Self?.ScaleTailIPs || []).join(", ") || "-");
 const totalRx = computed(() => peers.value.reduce((sum, p) => sum + Number(p.RxBytes || 0), 0));
 const totalTx = computed(() => peers.value.reduce((sum, p) => sum + Number(p.TxBytes || 0), 0));
 const onlineCount = computed(() => peers.value.filter((peer) => peer.Online).length);
@@ -73,7 +73,7 @@ function nodeName(peer: PeerStatus) {
 }
 
 function nodeIP(peer: PeerStatus) {
-  return (peer.TailscaleIPs || []).join(", ") || "-";
+  return (peer.ScaleTailIPs || []).join(", ") || "-";
 }
 
 function fmtBytes(value?: number) {

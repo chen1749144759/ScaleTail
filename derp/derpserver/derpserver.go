@@ -175,10 +175,10 @@ type Server struct {
 	rateLimitPerClientWaited   expvar.Int         // number of times per-client rate limit caused a wait
 	// TODO(illotum): add metrics for rate limited wait time, consider total seconds vs a histogram.
 
-	// verifyClientsLocalTailscaled only accepts client connections to the DERP
+	// verifyClientsLocalScaleTaild only accepts client connections to the DERP
 	// server if the clientKey is a known peer in the network, as specified by a
-	// running tailscaled's client's LocalAPI.
-	verifyClientsLocalTailscaled bool
+	// running scaletaild's client's LocalAPI.
+	verifyClientsLocalScaleTaild bool
 
 	verifyClientsURL         string
 	verifyClientsURLFailOpen bool
@@ -467,16 +467,16 @@ func (s *Server) SetMeshKey(v string) error {
 	return nil
 }
 
-// SetVerifyClients sets whether this DERP server verifies clients through tailscaled.
+// SetVerifyClients sets whether this DERP server verifies clients through scaletaild.
 //
 // It must be called before serving begins.
 func (s *Server) SetVerifyClient(v bool) {
-	s.verifyClientsLocalTailscaled = v
+	s.verifyClientsLocalScaleTaild = v
 }
 
 // SetVerifyClientURL sets the admission controller URL to use for verifying clients.
 // If empty, all clients are accepted (unless restricted by SetVerifyClient checking
-// against tailscaled).
+// against scaletaild).
 func (s *Server) SetVerifyClientURL(v string) {
 	s.verifyClientsURL = v
 }
@@ -487,12 +487,12 @@ func (s *Server) SetVerifyClientURLFailOpen(v bool) {
 	s.verifyClientsURLFailOpen = v
 }
 
-// SetTailscaledSocketPath sets the unix socket path to use to talk to
-// tailscaled if client verification is enabled.
+// SetScaleTaildSocketPath sets the unix socket path to use to talk to
+// scaletaild if client verification is enabled.
 //
 // If unset or set to the empty string, the default path for the operating
 // system is used.
-func (s *Server) SetTailscaledSocketPath(path string) {
+func (s *Server) SetScaleTaildSocketPath(path string) {
 	s.localClient.Socket = path
 	s.localClient.UseSocketOnly = path != ""
 }
@@ -1405,7 +1405,7 @@ type dropReason string
 const (
 	dropReasonUnknownDest      dropReason = "unknown_dest"        // unknown destination pubkey
 	dropReasonUnknownDestOnFwd dropReason = "unknown_dest_on_fwd" // unknown destination pubkey on a derp-forwarded packet
-	dropReasonGoneDisconnected dropReason = "gone_disconnected"   // destination tailscaled disconnected before we could send
+	dropReasonGoneDisconnected dropReason = "gone_disconnected"   // destination scaletaild disconnected before we could send
 	dropReasonQueueHead        dropReason = "queue_head"          // destination queue is full, dropped packet at queue head
 	dropReasonQueueTail        dropReason = "queue_tail"          // destination queue is full, dropped packet at queue tail
 	dropReasonWriteError       dropReason = "write_error"         // OS write() failed
@@ -1532,23 +1532,23 @@ func (s *Server) isMeshPeer(info *derp.ClientInfo) bool {
 func (s *Server) verifyClient(ctx context.Context, clientKey key.NodePublic, info *derp.ClientInfo, clientIP netip.Addr) error {
 	if s.isMeshPeer(info) {
 		// Trusted mesh peer. No need to verify further. In fact, verifying
-		// further wouldn't work: it's not part of the tailnet so tailscaled and
+		// further wouldn't work: it's not part of the tailnet so scaletaild and
 		// likely the admission control URL wouldn't know about it.
 		return nil
 	}
 
-	// tailscaled-based verification:
-	if s.verifyClientsLocalTailscaled {
+	// scaletaild-based verification:
+	if s.verifyClientsLocalScaleTaild {
 		_, err := s.localClient.WhoIsNodeKey(ctx, clientKey)
 		if err == local.ErrPeerNotFound {
-			return fmt.Errorf("peer %v not authorized (not found in local tailscaled)", clientKey)
+			return fmt.Errorf("peer %v not authorized (not found in local scaletaild)", clientKey)
 		}
 		if err != nil {
 			if strings.Contains(err.Error(), "invalid 'addr' parameter") {
 				// Issue 12617
-				return errors.New("tailscaled version is too old (out of sync with derper binary)")
+				return errors.New("scaletaild version is too old (out of sync with derper binary)")
 			}
-			return fmt.Errorf("failed to query local tailscaled status for %v: %w", clientKey, err)
+			return fmt.Errorf("failed to query local scaletaild status for %v: %w", clientKey, err)
 		}
 	}
 
@@ -2461,8 +2461,8 @@ func (s *Server) ConsistencyCheck() error {
 			len(s.clients)))
 	}
 
-	if s.verifyClientsLocalTailscaled {
-		if err := s.checkVerifyClientsLocalTailscaled(); err != nil {
+	if s.verifyClientsLocalScaleTaild {
+		if err := s.checkVerifyClientsLocalScaleTaild(); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
@@ -2473,8 +2473,8 @@ func (s *Server) ConsistencyCheck() error {
 	return errors.New(strings.Join(errs, ", "))
 }
 
-// checkVerifyClientsLocalTailscaled checks that a verifyClients call can be made successfully for the derper hosts own node key.
-func (s *Server) checkVerifyClientsLocalTailscaled() error {
+// checkVerifyClientsLocalScaleTaild checks that a verifyClients call can be made successfully for the derper hosts own node key.
+func (s *Server) checkVerifyClientsLocalScaleTaild() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	status, err := s.localClient.StatusWithoutPeers(ctx)

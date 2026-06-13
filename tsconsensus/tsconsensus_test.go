@@ -166,7 +166,7 @@ func startNode(t testing.TB, ctx context.Context, controlURL, hostname string) (
 	if err != nil {
 		t.Fatal(err)
 	}
-	return s, status.Self.PublicKey, status.TailscaleIPs[0]
+	return s, status.Self.PublicKey, status.ScaleTailIPs[0]
 }
 
 func waitForNodesToBeTaggedInStatus(t testing.TB, ctx context.Context, ts *tsnet.Server, nodeKeys []key.NodePublic, tag string) {
@@ -597,7 +597,7 @@ func TestOnlyTaggedPeersCanDialRaftPort(t *testing.T) {
 
 	// surface area: command http, peer tcp
 	//untagged
-	ipv4, _ := ps[0].ts.TailscaleIPs()
+	ipv4, _ := ps[0].ts.ScaleTailIPs()
 	sAddr := fmt.Sprintf("%s:%d", ipv4, cfg.RaftPort)
 
 	getErrorFromTryingToSend := func(s *tsnet.Server) error {
@@ -661,10 +661,10 @@ func TestOnlyTaggedPeersCanBeDialed(t *testing.T) {
 		shutdownCtx: ctx,
 	}
 
-	ip1, _ := ps[1].ts.TailscaleIPs()
+	ip1, _ := ps[1].ts.ScaleTailIPs()
 	a1 := raft.ServerAddress(fmt.Sprintf("%s:%d", ip1, port))
 
-	ip2, _ := ps[2].ts.TailscaleIPs()
+	ip2, _ := ps[2].ts.ScaleTailIPs()
 	a2 := raft.ServerAddress(fmt.Sprintf("%s:%d", ip2, port))
 
 	// both can be dialed...
@@ -713,7 +713,7 @@ func TestOnlyTaggedPeersCanJoin(t *testing.T) {
 
 	tsJoiner, _, _ := startNode(t, ctx, controlURL, "joiner node")
 
-	ipv4, _ := tsJoiner.TailscaleIPs()
+	ipv4, _ := tsJoiner.ScaleTailIPs()
 	url := fmt.Sprintf("http://%s/join", ps[0].c.commandAddr(ps[0].c.self.hostAddr))
 	payload, err := json.Marshal(joinRequest{
 		RemoteHost: ipv4.String(),

@@ -43,7 +43,7 @@ machine. Logs can be written as soon as a private ID is generated.
 The public ID is used to read and adopt logs. It is designed to be sent
 to a service that also holds a logs service API key.
 
-The tailscale logs service will store any logs for a short period of time.
+The scaletail logs service will store any logs for a short period of time.
 To enable logs retention, the log can be **adopted** using the public ID
 and a logs service API key.
 Once this is done, logs will be retained long-term (for the configured

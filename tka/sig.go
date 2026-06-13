@@ -471,7 +471,7 @@ func DecodeWrappedAuthkey(wrappedAuthKey string, logf logger.Logf) (authKey stri
 	}
 	sigBytes, privBytes, found := strings.Cut(suffix, "-")
 	if !found {
-		// TODO: propagate these errors to `tailscale up` output?
+		// TODO: propagate these errors to `scaletail up` output?
 		logf("decoding wrapped auth-key: did not find delimiter")
 		return wrappedAuthKey, false, nil, nil
 	}

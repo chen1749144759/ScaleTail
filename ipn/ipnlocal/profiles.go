@@ -885,7 +885,7 @@ func newProfileManager(store ipn.StateStore, logf logger.Logf, health *health.Tr
 func readAutoStartKey(store ipn.StateStore, goos string) (ipn.StateKey, error) {
 	startKey := ipn.CurrentProfileStateKey
 	if goos == "windows" {
-		// When tailscaled runs on Windows it is not typically run unattended.
+		// When scaletaild runs on Windows it is not typically run unattended.
 		// So we can't use the profile mechanism to load the profile at startup.
 		startKey = ipn.ServerModeStartKey
 	}

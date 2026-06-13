@@ -117,7 +117,7 @@ func (c *Config) AddNode(opts ...any) *Node {
 				o.nodes = append(o.nodes, n)
 			}
 			n.nets = append(n.nets, o)
-		case TailscaledEnv:
+		case ScaleTaildEnv:
 			n.env = append(n.env, o)
 		case NodeOption:
 			switch o {
@@ -160,9 +160,9 @@ const (
 	VerboseSyslog   NodeOption = "VerboseSyslog"
 )
 
-// TailscaledEnv is а option that can be passed to Config.AddNode
-// to set an environment variable for tailscaled.
-type TailscaledEnv struct {
+// ScaleTaildEnv is а option that can be passed to Config.AddNode
+// to set an environment variable for scaletaild.
+type ScaleTaildEnv struct {
 	Key, Value string
 }
 
@@ -222,7 +222,7 @@ type Node struct {
 	n      *node // nil until NewServer called
 	client *NodeAgentClient
 
-	env             []TailscaledEnv
+	env             []ScaleTaildEnv
 	hostFW          bool
 	rotateDisco     bool
 	preICMPPing     bool
@@ -272,7 +272,7 @@ func (n *Node) Networks() []*Network {
 	return n.nets
 }
 
-func (n *Node) Env() []TailscaledEnv {
+func (n *Node) Env() []ScaleTaildEnv {
 	return n.env
 }
 

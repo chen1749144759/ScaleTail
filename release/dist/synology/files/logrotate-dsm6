@@ -1,4 +1,4 @@
-/var/packages/Tailscale/etc/tailscaled.stdout.log {
+/var/packages/Tailscale/etc/scaletaild.stdout.log {
   size 10M
   rotate 3
   missingok

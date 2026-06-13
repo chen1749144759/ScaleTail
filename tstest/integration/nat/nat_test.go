@@ -36,7 +36,7 @@ import (
 
 var (
 	runVMTests    = flag.Bool("run-vm-tests", false, "run tests that require a VM")
-	logTailscaled = flag.Bool("log-tailscaled", false, "log tailscaled output")
+	logScaleTaild = flag.Bool("log-scaletaild", false, "log scaletaild output")
 	pcapFile      = flag.String("pcap", "", "write pcap to file")
 )
 
@@ -147,7 +147,7 @@ func easyNoControlDiscoRotate(c *vnet.Config) *vnet.Node {
 		vnet.EasyNAT)
 	nw.SetPostConnectControlBlackhole(true)
 	return c.AddNode(
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_USE_CACHED_NETMAP",
 			Value: "true",
 		},
@@ -231,19 +231,19 @@ func easyPMPFWPlusBPF(c *vnet.Config) *vnet.Node {
 	n := c.NumNodes() + 1
 	return c.AddNode(
 		vnet.HostFirewall,
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_ENABLE_RAW_DISCO",
 			Value: "true",
 		},
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_DEBUG_RAW_DISCO",
 			Value: "1",
 		},
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_DEBUG_DISCO",
 			Value: "1",
 		},
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_LOG_VERBOSITY",
 			Value: "2",
 		},
@@ -257,7 +257,7 @@ func easyPMPFWNoBPF(c *vnet.Config) *vnet.Node {
 	n := c.NumNodes() + 1
 	return c.AddNode(
 		vnet.HostFirewall,
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_ENABLE_RAW_DISCO",
 			Value: "false",
 		},
@@ -278,11 +278,11 @@ func hardNoDERPOrEndoints(c *vnet.Config) *vnet.Node {
 	return c.AddNode(c.AddNetwork(
 		fmt.Sprintf("2.%d.%d.%d", n, n, n), // public IP
 		fmt.Sprintf("10.0.%d.1/24", n), vnet.HardNAT),
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_DEBUG_STRIP_ENDPOINTS",
 			Value: "1",
 		},
-		vnet.TailscaledEnv{
+		vnet.ScaleTaildEnv{
 			Key:   "TS_DEBUG_STRIP_HOME_DERP",
 			Value: "1",
 		},
@@ -310,7 +310,7 @@ func (nt *natTest) setupTest(ctx context.Context, addNode ...addNodeFunc) (nodes
 			t.Skip("skipping test; not applicable combination")
 		}
 		nodes = append(nodes, node)
-		if *logTailscaled {
+		if *logScaleTaild {
 			node.SetVerboseSyslog(true)
 		}
 	}
@@ -366,7 +366,7 @@ func (nt *natTest) setupTest(ctx context.Context, addNode ...addNodeFunc) (nodes
 
 		var envBuf bytes.Buffer
 		for _, e := range node.Env() {
-			fmt.Fprintf(&envBuf, " tailscaled.env=%s=%s", e.Key, e.Value)
+			fmt.Fprintf(&envBuf, " scaletaild.env=%s=%s", e.Key, e.Value)
 		}
 		sysLogAddr := net.JoinHostPort(vnet.FakeSyslogIPv4().String(), "995")
 		if node.IsV6Only() {
@@ -462,7 +462,7 @@ func (nt *natTest) setupTest(ctx context.Context, addNode ...addNodeFunc) (nodes
 				}
 
 				t.Logf("%v AllowedIPs: %v", node, st.Self.Addrs)
-				t.Logf("%v up with %v", node, st.Self.TailscaleIPs)
+				t.Logf("%v up with %v", node, st.Self.ScaleTailIPs)
 			} else {
 				t.Logf("%v skipping joining tailnet", node)
 			}
@@ -567,13 +567,13 @@ func (nt *natTest) runTailscaleConnectivityTest(addNode ...addNodeFunc) pingRout
 	// Should we send traffic across the nodes before starting disco?
 	// For nodes that rotated disco keys after control going away.
 	if preICMPPing {
-		_, err := ping(ctx, t, clients[0], sts[1].Self.TailscaleIPs[0], tailcfg.PingICMP)
+		_, err := ping(ctx, t, clients[0], sts[1].Self.ScaleTailIPs[0], tailcfg.PingICMP)
 		if err != nil {
 			t.Fatalf("ICMP ping failure: %v", err)
 		}
 	}
 
-	pingRes, err := ping(ctx, t, clients[0], sts[1].Self.TailscaleIPs[0], tailcfg.PingDisco)
+	pingRes, err := ping(ctx, t, clients[0], sts[1].Self.ScaleTailIPs[0], tailcfg.PingDisco)
 	if err != nil {
 		t.Logf("ping failure: %v", err)
 	}

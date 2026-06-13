@@ -39,7 +39,7 @@ type winMon struct {
 	lastLog time.Time // time we last logged about any windows change event
 
 	// noDeadlockTicker exists just to have something scheduled as
-	// far as the Go runtime is concerned. Otherwise "tailscaled
+	// far as the Go runtime is concerned. Otherwise "scaletaild
 	// debug --monitor" thinks it's deadlocked with nothing to do,
 	// as Go's runtime doesn't know about callbacks registered with
 	// Windows.

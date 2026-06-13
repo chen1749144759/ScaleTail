@@ -57,7 +57,7 @@ type Actor interface {
 	//
 	// The operatorUID is only used on Unix-like platforms and specifies the ID
 	// of a local user (in the os/user.User.Uid string form) who is allowed to
-	// operate tailscaled without being root or using sudo.
+	// operate scaletaild without being root or using sudo.
 	//
 	// Deprecated: this method exists for compatibility with the current (as of 2024-08-27)
 	// permission model and will be removed as we progress on tailscale/corp#18342.

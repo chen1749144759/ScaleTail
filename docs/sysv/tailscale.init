@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 ### BEGIN INIT INFO
-# Provides:             tailscaled
+# Provides:             scaletaild
 # Required-Start:
 # Required-Stop:
 # Default-Start:
@@ -15,7 +15,7 @@ set -e
 
 # /etc/init.d/tailscale: start and stop the Tailscale VPN service
 
-test -x /usr/sbin/tailscaled || exit 0
+test -x /usr/sbin/scaletaild || exit 0
 
 umask 022
 
@@ -30,11 +30,11 @@ export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
 case "$1" in
   start)
-        log_daemon_msg "Starting Tailscale VPN" "tailscaled" || true
-        if start-stop-daemon --start --oknodo --name tailscaled -m --pidfile /run/tailscaled.pid --background \
-                --exec /usr/sbin/tailscaled -- \
-                --state=/var/lib/tailscale/tailscaled.state \
-                --socket=/run/tailscale/tailscaled.sock \
+        log_daemon_msg "Starting Tailscale VPN" "scaletaild" || true
+        if start-stop-daemon --start --oknodo --name scaletaild -m --pidfile /run/scaletaild.pid --background \
+                --exec /usr/sbin/scaletaild -- \
+                --state=/var/lib/tailscale/scaletaild.state \
+                --socket=/run/tailscale/scaletaild.sock \
                 --port 41641;
         then
             log_end_msg 0 || true
@@ -43,8 +43,8 @@ case "$1" in
         fi
         ;;
   stop)
-        log_daemon_msg "Stopping Tailscale VPN" "tailscaled" || true
-        if start-stop-daemon --stop --remove-pidfile --pidfile /run/tailscaled.pid --exec /usr/sbin/tailscaled; then
+        log_daemon_msg "Stopping Tailscale VPN" "scaletaild" || true
+        if start-stop-daemon --stop --remove-pidfile --pidfile /run/scaletaild.pid --exec /usr/sbin/scaletaild; then
             log_end_msg 0 || true
         else
             log_end_msg 1 || true
@@ -52,11 +52,11 @@ case "$1" in
         ;;
 
   status)
-        status_of_proc -p /run/tailscaled.pid /usr/sbin/tailscaled tailscaled && exit 0 || exit $?
+        status_of_proc -p /run/scaletaild.pid /usr/sbin/scaletaild scaletaild && exit 0 || exit $?
         ;;
 
   *)
-        log_action_msg "Usage: /etc/init.d/tailscaled {start|stop|status}" || true
+        log_action_msg "Usage: /etc/init.d/scaletaild {start|stop|status}" || true
         exit 1
 esac
 

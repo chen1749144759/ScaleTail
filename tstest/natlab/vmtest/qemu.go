@@ -91,7 +91,7 @@ func (e *Env) startGokrazyQEMU(n *Node) error {
 
 	var envBuf bytes.Buffer
 	for _, env := range n.vnetNode.Env() {
-		fmt.Fprintf(&envBuf, " tailscaled.env=%s=%s", env.Key, env.Value)
+		fmt.Fprintf(&envBuf, " scaletaild.env=%s=%s", env.Key, env.Value)
 	}
 	sysLogAddr := net.JoinHostPort(vnet.FakeSyslogIPv4().String(), "995")
 	if n.vnetNode.IsV6Only() {

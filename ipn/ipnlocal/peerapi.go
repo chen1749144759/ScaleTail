@@ -298,11 +298,11 @@ func (h *peerAPIHandler) validatePeerAPIRequest(r *http.Request) error {
 
 // peerAPIRequestShouldGetSecurityHeaders reports whether the PeerAPI request r
 // should get security response headers. It aims to report true for any request
-// from a browser and false for requests from tailscaled (Go) clients.
+// from a browser and false for requests from scaletaild (Go) clients.
 //
 // PeerAPI is primarily an RPC mechanism between Tailscale instances. Some of
 // the HTTP handlers are useful for debugging with curl or browsers, but in
-// general the client is always tailscaled itself. Because PeerAPI only uses
+// general the client is always scaletaild itself. Because PeerAPI only uses
 // HTTP/1 without HTTP/2 and its HPACK helping with repetitive headers, we try
 // to minimize header bytes sent in the common case when the client isn't a
 // browser. Minimizing bytes is important in particular with the ExitDNS service

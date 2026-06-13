@@ -22,7 +22,7 @@ import (
 
 // ServeHTTPDebug serves an HTML representation of the innards of c for debugging.
 //
-// It's accessible either from tailscaled's debug port (at
+// It's accessible either from scaletaild's debug port (at
 // /debug/magicsock) or via peerapi to a peer that's owned by the same
 // user (so they can e.g. inspect their phones).
 func (c *Conn) ServeHTTPDebug(w http.ResponseWriter, r *http.Request) {

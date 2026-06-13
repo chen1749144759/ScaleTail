@@ -34,7 +34,7 @@ func TestTaildropIntegration_Fresh(t *testing.T) {
 }
 
 // freshProfiles is whether to start the test right away
-// with a fresh profile. If false, tailscaled is started, stopped,
+// with a fresh profile. If false, scaletaild is started, stopped,
 // and restarted again to simulate a real-world scenario where
 // the first profile already existed.
 //
@@ -94,7 +94,7 @@ func testTaildropIntegration(t *testing.T, freshProfiles bool) {
 			return errors.New("peer is self")
 		}
 
-		if len(st.TailscaleIPs) == 0 {
+		if len(st.ScaleTailIPs) == 0 {
 			return errors.New("no Tailscale IPs")
 		}
 

@@ -155,7 +155,7 @@ func (p *proxy) Expvar() expvar.Var {
 
 // Serve accepts postgres client connections on ln and proxies them to
 // the configured upstream. ln can be any net.Listener, but all client
-// connections must originate from tailscale IPs that can be verified
+// connections must originate from scaletail IPs that can be verified
 // with WhoIs.
 func (p *proxy) Serve(ln net.Listener) error {
 	var lastSessionID int64

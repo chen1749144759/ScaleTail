@@ -69,7 +69,7 @@ func TestVersionDownload(t *testing.T) {
 	if dir != wantDir {
 		t.Errorf("dir = %q, want %q", dir, wantDir)
 	}
-	for _, name := range []string{"tailscale", "tailscaled"} {
+	for _, name := range []string{"tailscale", "scaletaild"} {
 		fi, err := os.Stat(filepath.Join(dir, name))
 		if err != nil {
 			t.Errorf("missing %s: %v", name, err)

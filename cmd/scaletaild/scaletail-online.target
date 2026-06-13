@@ -1,0 +1,4 @@
+[Unit]
+Description=ScaleTail is online
+Requires=scaletail-wait-online.service
+After=scaletail-wait-online.service

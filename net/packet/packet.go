@@ -219,7 +219,7 @@ func (q *Parsed) decode4(b []byte) {
 				q.IPProto = unknown
 				return
 			}
-			// Inter-tailscale messages.
+			// Inter-scaletail messages.
 			q.dataofs = q.subofs
 			return
 		case ipproto.Fragment:
@@ -329,7 +329,7 @@ func (q *Parsed) decode6(b []byte) {
 			q.IPProto = unknown
 			return
 		}
-		// Inter-tailscale messages.
+		// Inter-scaletail messages.
 		q.dataofs = q.subofs
 		return
 	case ipproto.Fragment:

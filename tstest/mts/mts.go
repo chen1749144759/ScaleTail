@@ -3,9 +3,9 @@
 
 //go:build linux || darwin
 
-// The mts ("Multiple Tailscale") command runs multiple tailscaled instances for
+// The mts ("Multiple Tailscale") command runs multiple scaletaild instances for
 // development, managing their directories and sockets, and lets you easily direct
-// tailscale CLI commands to them.
+// scaletail CLI commands to them.
 package main
 
 import (
@@ -48,17 +48,17 @@ func usage(args ...any) {
 	io.WriteString(os.Stderr, strings.TrimSpace(`
 usage:
 
-   mts server <subcommand>      # manage tailscaled instances
-   mts server run               # run the mts server (parent process of all tailscaled)
-   mts server list              # list all tailscaled and their state
+   mts server <subcommand>      # manage scaletaild instances
+   mts server run               # run the mts server (parent process of all scaletaild)
+   mts server list              # list all scaletaild and their state
    mts server list <name>       # show details of named instance
-   mts server add <name>        # add+start new named tailscaled
-   mts server start <name>      # start a previously added tailscaled
-   mts server stop <name>       # stop & remove a named tailscaled
-   mts server rm <name>         # stop & remove a named tailscaled
-   mts server logs [-f] <name>  # get/follow tailscaled logs
+   mts server add <name>        # add+start new named scaletaild
+   mts server start <name>      # start a previously added scaletaild
+   mts server stop <name>       # stop & remove a named scaletaild
+   mts server rm <name>         # stop & remove a named scaletaild
+   mts server logs [-f] <name>  # get/follow scaletaild logs
 
-  mts <inst-name> [tailscale CLI args] # run Tailscale CLI against a named instance
+  mts <inst-name> [scaletail CLI args] # run Tailscale CLI against a named instance
     e.g.
       mts gmail1 up
       mts github2 status --json
@@ -292,7 +292,7 @@ func (c *Client) RunCommand(name string, args []string) {
 	if _, err := lc.StatusWithoutPeers(probeCtx); err != nil {
 		log.Fatalf("instance %q not running? start with 'mts server start %q'; got error: %v", name, name, err)
 	}
-	args = append([]string{"run", "tailscale.com/cmd/tailscale", "--socket=" + sock}, args...)
+	args = append([]string{"run", "tailscale.com/cmd/scaletail", "--socket=" + sock}, args...)
 	cmd := exec.Command("go", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -308,15 +308,15 @@ func (c *Client) RunCommand(name string, args []string) {
 }
 
 type Server struct {
-	lazyTailscaled lazy.GValue[string]
+	lazyScaleTaild lazy.GValue[string]
 
 	mu   sync.Mutex
-	cmds map[string]*exec.Cmd // running tailscaled instances
+	cmds map[string]*exec.Cmd // running scaletaild instances
 }
 
-func (s *Server) tailscaled() string {
-	v, err := s.lazyTailscaled.GetErr(func() (string, error) {
-		out, err := exec.Command("go", "list", "-f", "{{.Target}}", "tailscale.com/cmd/tailscaled").CombinedOutput()
+func (s *Server) scaletaild() string {
+	v, err := s.lazyScaleTaild.GetErr(func() (string, error) {
+		out, err := exec.Command("go", "list", "-f", "{{.Target}}", "tailscale.com/cmd/scaletaild").CombinedOutput()
 		if err != nil {
 			return "", err
 		}
@@ -334,7 +334,7 @@ func (s *Server) Run() error {
 	}
 	sock := mtsSock()
 	os.Remove(sock)
-	log.Printf("Multi-Tailscaled Server running; listening on %q ...", sock)
+	log.Printf("Multi-ScaleTaild Server running; listening on %q ...", sock)
 	ln, err := net.Listen("unix", sock)
 	if err != nil {
 		return err
@@ -413,7 +413,7 @@ func (s *Server) RunInstance(name string) error {
 		}
 	} else if os.IsNotExist(err) {
 		// Write an example one.
-		os.WriteFile(instArgsFile(name), fmt.Appendf(nil, "# Example mts args.txt file for instance %q.\n# One line per extra arg to tailscaled; no magic string quoting\n\n--verbose=1\n#--socks5-server=127.0.0.1:5000\n", name), 0600)
+		os.WriteFile(instArgsFile(name), fmt.Appendf(nil, "# Example mts args.txt file for instance %q.\n# One line per extra arg to scaletaild; no magic string quoting\n\n--verbose=1\n#--socks5-server=127.0.0.1:5000\n", name), 0600)
 	}
 
 	log.Printf("Running Tailscale daemon %q in %q", name, dir)
@@ -421,11 +421,11 @@ func (s *Server) RunInstance(name string) error {
 	args := []string{
 		"--tun=userspace-networking",
 		"--statedir=" + filepath.Join(dir),
-		"--socket=" + filepath.Join(dir, "tailscaled.sock"),
+		"--socket=" + filepath.Join(dir, "scaletaild.sock"),
 	}
 	args = append(args, extraArgs...)
 
-	cmd := exec.Command(s.tailscaled(), args...)
+	cmd := exec.Command(s.scaletaild(), args...)
 	cmd.Dir = dir
 	cmd.Env = env
 
@@ -447,7 +447,7 @@ func (s *Server) RunInstance(name string) error {
 			// TODO(bradfitz): record in memory too, serve via HTTP
 			line := strings.TrimSpace(bs.Text())
 			fmt.Fprintf(logFile, "%s\n", line)
-			fmt.Printf("tailscaled[%s]: %s\n", name, line)
+			fmt.Printf("scaletaild[%s]: %s\n", name, line)
 		}
 	}()
 
@@ -542,7 +542,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/" {
-		fmt.Fprintf(w, "This is mts, the multi-tailscaled server.\n")
+		fmt.Fprintf(w, "This is mts, the multi-scaletaild server.\n")
 		return
 	}
 	http.NotFound(w, r)
@@ -579,7 +579,7 @@ func instDir(name string) string {
 }
 
 func instSock(name string) string {
-	return filepath.Join(instDir(name), "tailscaled.sock")
+	return filepath.Join(instDir(name), "scaletaild.sock")
 }
 
 func instEnvFile(name string) string {

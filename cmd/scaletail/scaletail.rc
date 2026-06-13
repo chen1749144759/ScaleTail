@@ -1,0 +1,3 @@
+#!/bin/rc
+# Plan 9 cmd/scaletail wrapper script to run cmd/scaletaild's embedded CLI.
+TS_BE_CLI=1 scaletaild $*

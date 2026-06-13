@@ -691,7 +691,7 @@ func NewConn(opts Options) (*Conn, error) {
 
 	c.metrics = registerMetrics(opts.Metrics)
 	if opts.Metrics != nil {
-		c.homeDERPGauge = opts.Metrics.NewGauge("tailscaled_home_derp_region_id", "DERP region ID of this node's home relay server")
+		c.homeDERPGauge = opts.Metrics.NewGauge("scaletaild_home_derp_region_id", "DERP region ID of this node's home relay server")
 	}
 
 	if d4, err := c.listenRawDisco("ip4"); err == nil {
@@ -722,25 +722,25 @@ func registerMetrics(reg *usermetric.Registry) *metrics {
 	pathPeerRelayV6 := pathLabel{Path: PathPeerRelayIPv6}
 	inboundPacketsTotal := usermetric.NewMultiLabelMapWithRegistry[pathLabel](
 		reg,
-		"tailscaled_inbound_packets_total",
+		"scaletaild_inbound_packets_total",
 		"counter",
 		"Counts the number of packets received from other peers",
 	)
 	inboundBytesTotal := usermetric.NewMultiLabelMapWithRegistry[pathLabel](
 		reg,
-		"tailscaled_inbound_bytes_total",
+		"scaletaild_inbound_bytes_total",
 		"counter",
 		"Counts the number of bytes received from other peers",
 	)
 	outboundPacketsTotal := usermetric.NewMultiLabelMapWithRegistry[pathLabel](
 		reg,
-		"tailscaled_outbound_packets_total",
+		"scaletaild_outbound_packets_total",
 		"counter",
 		"Counts the number of packets sent to other peers",
 	)
 	outboundBytesTotal := usermetric.NewMultiLabelMapWithRegistry[pathLabel](
 		reg,
-		"tailscaled_outbound_bytes_total",
+		"scaletaild_outbound_bytes_total",
 		"counter",
 		"Counts the number of bytes sent to other peers",
 	)
@@ -1121,12 +1121,12 @@ func (c *Conn) LastRecvActivityOfNodeKey(nk key.NodePublic) string {
 	return mono.Since(saw).Round(time.Second).String()
 }
 
-// Ping handles a "tailscale ping" CLI query.
+// Ping handles a "scaletail ping" CLI query.
 func (c *Conn) Ping(peer tailcfg.NodeView, res *ipnstate.PingResult, size int, cb func(*ipnstate.PingResult)) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.privateKey.IsZero() {
-		res.Err = "local tailscaled stopped"
+		res.Err = "local scaletaild stopped"
 		cb(res)
 		return
 	}
@@ -1172,7 +1172,7 @@ func (c *Conn) GetEndpointChanges(peer tailcfg.NodeView) ([]EndpointChange, erro
 	c.mu.Lock()
 	if c.privateKey.IsZero() {
 		c.mu.Unlock()
-		return nil, fmt.Errorf("tailscaled stopped")
+		return nil, fmt.Errorf("scaletaild stopped")
 	}
 	ep, ok := c.peerMap.endpointForNodeKey(peer.Key())
 	c.mu.Unlock()
@@ -1289,7 +1289,7 @@ func (c *Conn) determineEndpoints(ctx context.Context) ([]tailcfg.Endpoint, erro
 		// If they're behind a hard NAT and are using a fixed
 		// port locally, assume they might've added a static
 		// port mapping on their router to the same explicit
-		// port that tailscaled is running with. Worst case
+		// port that scaletaild is running with. Worst case
 		// it's an invalid candidate mapping.
 		if port := c.port.Load(); nr.MappingVariesByDestIP.EqualBool(true) && port != 0 {
 			addAddr(netip.AddrPortFrom(v4Addrs[0].Addr(), uint16(port)), tailcfg.EndpointSTUN4LocalPort)
@@ -4390,7 +4390,7 @@ func (c *Conn) HandleDiscoKeyAdvertisement(node tailcfg.NodeView, update packet.
 // In the common case, a DiscoKey is not rotated within a process generation
 // (as of 2026-01-21), except with debug commands to simulate process restarts.
 //
-// The address is the first node address (tailscale address) of the node. It
+// The address is the first node address (scaletail address) of the node. It
 // does not matter if the address is v4/v6, the receiver should handle either.
 //
 // Since we have not yet communicated with the node at the time we are

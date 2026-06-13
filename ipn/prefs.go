@@ -85,7 +85,7 @@ type Prefs struct {
 	//
 	// The preferred way to express the chosen node is ExitNodeID, but
 	// in some cases it's not possible to use that ID (e.g. in the
-	// linux CLI, before tailscaled has a netmap). For those
+	// linux CLI, before scaletaild has a netmap). For those
 	// situations, we allow specifying the exit node by IP, and
 	// ipnlocal.LocalBackend will translate the IP into an ID when the
 	// node is found in the netmap.
@@ -98,15 +98,15 @@ type Prefs struct {
 	ExitNodeIP netip.Addr
 
 	// AutoExitNode is an optional expression that specifies whether and how
-	// tailscaled should pick an exit node automatically.
+	// scaletaild should pick an exit node automatically.
 	//
-	// If specified, tailscaled will use an exit node based on the expression,
+	// If specified, scaletaild will use an exit node based on the expression,
 	// and will re-evaluate the selection periodically as network conditions,
 	// available exit nodes, or policy settings change. A blackhole route will
 	// be installed to prevent traffic from escaping to the local network until
 	// an exit node is selected. It takes precedence over ExitNodeID and ExitNodeIP.
 	//
-	// If empty, tailscaled will not automatically select an exit node.
+	// If empty, scaletaild will not automatically select an exit node.
 	//
 	// If the specified expression is invalid or unsupported by the client,
 	// it falls back to the behavior of [AnyExitNode].
@@ -244,7 +244,7 @@ type Prefs struct {
 	NetfilterMode preftype.NetfilterMode
 
 	// OperatorUser is the local machine user name who is allowed to
-	// operate tailscaled without being root or using sudo.
+	// operate scaletaild without being root or using sudo.
 	OperatorUser string `json:",omitempty"`
 
 	// ProfileName is the desired name of the profile. If empty, then the user's
@@ -312,11 +312,11 @@ type Prefs struct {
 // AutoUpdatePrefs are the auto update settings for the node agent.
 type AutoUpdatePrefs struct {
 	// Check specifies whether background checks for updates are enabled. When
-	// enabled, tailscaled will periodically check for available updates and
+	// enabled, scaletaild will periodically check for available updates and
 	// notify the user about them.
 	Check bool
 	// Apply specifies whether background auto-updates are enabled. When
-	// enabled, tailscaled will apply available updates in the background.
+	// enabled, scaletaild will apply available updates in the background.
 	// Check must also be set when Apply is set.
 	Apply opt.Bool
 }
@@ -783,7 +783,7 @@ func (p *Prefs) DefaultRouteAll(goos string) bool {
 	case "windows", "android", "ios":
 		return true
 	case "darwin":
-		// Only true for macAppStore and macsys, false for darwin tailscaled.
+		// Only true for macAppStore and macsys, false for darwin scaletaild.
 		return version.IsSandboxedMacOS()
 	default:
 		return false
@@ -844,7 +844,7 @@ func (p *Prefs) SetAdvertiseExitNode(runExit bool) {
 // Tailscale IP.
 func peerWithTailscaleIP(st *ipnstate.Status, ip netip.Addr) (ps *ipnstate.PeerStatus, ok bool) {
 	for _, ps := range st.Peer {
-		if slices.Contains(ps.TailscaleIPs, ip) {
+		if slices.Contains(ps.ScaleTailIPs, ip) {
 			return ps, true
 		}
 	}
@@ -852,7 +852,7 @@ func peerWithTailscaleIP(st *ipnstate.Status, ip netip.Addr) (ps *ipnstate.PeerS
 }
 
 func isRemoteIP(st *ipnstate.Status, ip netip.Addr) bool {
-	return !slices.Contains(st.TailscaleIPs, ip)
+	return !slices.Contains(st.ScaleTailIPs, ip)
 }
 
 // ClearExitNode sets the ExitNodeID and ExitNodeIP to their zero values.
@@ -900,7 +900,7 @@ func exitNodeIPOfArg(s string, st *ipnstate.Status) (ip netip.Addr, err error) {
 		//
 		//	- base name ("example")
 		//	- FQDN ("example.tail1234.ts.net.")
-		// 	- FQDN sans dot ("example.tail1234.ts.net", as returned by `tailscale exit-node list`
+		// 	- FQDN sans dot ("example.tail1234.ts.net", as returned by `scaletail exit-node list`
 		//	  and the admin console)
 		//
 		fqdn := ps.DNSName
@@ -910,13 +910,13 @@ func exitNodeIPOfArg(s string, st *ipnstate.Status) (ip netip.Addr, err error) {
 			continue
 		}
 		match++
-		if len(ps.TailscaleIPs) == 0 {
+		if len(ps.ScaleTailIPs) == 0 {
 			return ip, fmt.Errorf("node %q has no Tailscale IP?", s)
 		}
 		if !ps.ExitNodeOption {
 			return ip, fmt.Errorf("node %q is not advertising an exit node", s)
 		}
-		ip = ps.TailscaleIPs[0]
+		ip = ps.ScaleTailIPs[0]
 	}
 	switch match {
 	case 0:

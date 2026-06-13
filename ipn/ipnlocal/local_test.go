@@ -2025,8 +2025,8 @@ func TestStatusPeerCapabilities(t *testing.T) {
 }
 
 // legacyBackend was the interface between Tailscale frontends
-// (e.g. cmd/tailscale, iOS/MacOS/Windows GUIs) and the tailscale
-// backend (e.g. cmd/tailscaled) running on the same machine.
+// (e.g. cmd/scaletail, iOS/MacOS/Windows GUIs) and the tailscale
+// backend (e.g. cmd/scaletaild) running on the same machine.
 // (It has nothing to do with the interface between the backends
 // and the cloud control plane.)
 type legacyBackend interface {
@@ -2425,7 +2425,7 @@ func TestDNSConfigForNetmapForExitNodeConfigs(t *testing.T) {
 			ExitNodeDNSResolvers: wgResolvers,
 			Hostinfo:             (&tailcfg.Hostinfo{}).View(),
 		}).View(),
-		// regular tailscale exit node with DNS capabilities
+		// regular scaletail exit node with DNS capabilities
 		(&tailcfg.Node{
 			Cap:      26,
 			ID:       2,
@@ -2506,7 +2506,7 @@ func TestDNSConfigForNetmapForExitNodeConfigs(t *testing.T) {
 			wantRoutes:           nil,
 		},
 
-		// When at tailscale exit node is in use,
+		// When at scaletail exit node is in use,
 		// only routes that reference resolvers with the UseWithExitNode should be installed,
 		// as well as routes with 0-length resolver lists, which should be installed in all cases.
 		{
@@ -7828,7 +7828,7 @@ func TestRouteAllDisabled(t *testing.T) {
 						// a /28 range will not be added, since this is not a Service IP range (which is always /32, a single IP)
 						pp("100.64.0.0/28"),
 
-						// ips outside the tailscale cgnat/ula range are not added to the router config
+						// ips outside the scaletail cgnat/ula range are not added to the router config
 						pp("192.168.0.45/32"),
 						pp("fd7a:115c:b1e0::2501:9b83/128"),
 						pp("fdf8:f966:e27c:0:5:0:0:10/128"),
@@ -7858,7 +7858,7 @@ func TestRouteAllDisabled(t *testing.T) {
 						pp("100.94.122.93/32"),
 						pp("100.79.141.115/32"),
 
-						// ips outside the tailscale cgnat/ula range are not added to the router config
+						// ips outside the scaletail cgnat/ula range are not added to the router config
 						pp("192.168.0.45/32"),
 						pp("fd7a:115c:b1e0::2501:9b83/128"),
 						pp("fdf8:f966:e27c:0:5:0:0:10/128"),

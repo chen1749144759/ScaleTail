@@ -98,7 +98,7 @@ func getInterfaceIndex(logf logger.Logf, netMon *netmon.Monitor, address string)
 			logf("netns: [unexpected] os default if %q (%d) != netmon cached if %q (%d)", osIf.InterfaceName, osIf.InterfaceIndex, cachedIdx.Name, cachedIdx.Index)
 		}
 
-		// Sanity check to make sure we didn't pick the tailscale interface
+		// Sanity check to make sure we didn't pick the scaletail interface
 		if tsif, err2 := tailscaleInterface(); tsif != nil && err2 == nil && errOut == nil {
 			if tsif.Index == idx {
 				idx = -1

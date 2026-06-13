@@ -132,9 +132,9 @@ func TestProxyClass(t *testing.T) {
 		proxyClass.Spec.StatefulSet.Pod.TailscaleContainer.Env = []tsapi.Env{{Name: "TS_USERSPACE", Value: "true"}, {Name: "EXPERIMENTAL_TS_CONFIGFILE_PATH"}, {Name: "EXPERIMENTAL_ALLOW_PROXYING_CLUSTER_TRAFFIC_VIA_INGRESS"}}
 	})
 	expectedEvents := []string{
-		"Warning CustomTSEnvVar ProxyClass overrides the default value for TS_USERSPACE env var for tailscale container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
-		"Warning CustomTSEnvVar ProxyClass overrides the default value for EXPERIMENTAL_TS_CONFIGFILE_PATH env var for tailscale container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
-		"Warning CustomTSEnvVar ProxyClass overrides the default value for EXPERIMENTAL_ALLOW_PROXYING_CLUSTER_TRAFFIC_VIA_INGRESS env var for tailscale container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
+		"Warning CustomTSEnvVar ProxyClass overrides the default value for TS_USERSPACE env var for scaletail container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
+		"Warning CustomTSEnvVar ProxyClass overrides the default value for EXPERIMENTAL_TS_CONFIGFILE_PATH env var for scaletail container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
+		"Warning CustomTSEnvVar ProxyClass overrides the default value for EXPERIMENTAL_ALLOW_PROXYING_CLUSTER_TRAFFIC_VIA_INGRESS env var for scaletail container. Running with custom values for Tailscale env vars is not recommended and might break in the future.",
 	}
 	expectReconciled(t, pcr, "", "test")
 	expectEvents(t, fr, expectedEvents)

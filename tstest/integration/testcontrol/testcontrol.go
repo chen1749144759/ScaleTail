@@ -1662,7 +1662,7 @@ func keepClientEndpoint(ipp netip.AddrPort) bool {
 	}
 	if ip.Is6() && ip.IsLinkLocalUnicast() {
 		// We let clients send these for now, but
-		// tailscaled doesn't know how to use them yet
+		// scaletaild doesn't know how to use them yet
 		// so we filter them out for now. A future
 		// MapRequest.Version might signal that
 		// clients know how to use them (e.g. try all

@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package tsd (short for "Tailscale Daemon") contains a System type that
-// containing all the subsystems a Tailscale node (tailscaled or platform
+// containing all the subsystems a Tailscale node (scaletaild or platform
 // equivalent) uses.
 //
 // The goal of this package (as of 2023-05-03) is to eventually unify
-// initialization across tailscaled, tailscaled as a Windows services, the mac
+// initialization across scaletaild, scaletaild as a Windows services, the mac
 // GUI, tsnet, wasm, tests, and other places that wire up all the subsystems.
 // And doing so without weird optional interface accessors on some subsystems
 // that return other subsystems. It's all a work in progress.
 //
 // This package depends on nearly all parts of Tailscale, so it should not be
 // imported by (or thus passed to) any package that does not want to depend on
-// the world. In practice this means that only things like cmd/tailscaled,
+// the world. In practice this means that only things like cmd/scaletaild,
 // ipn/ipnlocal, and ipn/ipnserver should import this package.
 package tsd
 
@@ -42,7 +42,7 @@ import (
 	"tailscale.com/wgengine/router"
 )
 
-// System contains all the subsystems of a Tailscale node (tailscaled, etc.)
+// System contains all the subsystems of a Tailscale node (scaletaild, etc.)
 //
 // A valid System value must always have a non-nil Bus populated.  Callers must
 // ensure this before using the value further. Call [NewSystem] to obtain a
@@ -76,7 +76,7 @@ type System struct {
 	// LocalBackend tracks the current config after any reloads.
 	InitialConfig *conffile.Config
 
-	// SocketPath is the path to the tailscaled Unix socket.
+	// SocketPath is the path to the scaletaild Unix socket.
 	// It is used to prevent serve from proxying to our own socket.
 	SocketPath string
 

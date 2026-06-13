@@ -59,7 +59,7 @@ func TestService_DefaultProxyClassInitiallyNotReady(t *testing.T) {
 		clock:             clock,
 	}
 
-	// 1. A new tailscale LoadBalancer Service is created but the default
+	// 1. A new scaletail LoadBalancer Service is created but the default
 	// ProxyClass is not ready yet.
 	mustCreate(t, fc, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

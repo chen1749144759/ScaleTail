@@ -12,20 +12,20 @@ import (
 )
 
 func init() {
-	tailscaledProcExists.Set(func() bool {
+	scaletaildProcExists.Set(func() bool {
 		procs, err := ps.Processes()
 		if err != nil {
 			return false
 		}
 		for _, proc := range procs {
 			name := proc.Executable()
-			const tailscaled = "tailscaled"
-			if len(name) < len(tailscaled) {
+			const scaletaild = "scaletaild"
+			if len(name) < len(scaletaild) {
 				continue
 			}
 			// Do case insensitive comparison for Windows,
 			// notably, and ignore any ".exe" suffix.
-			if strings.EqualFold(name[:len(tailscaled)], tailscaled) {
+			if strings.EqualFold(name[:len(scaletaild)], scaletaild) {
 				return true
 			}
 		}

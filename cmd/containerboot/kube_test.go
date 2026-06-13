@@ -298,7 +298,7 @@ func TestResetContainerbootState(t *testing.T) {
 				kubetypes.KeyHTTPSEndpoint:       nil,
 				egressservices.KeyEgressServices: nil,
 				ingressservices.IngressConfigKey: nil,
-				// Tailscaled keys not included in patch.
+				// ScaleTaild keys not included in patch.
 			},
 		},
 		"new_authkey_issued": {

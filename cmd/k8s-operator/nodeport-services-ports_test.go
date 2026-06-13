@@ -270,8 +270,8 @@ func TestValidateNodePortRanges(t *testing.T) {
 func TestGetRandomPort(t *testing.T) {
 	for range 100 {
 		port := getRandomPort()
-		if port < tailscaledPortMin || port > tailscaledPortMax {
-			t.Errorf("generated port %d which is out of range [%d, %d]", port, tailscaledPortMin, tailscaledPortMax)
+		if port < scaletaildPortMin || port > scaletaildPortMax {
+			t.Errorf("generated port %d which is out of range [%d, %d]", port, scaletaildPortMin, scaletaildPortMax)
 		}
 	}
 }

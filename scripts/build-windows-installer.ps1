@@ -14,32 +14,30 @@ Set-Location $repoRoot
 
 $installerOutDirAbs = Join-Path $repoRoot "dist\installer"
 New-Item -ItemType Directory -Force -Path $installerOutDirAbs | Out-Null
-Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "tailscale-*-windows-amd64-setup*.exe" -ErrorAction SilentlyContinue |
+Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "ScaleTail-*-windows-amd64-setup*.exe" -ErrorAction SilentlyContinue |
   Remove-Item -Force
 Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "scaletail-*-windows-amd64-setup*.exe" -ErrorAction SilentlyContinue |
   Remove-Item -Force
 
 $outDirAbs = Join-Path $repoRoot $OutDir
 New-Item -ItemType Directory -Force -Path $outDirAbs | Out-Null
-  Remove-Item -LiteralPath `
+Remove-Item -LiteralPath `
   (Join-Path $outDirAbs "ScaleTail.exe"), `
-  (Join-Path $outDirAbs "Tailscale.exe"), `
+  (Join-Path $outDirAbs "ScaleTailUI.exe"), `
+  (Join-Path $outDirAbs "scaletail.exe"), `
   (Join-Path $outDirAbs "scaletaild.exe"), `
-  (Join-Path $outDirAbs "scaletail-localapi.exe"), `
-  (Join-Path $outDirAbs "tailscaled.exe"), `
-  (Join-Path $outDirAbs "tailscale-localapi.exe"), `
-  (Join-Path $outDirAbs "tailscale-cli.exe"), `
-  (Join-Path $outDirAbs "tailscale.exe"), `
-  (Join-Path $outDirAbs "tailscale-systray.exe") `
+  (Join-Path $outDirAbs "scaletail-localapi.exe") `
   -Force -ErrorAction SilentlyContinue
 
 $oldCgo = $env:CGO_ENABLED
 $env:CGO_ENABLED = "0"
 try {
+  Write-Host "Building scaletail.exe"
+  go build -trimpath -o (Join-Path $outDirAbs "scaletail.exe") ./cmd/scaletail
   Write-Host "Building scaletaild.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/tailscaled
+  go build -trimpath -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/scaletaild
   Write-Host "Building scaletail-localapi.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/tailscale-localapi
+  go build -trimpath -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/scaletail-localapi
 } finally {
   $env:CGO_ENABLED = $oldCgo
 }
@@ -93,7 +91,7 @@ if (-not $SkipElectron) {
   if (-not (Test-Path -LiteralPath $electronOut)) {
     throw "Electron output not found: $electronOut"
   }
-  Remove-Item -LiteralPath (Join-Path $electronOut "Tailscale.exe") -Force -ErrorAction SilentlyContinue
+  Move-Item -LiteralPath (Join-Path $electronOut "ScaleTail.exe") -Destination (Join-Path $electronOut "ScaleTailUI.exe") -Force
   $appIcon = Join-Path $electronAbs "resources\app.ico"
   $rceditCandidates = @(
     (Join-Path $electronAbs "node_modules\electron-winstaller\vendor\rcedit.exe"),
@@ -103,10 +101,11 @@ if (-not $SkipElectron) {
   $rcedit = $rceditCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
   if ((Test-Path -LiteralPath $appIcon) -and $rcedit) {
     Write-Host "Embedding Electron executable icon"
-    & $rcedit (Join-Path $electronOut "ScaleTail.exe") "--set-icon" $appIcon
+    & $rcedit (Join-Path $electronOut "ScaleTailUI.exe") "--set-icon" $appIcon
   } elseif (Test-Path -LiteralPath $appIcon) {
     Write-Warning "rcedit.exe not found; shortcut, tray, window, and installer icons will still use app.ico."
   }
+  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail.exe") -Destination (Join-Path $electronOut "scaletail.exe") -Force
   Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletaild.exe") -Destination (Join-Path $electronOut "scaletaild.exe") -Force
   Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail-localapi.exe") -Destination (Join-Path $electronOut "scaletail-localapi.exe") -Force
   Copy-Item -LiteralPath (Join-Path $outDirAbs "wintun.dll") -Destination (Join-Path $electronOut "wintun.dll") -Force

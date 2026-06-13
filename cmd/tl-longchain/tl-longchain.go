@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	flagSocket   = flag.String("socket", "", "custom path to tailscaled socket")
+	flagSocket   = flag.String("socket", "", "custom path to scaletaild socket")
 	maxRotations = flag.Int("rotations", 10, "number of rotation signatures before re-signing (max 16)")
 	showFiltered = flag.Bool("show-filtered", false, "include nodes with invalid signatures")
 )
@@ -70,7 +70,7 @@ func main() {
 
 // peerInfo returns a string with information about a peer.
 func peerInfo(peer *ipnstate.TKAPeer) string {
-	return fmt.Sprintf("Peer %s (%s) nodeid=%s, current signature kind=%v", peer.Name, peer.TailscaleIPs[0], peer.StableID, peer.NodeKeySignature.SigKind)
+	return fmt.Sprintf("Peer %s (%s) nodeid=%s, current signature kind=%v", peer.Name, peer.ScaleTailIPs[0], peer.StableID, peer.NodeKeySignature.SigKind)
 }
 
 // print prints a message about a node key signature and a re-signing command if needed.
@@ -78,7 +78,7 @@ func print(info string, nodeKey key.NodePublic, sig tka.NodeKeySignature) {
 	if ln := chainLength(sig); ln > *maxRotations {
 		log.Printf("%s: chain length %d, printing command to re-sign", info, ln)
 		wrapping, _ := sig.UnverifiedWrappingPublic()
-		fmt.Printf("tailscale lock sign %s %s\n", nodeKey, key.NLPublicFromEd25519Unsafe(wrapping).CLIString())
+		fmt.Printf("scaletail lock sign %s %s\n", nodeKey, key.NLPublicFromEd25519Unsafe(wrapping).CLIString())
 	} else {
 		log.Printf("%s: does not need re-signing", info)
 	}

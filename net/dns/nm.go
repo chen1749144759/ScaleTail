@@ -313,7 +313,7 @@ func (m *nmManager) GetBaseConfig() (OSConfig, error) {
 	for _, cfg := range cfgs {
 		if name, ok := cfg["interface"]; ok {
 			if s, ok := name.Value().(string); ok && s == m.interfaceName {
-				// Config for the tailscale interface, skip.
+				// Config for the scaletail interface, skip.
 				continue
 			}
 		}
@@ -387,7 +387,7 @@ func (m *nmManager) GetBaseConfig() (OSConfig, error) {
 
 func (m *nmManager) Close() error {
 	// No need to do anything on close, NetworkManager will delete our
-	// settings when the tailscale interface goes away.
+	// settings when the scaletail interface goes away.
 	return nil
 }
 

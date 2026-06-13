@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package proxymap contains a mapping table for ephemeral localhost ports used
-// by tailscaled on behalf of remote Tailscale IPs for proxied connections.
+// by scaletaild on behalf of remote Tailscale IPs for proxied connections.
 package proxymap
 
 import (
@@ -16,10 +16,10 @@ import (
 )
 
 // Mapper tracks which localhost ip:ports correspond to which remote Tailscale
-// IPs for connections proxied by tailscaled.
+// IPs for connections proxied by scaletaild.
 //
 // This is then used (via the WhoIsIPPort method) by localhost applications to
-// ask tailscaled (via the LocalAPI WhoIs method) the Tailscale identity that a
+// ask scaletaild (via the LocalAPI WhoIs method) the Tailscale identity that a
 // given localhost:port corresponds to.
 type Mapper struct {
 	mu syncs.Mutex
@@ -54,7 +54,7 @@ type mappingKey struct {
 // Tailscale IP) as temporarily having the given IP:port for whois lookups.
 //
 // The IP:port is generally a localhost IP and an ephemeral port, used
-// while proxying connections to localhost when tailscaled is running
+// while proxying connections to localhost when scaletaild is running
 // in netstack mode.
 //
 // The proto is the network protocol that is being proxied; it must be "tcp" or

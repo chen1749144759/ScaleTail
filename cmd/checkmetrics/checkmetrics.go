@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// checkmetrics validates that all metrics in the tailscale client-metrics
+// checkmetrics validates that all metrics in the scaletail client-metrics
 // are documented in a given path or URL.
 package main
 

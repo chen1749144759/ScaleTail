@@ -98,7 +98,7 @@ func TestServeAPI(t *testing.T) {
 	remoteIPWithAllCapabilities := "100.100.100.101"
 	remoteIPWithNoCapabilities := "100.100.100.102"
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t,
 		map[string]*apitype.WhoIsResponse{
@@ -281,7 +281,7 @@ func TestGetTailscaleBrowserSession(t *testing.T) {
 		},
 	}
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t, tailnetNodes, func() *ipnstate.PeerStatus { return selfNode }, nil, nil)
 	defer localapi.Close()
@@ -435,7 +435,7 @@ func TestGetTailscaleBrowserSession(t *testing.T) {
 }
 
 // TestAuthorizeRequest tests the s.authorizeRequest function.
-// 2023-10-18: These tests currently cover tailscale auth mode (not platform auth).
+// 2023-10-18: These tests currently cover scaletail auth mode (not platform auth).
 func TestAuthorizeRequest(t *testing.T) {
 	// Create self and remoteNode owned by same user.
 	// See TestGetTailscaleBrowserSession for tests of
@@ -445,7 +445,7 @@ func TestAuthorizeRequest(t *testing.T) {
 	remoteNode := &apitype.WhoIsResponse{Node: &tailcfg.Node{StableID: "node"}, UserProfile: user}
 	remoteIP := "100.100.100.101"
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t,
 		map[string]*apitype.WhoIsResponse{remoteIP: remoteNode},
@@ -533,7 +533,7 @@ func TestServeAuth(t *testing.T) {
 	self := &ipnstate.PeerStatus{
 		ID:           "self",
 		UserID:       user.ID,
-		TailscaleIPs: []netip.Addr{netip.MustParseAddr("100.1.2.3")},
+		ScaleTailIPs: []netip.Addr{netip.MustParseAddr("100.1.2.3")},
 	}
 	remoteIP := "100.100.100.101"
 	remoteNode := &apitype.WhoIsResponse{
@@ -554,7 +554,7 @@ func TestServeAuth(t *testing.T) {
 
 	testControlURL := &defaultControlURL
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t,
 		map[string]*apitype.WhoIsResponse{remoteIP: remoteNode},
@@ -855,7 +855,7 @@ func TestServeAPIAuthMetricLogging(t *testing.T) {
 	self := &ipnstate.PeerStatus{
 		ID:           "self",
 		UserID:       user.ID,
-		TailscaleIPs: []netip.Addr{netip.MustParseAddr("100.1.2.3")},
+		ScaleTailIPs: []netip.Addr{netip.MustParseAddr("100.1.2.3")},
 	}
 	remoteIP := "100.100.100.101"
 	remoteNode := &apitype.WhoIsResponse{
@@ -911,7 +911,7 @@ func TestServeAPIAuthMetricLogging(t *testing.T) {
 	testControlURL := &defaultControlURL
 	var loggedMetrics []string
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t,
 		map[string]*apitype.WhoIsResponse{remoteIP: remoteNode, localIP: localNode, otherIP: otherNode, localTaggedIP: localTaggedNode, remoteTaggedIP: remoteTaggedNode},
@@ -1129,13 +1129,13 @@ func TestPathPrefix(t *testing.T) {
 
 func TestRequireTailscaleIP(t *testing.T) {
 	self := &ipnstate.PeerStatus{
-		TailscaleIPs: []netip.Addr{
+		ScaleTailIPs: []netip.Addr{
 			netip.MustParseAddr("100.1.2.3"),
 			netip.MustParseAddr("fd7a:115c::1234"),
 		},
 	}
 
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	defer lal.Close()
 	localapi := mockLocalAPI(t, nil, func() *ipnstate.PeerStatus { return self }, nil, nil)
 	defer localapi.Close()
@@ -1689,7 +1689,7 @@ func TestServePostRoutes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var gotPrefs *ipn.MaskedPrefs
 
-			lal := memnet.Listen("local-tailscaled.sock:80")
+			lal := memnet.Listen("local-scaletaild.sock:80")
 			defer lal.Close()
 
 			localapi := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

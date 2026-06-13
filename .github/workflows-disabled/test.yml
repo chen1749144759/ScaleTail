@@ -161,9 +161,9 @@ jobs:
       if: matrix.buildflags == '' # skip on race builder
       working-directory: src
       run: |
-        ./build_dist.sh --extra-small ./cmd/tailscaled
-        ./build_dist.sh --box ./cmd/tailscaled
-        ./build_dist.sh --extra-small --box ./cmd/tailscaled
+        ./build_dist.sh --extra-small ./cmd/scaletaild
+        ./build_dist.sh --box ./cmd/scaletaild
+        ./build_dist.sh --extra-small --box ./cmd/scaletaild
         rm -f tailscaled
       env:
         GOARCH: ${{ matrix.goarch }}
@@ -503,7 +503,7 @@ jobs:
         GOOS: ios
         GOARCH: arm64
 
-  crossmin: # cross-compile for platforms where we only check cmd/tailscale{,d}
+  crossmin: # cross-compile for platforms where we only check cmd/scaletail{,d}
     needs: gomod-cache
     strategy:
       fail-fast: false # don't abort the entire matrix if one element fails
@@ -550,7 +550,7 @@ jobs:
           ${{ runner.os }}-${{ matrix.goos }}-${{ matrix.goarch }}-go-
     - name: build core
       working-directory: src
-      run: ./tool/go build ./cmd/tailscale ./cmd/tailscaled
+      run: ./tool/go build ./cmd/scaletail ./cmd/scaletaild
       env:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.goarch }}
@@ -631,7 +631,7 @@ jobs:
           ${{ runner.os }}-js-wasm-go-
     - name: build tsconnect client
       working-directory: src
-      run: ./tool/go build ./cmd/tsconnect/wasm ./cmd/tailscale/cli
+      run: ./tool/go build ./cmd/tsconnect/wasm ./cmd/scaletail/cli
       env:
         GOOS: js
         GOARCH: wasm

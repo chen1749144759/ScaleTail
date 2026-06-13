@@ -63,10 +63,10 @@ var disableBindConnToInterface atomic.Bool
 // SetDisableBindConnToInterface disables the (normal) behavior of binding
 // connections to the default network interface on Darwin nodes.
 //
-// Unless you intended to disable this for tailscaled on macos (which is likely
+// Unless you intended to disable this for scaletaild on macos (which is likely
 // to break things), you probably wanted to set
 // SetDisableBindConnToInterfaceAppleExt which will disable explicit interface
-// binding only when tailscaled is running inside a network extension process.
+// binding only when scaletaild is running inside a network extension process.
 func SetDisableBindConnToInterface(logf logger.Logf, v bool) {
 	if disableBindConnToInterface.Swap(v) != v {
 		logf("netns: disableBindConnToInterface changed to %v", v)
@@ -77,7 +77,7 @@ var disableBindConnToInterfaceAppleExt atomic.Bool
 
 // SetDisableBindConnToInterfaceAppleExt disables the (normal) behavior of binding
 // connections to the default network interface but only on Apple clients where
-// tailscaled is running inside a network extension.
+// scaletaild is running inside a network extension.
 func SetDisableBindConnToInterfaceAppleExt(logf logger.Logf, v bool) {
 	if runtime.GOOS == "darwin" && disableBindConnToInterfaceAppleExt.Swap(v) != v {
 		logf("netns: disableBindConnToInterfaceAppleExt changed to %v", v)

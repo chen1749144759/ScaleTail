@@ -73,7 +73,7 @@ type endpoint struct {
 	publicKey    key.NodePublic // peer public key (for WireGuard + DERP)
 	publicKeyHex string         // cached output of publicKey.UntypedHexString
 	fakeWGAddr   netip.AddrPort // the UDP address we tell wireguard-go we're using
-	nodeAddr     netip.Addr     // the node's first tailscale address; used for logging & wireguard rate-limiting (Issue 6686)
+	nodeAddr     netip.Addr     // the node's first scaletail address; used for logging & wireguard rate-limiting (Issue 6686)
 
 	disco atomic.Pointer[endpointDisco] // if the peer supports disco, the key and short string
 
@@ -969,7 +969,7 @@ func (p *pingResultAndCallback) reply() bool {
 	return p != nil && p.taken.CompareAndSwap(false, true)
 }
 
-// discoPing starts a disco-level ping for the "tailscale ping" command (or other
+// discoPing starts a disco-level ping for the "scaletail ping" command (or other
 // callers, such as c2n). res is value to call cb with, already partially
 // filled. cb must be called at most once. Once called, ownership of res passes to cb.
 func (de *endpoint) discoPing(res *ipnstate.PingResult, size int, cb func(*ipnstate.PingResult)) {
@@ -1002,7 +1002,7 @@ func (de *endpoint) discoPing(res *ipnstate.PingResult, size int, cb func(*ipnst
 		de.startDiscoPingLocked(udpAddr, now, pingCLI, size, resCB)
 		if !udpAddr.vni.IsSet() {
 			// If the path is direct we do not want to fallthrough to pinging
-			// all candidate direct paths, otherwise "tailscale ping" results to
+			// all candidate direct paths, otherwise "scaletail ping" results to
 			// a node on the local network can look like they're bouncing
 			// between, say 10.0.0.0/8 and the peer's IPv6 address, both 1ms
 			// away, and it's random who replies first. cb() is called with the
@@ -1268,7 +1268,7 @@ const (
 	// peer was still there.
 	pingHeartbeat
 
-	// pingCLI means that the user is running "tailscale ping"
+	// pingCLI means that the user is running "scaletail ping"
 	// from the CLI. These types of pings can go over DERP.
 	pingCLI
 
@@ -1280,7 +1280,7 @@ const (
 
 // startDiscoPingLocked sends a disco ping to ep in a separate goroutine. resCB,
 // if non-nil, means that a caller external to the magicsock package internals
-// is interested in the result (such as a CLI "tailscale ping" or a c2n ping
+// is interested in the result (such as a CLI "scaletail ping" or a c2n ping
 // request, etc)
 func (de *endpoint) startDiscoPingLocked(ep epAddr, now mono.Time, purpose discoPingPurpose, size int, resCB *pingResultAndCallback) {
 	if runtime.GOOS == "js" {
@@ -1989,12 +1989,12 @@ func (de *endpoint) handleCallMeMaybe(m *disco.CallMeMaybe) {
 	de.sendDiscoPingsLocked(monoNow, false)
 
 	// This hook is required to trigger peer relay path discovery around
-	// disco "tailscale ping" initiated by de. We may be configured with peer
+	// disco "scaletail ping" initiated by de. We may be configured with peer
 	// relay servers that differ from de.
 	//
 	// The only other peer relay path discovery hook is in [endpoint.heartbeat],
 	// which is kicked off around outbound WireGuard packet flow, or if you are
-	// the "tailscale ping" initiator. Disco "tailscale ping" does not propagate
+	// the "scaletail ping" initiator. Disco "scaletail ping" does not propagate
 	// into wireguard-go.
 	//
 	// We choose not to hook this around disco ping reception since peer relay

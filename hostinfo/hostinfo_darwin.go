@@ -22,7 +22,7 @@ var (
 )
 
 func packageTypeDarwin() string {
-	// Using tailscaled or IPNExtension?
+	// Using scaletaild or IPNExtension?
 	exe, _ := os.Executable()
 	return filepath.Base(exe)
 }

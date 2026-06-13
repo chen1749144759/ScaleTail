@@ -17,7 +17,7 @@ type Status struct {
 	// Err, if non-nil, is an error that occurred while logging in.
 	//
 	// If it's of type UserVisibleError then it's meant to be shown to users in
-	// their Tailscale client. Otherwise it's just logged to tailscaled's logs.
+	// their Tailscale client. Otherwise it's just logged to scaletaild's logs.
 	Err error
 
 	// URL, if non-empty, is the interactive URL to visit to finish logging in.

@@ -646,7 +646,7 @@ func echoRespondToAll(p *packet.Parsed, t *tstun.Wrapper, gro *gro.GRO) (filter.
 
 // handleLocalPackets inspects packets coming from the local network
 // stack, and intercepts any packets that should be handled by
-// tailscaled directly. Other packets are allowed to proceed into the
+// scaletaild directly. Other packets are allowed to proceed into the
 // main ACL filter.
 func (e *userspaceEngine) handleLocalPackets(p *packet.Parsed, t *tstun.Wrapper) filter.Response {
 	if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
@@ -1247,7 +1247,7 @@ func (e *userspaceEngine) linkChange(delta *netmon.ChangeDelta) {
 	// via [dns.Manager.RecompileDNSConfig] when it detects any change in the
 	// nameservers.
 	//
-	// TODO: On Android, Darwin-tailscaled, and openbsd, why do we need this?
+	// TODO: On Android, Darwin-scaletaild, and openbsd, why do we need this?
 	if delta.RebindLikelyRequired && up {
 		switch runtime.GOOS {
 		case "linux", "android", "ios", "darwin", "openbsd":

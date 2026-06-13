@@ -1,4 +1,4 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package clientupdate enables the client update feature.
@@ -87,7 +87,7 @@ func (e *extension) Init(h ipnext.Host) error {
 	h.Hooks().BackendStateChange.Add(e.onBackendStateChange)
 
 	// TODO(nickkhyl): remove this after the profileManager refactoring.
-	// See tailscale/tailscale#15974.
+	// See scaletail/scaletail#15974.
 	// This same workaround appears in feature/portlist/portlist.go.
 	profile, prefs := h.Profiles().CurrentProfileState()
 	e.onChangeProfile(profile, prefs, false)
@@ -169,11 +169,11 @@ func (e *extension) DoSelfUpdate() {
 	if err != nil {
 		e.pushSelfUpdateProgress(ipnstate.NewUpdateProgress(ipnstate.UpdateFailed, err.Error()))
 	} else {
-		e.pushSelfUpdateProgress(ipnstate.NewUpdateProgress(ipnstate.UpdateFinished, "tailscaled did not restart; please restart Tailscale manually."))
+		e.pushSelfUpdateProgress(ipnstate.NewUpdateProgress(ipnstate.UpdateFinished, "scaletaild did not restart; please restart ScaleTail manually."))
 	}
 }
 
-// serveUpdateInstall sends a request to the LocalBackend to start a Tailscale
+// serveUpdateInstall sends a request to the LocalBackend to start a ScaleTail
 // self-update. A successful response does not indicate whether the update
 // succeeded, only that the request was accepted. Clients should use
 // serveUpdateProgress after pinging this endpoint to check how the update is
@@ -196,7 +196,7 @@ func serveUpdateInstall(h *localapi.Handler, w http.ResponseWriter, r *http.Requ
 	go ext.DoSelfUpdate()
 }
 
-// serveUpdateProgress returns the status of an in-progress Tailscale self-update.
+// serveUpdateProgress returns the status of an in-progress ScaleTail self-update.
 // This is provided as a slice of ipnstate.UpdateProgress structs with various
 // log messages in order from oldest to newest. If an update is not in progress,
 // the returned slice will be empty.
@@ -320,11 +320,11 @@ func (e *extension) trySetC2NUpdateStarted() bool {
 	return true
 }
 
-// findCmdTailscale looks for the cmd/tailscale that corresponds to the
-// currently running cmd/tailscaled. It's up to the caller to verify that the
+// findCmdScaleTail looks for the cmd/scaletail that corresponds to the
+// currently running cmd/scaletaild. It's up to the caller to verify that the
 // two match, but this function does its best to find the right one. Notably, it
 // doesn't use $PATH for security reasons.
-func findCmdTailscale() (string, error) {
+func findCmdScaleTail() (string, error) {
 	self, err := os.Executable()
 	if err != nil {
 		return "", err
@@ -332,30 +332,30 @@ func findCmdTailscale() (string, error) {
 	var ts string
 	switch runtime.GOOS {
 	case "linux":
-		if self == "/usr/sbin/tailscaled" || self == "/usr/bin/tailscaled" {
-			ts = "/usr/bin/tailscale"
+		if self == "/usr/sbin/scaletaild" || self == "/usr/bin/scaletaild" {
+			ts = "/usr/bin/scaletail"
 		}
-		if self == "/usr/local/sbin/tailscaled" || self == "/usr/local/bin/tailscaled" {
-			ts = "/usr/local/bin/tailscale"
+		if self == "/usr/local/sbin/scaletaild" || self == "/usr/local/bin/scaletaild" {
+			ts = "/usr/local/bin/scaletail"
 		}
 		switch distro.Get() {
 		case distro.QNAP:
 			// The volume under /share/ where qpkg are installed is not
 			// predictable. But the rest of the path is.
-			ok, err := filepath.Match("/share/*/.qpkg/Tailscale/tailscaled", self)
+			ok, err := filepath.Match("/share/*/.qpkg/ScaleTail/scaletaild", self)
 			if err == nil && ok {
-				ts = filepath.Join(filepath.Dir(self), "tailscale")
+				ts = filepath.Join(filepath.Dir(self), "scaletail")
 			}
 		case distro.Unraid:
-			if self == "/usr/local/emhttp/plugins/tailscale/bin/tailscaled" {
-				ts = "/usr/local/emhttp/plugins/tailscale/bin/tailscale"
+			if self == "/usr/local/emhttp/plugins/scaletail/bin/scaletaild" {
+				ts = "/usr/local/emhttp/plugins/scaletail/bin/scaletail"
 			}
 		}
 	case "windows":
-		ts = filepath.Join(filepath.Dir(self), "tailscale.exe")
+		ts = filepath.Join(filepath.Dir(self), "scaletail.exe")
 	case "freebsd", "openbsd":
-		if self == "/usr/local/bin/tailscaled" {
-			ts = "/usr/local/bin/tailscale"
+		if self == "/usr/local/bin/scaletaild" {
+			ts = "/usr/local/bin/scaletail"
 		}
 	default:
 		return "", fmt.Errorf("unsupported OS %v", runtime.GOOS)
@@ -363,10 +363,10 @@ func findCmdTailscale() (string, error) {
 	if ts != "" && regularFileExists(ts) {
 		return ts, nil
 	}
-	return "", errors.New("tailscale executable not found in expected place")
+	return "", errors.New("scaletail executable not found in expected place")
 }
 
-func tailscaleUpdateCmd(cmdTS string) *exec.Cmd {
+func scaletailUpdateCmd(cmdTS string) *exec.Cmd {
 	defaultCmd := exec.Command(cmdTS, "update", "--yes")
 	if runtime.GOOS != "linux" {
 		return defaultCmd
@@ -376,8 +376,8 @@ func tailscaleUpdateCmd(cmdTS string) *exec.Cmd {
 	}
 
 	// When systemd-run is available, use it to run the update command. This
-	// creates a new temporary unit separate from the tailscaled unit. When
-	// tailscaled is restarted during the update, systemd won't kill this
+	// creates a new temporary unit separate from the scaletaild unit. When
+	// scaletaild is restarted during the update, systemd won't kill this
 	// temporary update unit, which could cause unexpected breakage.
 	//
 	// We want to use a few optional flags:
@@ -434,31 +434,31 @@ func (e *extension) startAutoUpdate(logPrefix string) (retErr error) {
 		}
 	}()
 
-	cmdTS, err := findCmdTailscale()
+	cmdTS, err := findCmdScaleTail()
 	if err != nil {
-		return fmt.Errorf("failed to find cmd/tailscale binary: %w", err)
+		return fmt.Errorf("failed to find cmd/scaletail binary: %w", err)
 	}
 	var ver struct {
 		Long string `json:"long"`
 	}
 	out, err := exec.Command(cmdTS, "version", "--json").Output()
 	if err != nil {
-		return fmt.Errorf("failed to find cmd/tailscale binary: %w", err)
+		return fmt.Errorf("failed to find cmd/scaletail binary: %w", err)
 	}
 	if err := json.Unmarshal(out, &ver); err != nil {
-		return fmt.Errorf("invalid JSON from cmd/tailscale version --json: %w", err)
+		return fmt.Errorf("invalid JSON from cmd/scaletail version --json: %w", err)
 	}
 	if ver.Long != version.Long() {
-		return fmt.Errorf("cmd/tailscale version %q does not match tailscaled version %q", ver.Long, version.Long())
+		return fmt.Errorf("cmd/scaletail version %q does not match scaletaild version %q", ver.Long, version.Long())
 	}
 
-	cmd := tailscaleUpdateCmd(cmdTS)
+	cmd := scaletailUpdateCmd(cmdTS)
 	buf := new(bytes.Buffer)
 	cmd.Stdout = buf
 	cmd.Stderr = buf
 	e.logf("%s: running %q", logPrefix, strings.Join(cmd.Args, " "))
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start cmd/tailscale update: %w", err)
+		return fmt.Errorf("failed to start cmd/scaletail update: %w", err)
 	}
 
 	go func() {

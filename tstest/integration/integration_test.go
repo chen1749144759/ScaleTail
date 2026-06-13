@@ -69,7 +69,7 @@ func TestMain(m *testing.M) {
 	os.Exit(0)
 }
 
-// Tests that tailscaled starts up in TUN mode, and also without data races:
+// Tests that scaletaild starts up in TUN mode, and also without data races:
 // https://github.com/tailscale/tailscale/issues/7894
 func TestTUNMode(t *testing.T) {
 	tstest.Shard(t)
@@ -159,8 +159,8 @@ func TestControlKnobs(t *testing.T) {
 	n1.AwaitRunning()
 
 	cmd := n1.Tailscale("debug", "control-knobs")
-	cmd.Stdout = nil // in case --verbose-tailscale was set
-	cmd.Stderr = nil // in case --verbose-tailscale was set
+	cmd.Stdout = nil // in case --verbose-scaletail was set
+	cmd.Stderr = nil // in case --verbose-scaletail was set
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatal(err)
@@ -206,7 +206,7 @@ func TestCollectPanic(t *testing.T) {
 	// Wait for the binary to be executable, working around a
 	// mysterious ETXTBSY on GitHub Actions.
 	// See https://github.com/tailscale/tailscale/issues/15868.
-	if err := n.awaitTailscaledRunnable(); err != nil {
+	if err := n.awaitScaleTaildRunnable(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -282,7 +282,7 @@ func TestStateSavedOnStart(t *testing.T) {
 
 	// Bring it down, to prevent an EditPrefs call in the
 	// subsequent "up", as we want to test the bug when
-	// cmd/tailscale implements "up" via LocalBackend.Start.
+	// cmd/scaletail implements "up" via LocalBackend.Start.
 	n1.MustDown()
 
 	// And change the hostname to something:
@@ -549,7 +549,7 @@ func isNonZeroExitCode(err error) bool {
 	return exitError.ExitCode() != 0
 }
 
-// If we interrupt `tailscale up` and then run it again, we should only
+// If we interrupt `scaletail up` and then run it again, we should only
 // print a single auth URL.
 func TestOneNodeUpInterruptedAuth(t *testing.T) {
 	tstest.Shard(t)
@@ -577,7 +577,7 @@ func TestOneNodeUpInterruptedAuth(t *testing.T) {
 	cmd1 := n.Tailscale(cmdArgs...)
 
 	// This handler watches for auth URLs in stdout, then cancels the
-	// running `tailscale up` CLI command.
+	// running `scaletail up` CLI command.
 	cmd1.Stdout = &authURLParserWriter{t: t, authURLFn: func(urlStr string) error {
 		t.Logf("saw auth URL %q", urlStr)
 		cmd1.Process.Kill()
@@ -597,7 +597,7 @@ func TestOneNodeUpInterruptedAuth(t *testing.T) {
 	//
 	// In #17361, there was a bug where we'd print two auth URLs, and you could
 	// click either auth URL and log in to control, but logging in through the
-	// first URL would leave `tailscale up` hanging.
+	// first URL would leave `scaletail up` hanging.
 	//
 	// Using `authURLHandler` ensures we only print the new, correct auth URL.
 	//
@@ -605,7 +605,7 @@ func TestOneNodeUpInterruptedAuth(t *testing.T) {
 	// to log in with one auth URL.
 	//
 	// If we only print the stale auth URL, the test will timeout because
-	// `tailscale up` will never return.
+	// `scaletail up` will never return.
 	t.Logf("Running command for the second time: %s", strings.Join(cmdArgs, " "))
 
 	var authURLCount atomic.Int32
@@ -627,9 +627,9 @@ func TestOneNodeUpInterruptedAuth(t *testing.T) {
 	n.AwaitRunning()
 }
 
-// If we interrupt `tailscale up` and login successfully, but don't
+// If we interrupt `scaletail up` and login successfully, but don't
 // complete the device approval, we should see the device approval URL
-// when we run `tailscale up` a second time.
+// when we run `scaletail up` a second time.
 func TestOneNodeUpInterruptedDeviceApproval(t *testing.T) {
 	tstest.Shard(t)
 	tstest.Parallel(t)
@@ -681,7 +681,7 @@ func TestOneNodeUpInterruptedDeviceApproval(t *testing.T) {
 
 	// The second time we run the command, we expect not to get an auth URL
 	// and go straight to the device approval URL. We don't need to pass the
-	// login server, because `tailscale up` should remember our control URL.
+	// login server, because `scaletail up` should remember our control URL.
 	cmd2Args := []string{"up"}
 	t.Logf("Running command: %s", strings.Join(cmd2Args, " "))
 
@@ -767,12 +767,12 @@ func TestTwoNodes(t *testing.T) {
 
 		rxNoDates := regexp.MustCompile(`(?m)^\d{4}.\d{2}.\d{2}.\d{2}:\d{2}:\d{2}`)
 		cleanLog := func(n *TestNode) []byte {
-			b := n.tailscaledParser.allBuf.Bytes()
+			b := n.scaletaildParser.allBuf.Bytes()
 			b = rxNoDates.ReplaceAll(b, nil)
 			return b
 		}
 
-		t.Logf("writing tailscaled logs to n1.log and n2.log")
+		t.Logf("writing scaletaild logs to n1.log and n2.log")
 		os.WriteFile("n1.log", cleanLog(n1), 0666)
 		os.WriteFile("n2.log", cleanLog(n2), 0666)
 	})
@@ -808,7 +808,7 @@ func TestTwoNodes(t *testing.T) {
 			return errors.New("peer is self")
 		}
 
-		if len(st.TailscaleIPs) == 0 {
+		if len(st.ScaleTailIPs) == 0 {
 			return errors.New("no Tailscale IPs")
 		}
 
@@ -1048,7 +1048,7 @@ func TestC2NPingRequest(t *testing.T) {
 	t.Error("all ping attempts failed")
 }
 
-// Issue 2434: when "down" (WantRunning false), tailscaled shouldn't
+// Issue 2434: when "down" (WantRunning false), scaletaild shouldn't
 // be connected to control.
 func TestNoControlConnWhenDown(t *testing.T) {
 	tstest.Shard(t)
@@ -1087,7 +1087,7 @@ func TestNoControlConnWhenDown(t *testing.T) {
 	d2.MustCleanShutdown(t)
 }
 
-// Issue 2137: make sure Windows tailscaled works with the CLI alone,
+// Issue 2137: make sure Windows scaletaild works with the CLI alone,
 // without the GUI to kick off a Start.
 func TestOneNodeUpWindowsStyle(t *testing.T) {
 	tstest.Shard(t)
@@ -1323,13 +1323,13 @@ func TestNATPing(t *testing.T) {
 
 				s1 := n1.MustStatus()
 				n2AsN1Peer := s1.Peer[k2]
-				if got := n2AsN1Peer.TailscaleIPs[ipIdx]; got != tc.n1SeesN2IP {
+				if got := n2AsN1Peer.ScaleTailIPs[ipIdx]; got != tc.n1SeesN2IP {
 					t.Fatalf("n1 sees n2 as %v; want %v", got, tc.n1SeesN2IP)
 				}
 
 				s2 := n2.MustStatus()
 				n1AsN2Peer := s2.Peer[k1]
-				if got := n1AsN2Peer.TailscaleIPs[ipIdx]; got != tc.n2SeesN1IP {
+				if got := n1AsN2Peer.ScaleTailIPs[ipIdx]; got != tc.n2SeesN1IP {
 					t.Fatalf("n2 sees n1 as %v; want %v", got, tc.n2SeesN1IP)
 				}
 
@@ -1906,7 +1906,7 @@ func TestEncryptStateMigration(t *testing.T) {
 		t.Skip("TPM not available")
 	}
 	if runtime.GOOS != "linux" && runtime.GOOS != "windows" {
-		t.Skip("--encrypt-state for tailscaled state not supported on this platform")
+		t.Skip("--encrypt-state for scaletaild state not supported on this platform")
 	}
 	tstest.Shard(t)
 	tstest.Parallel(t)
@@ -1959,8 +1959,8 @@ func TestEncryptStateMigration(t *testing.T) {
 }
 
 // TestPeerRelayPing creates three nodes with one acting as a peer relay.
-// The test succeeds when "tailscale ping" flows through the peer
-// relay between all 3 nodes, and "tailscale debug peer-relay-sessions" returns
+// The test succeeds when "scaletail ping" flows through the peer
+// relay between all 3 nodes, and "scaletail debug peer-relay-sessions" returns
 // expected values.
 func TestPeerRelayPing(t *testing.T) {
 	flakytest.Mark(t, "https://github.com/tailscale/tailscale/issues/17251")
@@ -2244,7 +2244,7 @@ func TestC2NDebugNetmap(t *testing.T) {
 
 func TestTailnetLock(t *testing.T) {
 
-	// If you run `tailscale lock log` on a node where Tailnet Lock isn't
+	// If you run `scaletail lock log` on a node where Tailnet Lock isn't
 	// enabled, you get an error explaining that.
 	t.Run("log-when-not-enabled", func(t *testing.T) {
 		tstest.Shard(t)
@@ -2354,7 +2354,7 @@ func TestTailnetLock(t *testing.T) {
 		}
 	})
 
-	// If you run `tailscale lock (add|remove|revoke-keys)` but don't pass any keys,
+	// If you run `scaletail lock (add|remove|revoke-keys)` but don't pass any keys,
 	// we print a helpful error message.
 	//
 	// Regression test for tailscale/tailscale#19130

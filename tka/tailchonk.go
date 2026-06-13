@@ -391,7 +391,7 @@ func (c *FS) CommitTime(h AUMHash) (time.Time, error) {
 
 	// If we got this far, the AUM exists but CreatedUnix is not
 	// set, presumably because this AUM was committed using a version
-	// of tailscaled that pre-dates the introduction of CreatedUnix.
+	// of scaletaild that pre-dates the introduction of CreatedUnix.
 	// As such, we use the file modification time as a suitable analog.
 	dir, base := c.aumDir(h)
 	s, err := os.Stat(filepath.Join(dir, base))

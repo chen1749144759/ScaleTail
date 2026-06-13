@@ -409,8 +409,8 @@ func TestSubnetRouterAndExitNode(t *testing.T) {
 // Ubuntu node via Taildrop, and the receiver gets the same content.
 //
 // Topology: two Ubuntu nodes, each behind its own EasyNAT, both joined to the
-// tailnet. The sender runs `tailscale file cp` to push to the receiver's
-// Tailscale IP; the receiver then runs `tailscale file get --wait` to fetch
+// tailnet. The sender runs `scaletail file cp` to push to the receiver's
+// Tailscale IP; the receiver then runs `scaletail file get --wait` to fetch
 // it.
 func TestTaildrop(t *testing.T) {
 	env := vmtest.New(t, vmtest.SameTailnetUser())
@@ -561,8 +561,8 @@ func TestExitNode(t *testing.T) {
 //
 //	rotate (LocalAPI rotate-disco-key) → ping B → A
 //	rotate (LocalAPI rotate-disco-key) → ping A → B
-//	restart  (SIGKILL tailscaled)      → ping B → A
-//	restart  (SIGKILL tailscaled)      → ping A → B
+//	restart  (SIGKILL scaletaild)      → ping B → A
+//	restart  (SIGKILL scaletaild)      → ping A → B
 //
 // Plus an initial A→B TSMP ping with a generous 30s budget to bring up the
 // WireGuard tunnel before the rotations begin (so the post-rotation pings
@@ -579,8 +579,8 @@ func TestExitNode(t *testing.T) {
 //     only touches local disco state; without the WantRunning bounce, B
 //     keeps using stale per-peer session keys against A and A drops
 //     everything until B's WG rekey timer eventually fires).
-//   - SIGKILL of tailscaled (via TTA's /kill-tailscaled): the gokrazy
-//     supervisor respawns tailscaled, fully resetting B's magicsock and
+//   - SIGKILL of scaletaild (via TTA's /kill-scaletaild): the gokrazy
+//     supervisor respawns scaletaild, fully resetting B's magicsock and
 //     wgengine state in addition to rotating the disco key.
 //
 // Each post-rotation ping currently gets a 15-second budget. On a
@@ -643,8 +643,8 @@ func TestDiscoKeyChange(t *testing.T) {
 	phases := []*phase{
 		{name: "rotate (LocalAPI), b → a", pingFrom: b, pingTo: a, rotate: func() { env.RotateDiscoKey(b) }},
 		{name: "rotate (LocalAPI), a → b", pingFrom: a, pingTo: b, rotate: func() { env.RotateDiscoKey(b) }},
-		{name: "restart, b → a", pingFrom: b, pingTo: a, rotate: func() { env.RestartTailscaled(b) }},
-		{name: "restart, a → b", pingFrom: a, pingTo: b, rotate: func() { env.RestartTailscaled(b) }},
+		{name: "restart, b → a", pingFrom: b, pingTo: a, rotate: func() { env.RestartScaleTaild(b) }},
+		{name: "restart, a → b", pingFrom: a, pingTo: b, rotate: func() { env.RestartScaleTaild(b) }},
 	}
 
 	pingABStep := env.AddStep("Ping a → b TSMP (establish tunnel)")
@@ -931,7 +931,7 @@ func TestCachedNetmapAfterRestart(t *testing.T) {
 
 	connectStep := env.AddStep("Establish initial TSMP tunnel")
 	cutControlStep := env.AddStep("Cut control server access")
-	restartStep := env.AddStep("Restart tailscaled on both nodes")
+	restartStep := env.AddStep("Restart scaletaild on both nodes")
 	netmapCheckStep := env.AddStep("Check netmap loaded is cached")
 	pingStep := env.AddStep("Ping a → b TSMP (cached netmap, no control)")
 
@@ -953,8 +953,8 @@ func TestCachedNetmapAfterRestart(t *testing.T) {
 	cutControlStep.End(nil)
 
 	restartStep.Begin()
-	env.RestartTailscaled(a)
-	env.RestartTailscaled(b)
+	env.RestartScaleTaild(a)
+	env.RestartScaleTaild(b)
 	restartStep.End(nil)
 
 	netmapCheckStep.Begin()

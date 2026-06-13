@@ -63,7 +63,7 @@ var defaultClient Client
 // and not changed thereafter.
 type Client struct {
 	// Dial optionally specifies an alternate func that connects to the local
-	// machine's tailscaled or equivalent. If nil, a default is used.
+	// machine's scaletaild or equivalent. If nil, a default is used.
 	Dial func(ctx context.Context, network, addr string) (net.Conn, error)
 
 	// Transport optionally specifies an alternate [http.RoundTripper]
@@ -76,7 +76,7 @@ type Client struct {
 	// If empty, a platform-specific default is used.
 	Socket string
 
-	// UseSocketOnly, if true, tries to only connect to tailscaled via the
+	// UseSocketOnly, if true, tries to only connect to scaletaild via the
 	// Unix socket and not via fallback mechanisms as done on macOS when
 	// connecting to the GUI client variants.
 	UseSocketOnly bool
@@ -99,7 +99,7 @@ func (lc *Client) socket() string {
 	if lc.Socket != "" {
 		return lc.Socket
 	}
-	return paths.DefaultTailscaledSocket()
+	return paths.DefaultScaleTaildSocket()
 }
 
 func (lc *Client) dialer() func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -110,7 +110,7 @@ func (lc *Client) dialer() func(ctx context.Context, network, addr string) (net.
 }
 
 func (lc *Client) defaultDialer(ctx context.Context, network, addr string) (net.Conn, error) {
-	if addr != "local-tailscaled.sock:80" {
+	if addr != "local-scaletaild.sock:80" {
 		return nil, fmt.Errorf("unexpected URL address %q", addr)
 	}
 	if !lc.UseSocketOnly {
@@ -128,9 +128,9 @@ func (lc *Client) defaultDialer(ctx context.Context, network, addr string) (net.
 
 // DoLocalRequest makes an HTTP request to the local machine's Tailscale daemon.
 //
-// URLs are of the form http://local-tailscaled.sock/localapi/v0/whois?ip=1.2.3.4.
+// URLs are of the form http://local-scaletaild.sock/localapi/v0/whois?ip=1.2.3.4.
 //
-// The hostname must be "local-tailscaled.sock", even though it
+// The hostname must be "local-scaletaild.sock", even though it
 // doesn't actually do any DNS lookup. The actual means of connecting to and
 // authenticating to the local Tailscale daemon vary by platform.
 //
@@ -172,7 +172,7 @@ func (lc *Client) doLocalRequestNiceError(req *http.Request) (*http.Response, er
 		if oe, ok := ue.Err.(*net.OpError); ok && oe.Op == "dial" {
 			path := req.URL.Path
 			pathPrefix, _, _ := strings.Cut(path, "?")
-			return nil, fmt.Errorf("Failed to connect to local Tailscale daemon for %s; %s Error: %w", pathPrefix, tailscaledConnectHint(), oe)
+			return nil, fmt.Errorf("Failed to connect to local Tailscale daemon for %s; %s Error: %w", pathPrefix, scaletaildConnectHint(), oe)
 		}
 	}
 	return nil, err
@@ -313,7 +313,7 @@ func decodeJSON[T any](b []byte) (ret T, err error) {
 //
 // If not found, the error is [ErrPeerNotFound].
 //
-// For connections proxied by tailscaled, this looks up the owner of the given
+// For connections proxied by scaletaild, this looks up the owner of the given
 // address as TCP first, falling back to UDP; if you want to only check a
 // specific address family, use WhoIsProto.
 func (lc *Client) WhoIs(ctx context.Context, remoteAddr string) (*apitype.WhoIsResponse, error) {
@@ -950,7 +950,7 @@ func (lc *Client) Logout(ctx context.Context) error {
 // DialTCP connects to the host's port via Tailscale.
 //
 // The host may be a base DNS name (resolved from the netmap inside
-// tailscaled), a FQDN, or an IP address.
+// scaletaild), a FQDN, or an IP address.
 //
 // The ctx is only used for the duration of the call, not the lifetime of the [net.Conn].
 func (lc *Client) DialTCP(ctx context.Context, host string, port uint16) (net.Conn, error) {
@@ -959,7 +959,7 @@ func (lc *Client) DialTCP(ctx context.Context, host string, port uint16) (net.Co
 
 // UserDial connects to the host's port via Tailscale for the given network.
 //
-// The host may be a base DNS name (resolved from the netmap inside tailscaled),
+// The host may be a base DNS name (resolved from the netmap inside scaletaild),
 // a FQDN, or an IP address.
 //
 // The ctx is only used for the duration of the call, not the lifetime of the
@@ -1026,7 +1026,7 @@ func (lc *Client) UserDial(ctx context.Context, network, host string, port uint1
 	return netutil.NewAltReadWriteCloserConn(rwc, switchedConn), nil
 }
 
-// CurrentDERPMap returns the current DERPMap that is being used by the local tailscaled.
+// CurrentDERPMap returns the current DERPMap that is being used by the local scaletaild.
 // It is intended to be used with netcheck to see availability of DERPs.
 func (lc *Client) CurrentDERPMap(ctx context.Context) (*tailcfg.DERPMap, error) {
 	var derpMap tailcfg.DERPMap
@@ -1040,7 +1040,7 @@ func (lc *Client) CurrentDERPMap(ctx context.Context) (*tailcfg.DERPMap, error) 
 	return &derpMap, nil
 }
 
-// CertDomains returns the list of domains for which the local tailscaled can
+// CertDomains returns the list of domains for which the local scaletaild can
 // fetch TLS certificates, equivalent to the DNS.CertDomains field of the
 // current netmap. The returned list is sorted in ascending order, and is
 // empty if no netmap has been received yet.
@@ -1122,16 +1122,16 @@ func (lc *Client) DisconnectControl(ctx context.Context) error {
 	return nil
 }
 
-// tailscaledConnectHint gives a little thing about why tailscaled (or
+// scaletaildConnectHint gives a little thing about why scaletaild (or
 // platform equivalent) is not answering localapi connections.
 //
 // It ends in a punctuation. See caller.
-func tailscaledConnectHint() string {
+func scaletaildConnectHint() string {
 	if runtime.GOOS != "linux" {
 		// TODO(bradfitz): flesh this out
 		return "not running?"
 	}
-	out, err := exec.Command("systemctl", "show", "tailscaled.service", "--no-page", "--property", "LoadState,ActiveState,SubState").Output()
+	out, err := exec.Command("systemctl", "show", "scaletaild.service", "--no-page", "--property", "LoadState,ActiveState,SubState").Output()
 	if err != nil {
 		return "not running?"
 	}
@@ -1147,7 +1147,7 @@ func tailscaledConnectHint() string {
 	}
 	if st["LoadState"] == "loaded" &&
 		(st["SubState"] != "running" || st["ActiveState"] != "active") {
-		return "systemd tailscaled.service not running."
+		return "systemd scaletaild.service not running."
 	}
 	return "not running?"
 }
@@ -1415,7 +1415,7 @@ func (lc *Client) DriveShareList(ctx context.Context) ([]*drive.Share, error) {
 	return shares, err
 }
 
-// IPNBusWatcher is an active subscription (watch) of the local tailscaled IPN bus.
+// IPNBusWatcher is an active subscription (watch) of the local scaletaild IPN bus.
 // It's returned by [Client.WatchIPNBus].
 //
 // It must be closed when done.
@@ -1462,7 +1462,7 @@ func (lc *Client) SuggestExitNode(ctx context.Context) (apitype.ExitNodeSuggesti
 }
 
 // CheckSOMarkInUse reports whether the socket mark option is in use. This will only
-// be true if tailscale is running on Linux and tailscaled uses SO_MARK.
+// be true if scaletail is running on Linux and scaletaild uses SO_MARK.
 func (lc *Client) CheckSOMarkInUse(ctx context.Context) (bool, error) {
 	body, err := lc.get200(ctx, "/localapi/v0/check-so-mark-in-use")
 	if err != nil {
@@ -1478,8 +1478,8 @@ func (lc *Client) CheckSOMarkInUse(ctx context.Context) (bool, error) {
 	return res.UseSOMark, nil
 }
 
-// ShutdownTailscaled requests a graceful shutdown of tailscaled.
-func (lc *Client) ShutdownTailscaled(ctx context.Context) error {
+// ShutdownScaleTaild requests a graceful shutdown of scaletaild.
+func (lc *Client) ShutdownScaleTaild(ctx context.Context) error {
 	_, err := lc.send(ctx, "POST", "/localapi/v0/shutdown", 200, nil)
 	return err
 }

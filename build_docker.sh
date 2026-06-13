@@ -11,11 +11,11 @@
 #
 # To build a Tailscale image and push to the local docker registry:
 
-#   $ REPO=local/tailscale TAGS=v0.0.1 PLATFORM=local  make publishdevimage
+#   $ REPO=local/scaletail TAGS=v0.0.1 PLATFORM=local  make publishdevimage
 #
 # To build a Tailscale image and push to a remote docker registry:
 #
-#   $ REPO=<your-registry>/<your-repo>/tailscale TAGS=v0.0.1  make publishdevimage
+#   $ REPO=<your-registry>/<your-repo>/scaletail TAGS=v0.0.1  make publishdevimage
 
 set -eu
 
@@ -50,8 +50,8 @@ case "$TARGET" in
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
       --gopaths="\
-        tailscale.com/cmd/tailscale:/usr/local/bin/tailscale, \
-        tailscale.com/cmd/tailscaled:/usr/local/bin/tailscaled, \
+        tailscale.com/cmd/scaletail:/usr/local/bin/tailscale, \
+        tailscale.com/cmd/scaletaild:/usr/local/bin/scaletaild, \
         tailscale.com/cmd/containerboot:/usr/local/bin/containerboot" \
       --ldflags="\
         -X tailscale.com/version.longStamp=${VERSION_LONG} \

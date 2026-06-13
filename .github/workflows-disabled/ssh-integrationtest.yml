@@ -33,7 +33,7 @@ jobs:
       - name: Build test binaries
         run: |
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go test -tags integrationtest -c ./ssh/tailssh -o ssh/tailssh/testcontainers/tailssh.test
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go build -o ssh/tailssh/testcontainers/tailscaled ./cmd/tailscaled
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go build -o ssh/tailssh/testcontainers/tailscaled ./cmd/scaletaild
       - name: Run SSH integration tests (${{ matrix.base }})
         run: |
           docker build --build-arg="BASE=${{ matrix.base }}" -t "${{ matrix.tag }}" ssh/tailssh/testcontainers

@@ -24,7 +24,7 @@ var ProxyClassKind = "ProxyClass"
 
 // ProxyClass describes a set of configuration parameters that can be applied to
 // proxy resources created by the Tailscale Kubernetes operator.
-// To apply a given ProxyClass to resources created for a tailscale Ingress or
+// To apply a given ProxyClass to resources created for a scaletail Ingress or
 // Service, use tailscale.com/proxy-class=<proxyclass-name> label. To apply a
 // given ProxyClass to resources created for a Connector, use
 // connector.spec.proxyClass field.
@@ -210,7 +210,7 @@ type TailscaleConfig struct {
 	// AcceptRoutes can be set to true to make the proxy instance accept
 	// routes advertized by other nodes on the tailnet, such as subnet
 	// routes.
-	// This is equivalent of passing --accept-routes flag to a tailscale Linux client.
+	// This is equivalent of passing --accept-routes flag to a scaletail Linux client.
 	// https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices
 	// Defaults to false.
 	AcceptRoutes bool `json:"acceptRoutes,omitempty"`
@@ -429,7 +429,7 @@ type Container struct {
 }
 
 type Debug struct {
-	// Enable tailscaled's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
+	// Enable scaletaild's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/
 	// and internal debug metrics endpoint at <pod-ip>:9001/debug/metrics, where
 	// 9001 is a container port named "debug". The endpoints and their responses
 	// may change in backwards incompatible ways in the future, and should not

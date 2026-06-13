@@ -52,7 +52,7 @@ type noopDevice struct{}
 func (noopDevice) SetConnectionCounter(netlogfunc.ConnectionCounter) {}
 
 // Logger logs statistics about every connection.
-// At present, it only logs connections within a tailscale network.
+// At present, it only logs connections within a scaletail network.
 // By default, exit node traffic is not logged for privacy reasons
 // unless the Tailnet administrator opts-into explicit logging.
 // The zero value is ready for use.
@@ -92,25 +92,25 @@ var testClient *http.Client
 // Startup starts an asynchronous network logger that monitors
 // statistics for the provided tun and/or sock device.
 //
-// The tun [Device] captures packets within the tailscale network,
-// where at least one address is usually a tailscale IP address.
+// The tun [Device] captures packets within the scaletail network,
+// where at least one address is usually a scaletail IP address.
 // The source is usually from the perspective of the current node.
-// If one of the other endpoint is not a tailscale IP address,
+// If one of the other endpoint is not a scaletail IP address,
 // then it suggests the use of a subnet router or exit node.
 // For example, when using a subnet router, the source address is
-// the tailscale IP address of the current node, and
+// the scaletail IP address of the current node, and
 // the destination address is an IP address within the subnet range.
 // In contrast, when acting as a subnet router, the source address is
 // an IP address within the subnet range, and the destination is a
-// tailscale IP address that initiated the subnet proxy connection.
+// scaletail IP address that initiated the subnet proxy connection.
 // In this case, the node acting as a subnet router is acting on behalf
 // of some remote endpoint within the subnet range.
 // The tun is used to populate the VirtualTraffic, SubnetTraffic,
 // and ExitTraffic fields in [netlogtype.Message].
 //
 // The sock [Device] captures packets at the magicsock layer.
-// The source is always a tailscale IP address and the destination
-// is a non-tailscale IP address to contact for that particular tailscale node.
+// The source is always a scaletail IP address and the destination
+// is a non-scaletail IP address to contact for that particular scaletail node.
 // The IP protocol and source port are always zero.
 // The sock is used to populated the PhysicalTraffic field in [netlogtype.Message].
 //

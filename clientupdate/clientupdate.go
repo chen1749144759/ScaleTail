@@ -1,8 +1,8 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package clientupdate implements tailscale client update for all supported
-// platforms. This package can be used from both tailscaled and tailscale
+// Package clientupdate implements scaletail client update for all supported
+// platforms. This package can be used from both scaletaild and scaletail
 // binaries.
 package clientupdate
 
@@ -98,7 +98,7 @@ type Arguments struct {
 	// update is aborted.
 	Confirm func(newVer string) bool
 	// PkgsAddr is the address of the pkgs server to fetch updates from.
-	// Defaults to "https://pkgs.tailscale.com".
+	// Defaults to "https://pkgs.scaletail.com".
 	PkgsAddr string
 	// ForAutoUpdate should be true when Updater is created in auto-update
 	// context. When true, NewUpdater returns an error if it cannot be used for
@@ -128,7 +128,7 @@ func (args Arguments) validate() error {
 type Updater struct {
 	Arguments
 	// Update is a platform-specific method that updates the installation. May be
-	// nil (not all platforms support updates from within Tailscale).
+	// nil (not all platforms support updates from within ScaleTail).
 	Update func() error
 
 	// currentVersion is the short form of the current client version as
@@ -168,7 +168,7 @@ func NewUpdater(args Arguments) (*Updater, error) {
 		}
 	}
 	if up.Arguments.PkgsAddr == "" {
-		up.Arguments.PkgsAddr = "https://pkgs.tailscale.com"
+		up.Arguments.PkgsAddr = "https://pkgs.scaletail.com"
 	}
 	return &up, nil
 }
@@ -192,7 +192,7 @@ func (up *Updater) getUpdateFunction() (fn updateFunction, canAutoUpdate bool) {
 			// configuration.
 			return up.updateNixos, false
 		case distro.Synology:
-			// Synology updates use our own pkgs.tailscale.com instead of the
+			// Synology updates use our own pkgs.scaletail.com instead of the
 			// Synology Package Center. We should eventually get to a regular
 			// release cadence with Synology Package Center and use their
 			// auto-update mechanism.
@@ -323,7 +323,7 @@ func (up *Updater) updateSynology() error {
 		return err
 	}
 
-	// Get the latest version and list of SPKs from pkgs.tailscale.com.
+	// Get the latest version and list of SPKs from pkgs.scaletail.com.
 	dsmVersion := distro.DSMVersion()
 	osName := fmt.Sprintf("dsm%d", dsmVersion)
 	arch, err := synoArch(runtime.GOARCH, synoinfoConfPath)
@@ -343,9 +343,9 @@ func (up *Updater) updateSynology() error {
 		return nil
 	}
 
-	up.cleanupOldDownloads(filepath.Join(os.TempDir(), "tailscale-update*", "*.spk"))
+	up.cleanupOldDownloads(filepath.Join(os.TempDir(), "scaletail-update*", "*.spk"))
 	// Download the SPK into a temporary directory.
-	spkDir, err := os.MkdirTemp("", "tailscale-update")
+	spkDir, err := os.MkdirTemp("", "scaletail-update")
 	if err != nil {
 		return err
 	}
@@ -356,8 +356,8 @@ func (up *Updater) updateSynology() error {
 	}
 
 	// Install the SPK. Run via nohup to allow install to succeed when we're
-	// connected over tailscale ssh and this parent process dies. Otherwise, if
-	// you abort synopkg install mid-way, tailscaled is not restarted.
+	// connected over scaletail ssh and this parent process dies. Otherwise, if
+	// you abort synopkg install mid-way, scaletaild is not restarted.
 	cmd := exec.Command("nohup", "synopkg", "install", spkPath)
 	// Don't attach cmd.Stdout to Stdout because nohup will redirect that into
 	// nohup.out file. synopkg doesn't have any progress output anyway, it just
@@ -372,7 +372,7 @@ func (up *Updater) updateSynology() error {
 	if dsmVersion == 6 {
 		// DSM6 does not automatically restart the package on install. Do it
 		// manually.
-		cmd := exec.Command("nohup", "synopkg", "start", "Tailscale")
+		cmd := exec.Command("nohup", "synopkg", "start", "ScaleTail")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("synopkg start failed: %w\noutput:\n%s", err, out)
@@ -382,7 +382,7 @@ func (up *Updater) updateSynology() error {
 }
 
 // synoArch returns the Synology CPU architecture matching one of the SPK
-// architectures served from pkgs.tailscale.com.
+// architectures served from pkgs.scaletail.com.
 func synoArch(goArch, synoinfoPath string) (string, error) {
 	// Most Synology boxes just use a different arch name from GOARCH.
 	arch := map[string]string{
@@ -408,7 +408,7 @@ func synoArch(goArch, synoinfoPath string) (string, error) {
 			"armada375", "armada38x", "armadaxp", "comcerto2k", "monaco":
 			arch = cpu
 		default:
-			return "", fmt.Errorf("unsupported Synology CPU architecture %q (Go arch %q), please report a bug at https://github.com/tailscale/tailscale/issues/new/choose", cpu, goArch)
+			return "", fmt.Errorf("unsupported Synology CPU architecture %q (Go arch %q), please report a bug at https://github.com/scaletail/scaletail/issues/new/choose", cpu, goArch)
 		}
 	}
 	return arch, nil
@@ -443,12 +443,12 @@ func (up *Updater) updateDebLike() error {
 	if err := requireRoot(); err != nil {
 		return err
 	}
-	if err := exec.Command("dpkg", "--status", "tailscale").Run(); err != nil && isExitError(err) {
-		// Tailscale was not installed via apt, update via tarball download
+	if err := exec.Command("dpkg", "--status", "scaletail").Run(); err != nil && isExitError(err) {
+		// ScaleTail was not installed via apt, update via tarball download
 		// instead.
 		return up.updateLinuxBinary()
 	}
-	ver, err := requestedTailscaleVersion(up.Version, up.Track)
+	ver, err := requestedScaleTailVersion(up.Version, up.Track)
 	if err != nil {
 		return err
 	}
@@ -463,9 +463,9 @@ func (up *Updater) updateDebLike() error {
 	}
 
 	cmd := exec.Command("apt-get", "update",
-		// Only update the tailscale repo, not the other ones, treating
-		// the tailscale.list file as the main "sources.list" file.
-		"-o", "Dir::Etc::SourceList=sources.list.d/tailscale.list",
+		// Only update the scaletail repo, not the other ones, treating
+		// the scaletail.list file as the main "sources.list" file.
+		"-o", "Dir::Etc::SourceList=sources.list.d/scaletail.list",
 		// Disable the "sources.list.d" directory:
 		"-o", "Dir::Etc::SourceParts=-",
 		// Don't forget about packages in the other repos just because
@@ -477,16 +477,16 @@ func (up *Updater) updateDebLike() error {
 	}
 
 	for range 2 {
-		out, err := exec.Command("apt-get", "install", "--yes", "--allow-downgrades", "tailscale="+ver).CombinedOutput()
+		out, err := exec.Command("apt-get", "install", "--yes", "--allow-downgrades", "scaletail="+ver).CombinedOutput()
 		if err != nil {
 			if !bytes.Contains(out, []byte(`dpkg was interrupted`)) {
 				return fmt.Errorf("apt-get install failed: %w; output:\n%s", err, out)
 			}
 			up.Logf("apt-get install failed: %s; output:\n%s", err, out)
-			up.Logf("running dpkg --configure tailscale")
-			out, err = exec.Command("dpkg", "--force-confdef,downgrade", "--configure", "tailscale").CombinedOutput()
+			up.Logf("running dpkg --configure scaletail")
+			out, err = exec.Command("dpkg", "--force-confdef,downgrade", "--configure", "scaletail").CombinedOutput()
 			if err != nil {
-				return fmt.Errorf("dpkg --configure tailscale failed: %w; output:\n%s", err, out)
+				return fmt.Errorf("dpkg --configure scaletail failed: %w; output:\n%s", err, out)
 			}
 			continue
 		}
@@ -496,9 +496,9 @@ func (up *Updater) updateDebLike() error {
 	return nil
 }
 
-const aptSourcesFile = "/etc/apt/sources.list.d/tailscale.list"
+const aptSourcesFile = "/etc/apt/sources.list.d/scaletail.list"
 
-// updateDebianAptSourcesList updates the /etc/apt/sources.list.d/tailscale.list
+// updateDebianAptSourcesList updates the /etc/apt/sources.list.d/scaletail.list
 // file to make sure it has the provided track (stable, unstable, or release-candidate) in it.
 //
 // If it already has the right track (including containing both stable,
@@ -519,13 +519,13 @@ func updateDebianAptSourcesList(dstTrack string) (rewrote bool, err error) {
 }
 
 func updateDebianAptSourcesListBytes(was []byte, dstTrack string) (newContent []byte, err error) {
-	trackURLPrefix := []byte("https://pkgs.tailscale.com/" + dstTrack + "/")
+	trackURLPrefix := []byte("https://pkgs.scaletail.com/" + dstTrack + "/")
 	var buf bytes.Buffer
 	var changes int
 	bs := bufio.NewScanner(bytes.NewReader(was))
 	hadCorrect := false
 	commentLine := regexp.MustCompile(`^\s*\#`)
-	pkgsURL := regexp.MustCompile(`\bhttps://pkgs\.tailscale\.com/(stable|unstable|release-candidate)/`)
+	pkgsURL := regexp.MustCompile(`\bhttps://pkgs\.scaletail\.com/(stable|unstable|release-candidate)/`)
 	for bs.Scan() {
 		line := bs.Bytes()
 		if !commentLine.Match(line) {
@@ -554,28 +554,28 @@ func updateDebianAptSourcesListBytes(was []byte, dstTrack string) (newContent []
 }
 
 func (up *Updater) archPackageInstalled() bool {
-	err := exec.Command("pacman", "--query", "tailscale").Run()
+	err := exec.Command("pacman", "--query", "scaletail").Run()
 	return err == nil
 }
 
 func (up *Updater) updateArchLike() error {
-	// Arch maintainer asked us not to implement "tailscale update" or
+	// Arch maintainer asked us not to implement "scaletail update" or
 	// auto-updates on Arch-based distros:
-	// https://github.com/tailscale/tailscale/issues/6995#issuecomment-1687080106
+	// https://github.com/scaletail/scaletail/issues/6995#issuecomment-1687080106
 	return errors.New(`individual package updates are not supported on Arch-based distros, only full-system updates are: https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported.
-you can use "pacman --sync --refresh --sysupgrade" or "pacman -Syu" to upgrade the system, including Tailscale.`)
+you can use "pacman --sync --refresh --sysupgrade" or "pacman -Syu" to upgrade the system, including ScaleTail.`)
 }
 
 func (up *Updater) updateNixos() error {
 	// NixOS package updates are managed on a system level and not individually.
 	// Direct users to update their nix channel or nixpkgs flake input to
 	// receive the latest version.
-	return errors.New(`individual package updates are not supported on NixOS installations. Update your system channel or flake inputs to get the latest Tailscale version from nixpkgs.`)
+	return errors.New(`individual package updates are not supported on NixOS installations. Update your system channel or flake inputs to get the latest ScaleTail version from nixpkgs.`)
 }
 
-const yumRepoConfigFile = "/etc/yum.repos.d/tailscale.repo"
+const yumRepoConfigFile = "/etc/yum.repos.d/scaletail.repo"
 
-// updateFedoraLike updates tailscale on any distros in the Fedora family,
+// updateFedoraLike updates scaletail on any distros in the Fedora family,
 // specifically anything that uses "dnf" or "yum" package managers. The actual
 // package manager is passed via packageManager.
 func (up *Updater) updateFedoraLike(packageManager string) func() error {
@@ -583,18 +583,18 @@ func (up *Updater) updateFedoraLike(packageManager string) func() error {
 		if err := requireRoot(); err != nil {
 			return err
 		}
-		if err := exec.Command(packageManager, "info", "--installed", "tailscale").Run(); err != nil && isExitError(err) {
-			// Tailscale was not installed via yum/dnf, update via tarball
+		if err := exec.Command(packageManager, "info", "--installed", "scaletail").Run(); err != nil && isExitError(err) {
+			// ScaleTail was not installed via yum/dnf, update via tarball
 			// download instead.
 			return up.updateLinuxBinary()
 		}
 		defer func() {
 			if err != nil {
-				err = fmt.Errorf(`%w; you can try updating using "%s upgrade tailscale"`, err, packageManager)
+				err = fmt.Errorf(`%w; you can try updating using "%s upgrade scaletail"`, err, packageManager)
 			}
 		}()
 
-		ver, err := requestedTailscaleVersion(up.Version, up.Track)
+		ver, err := requestedScaleTailVersion(up.Version, up.Track)
 		if err != nil {
 			return err
 		}
@@ -608,7 +608,7 @@ func (up *Updater) updateFedoraLike(packageManager string) func() error {
 			up.Logf("Updated %s to use the %s track", yumRepoConfigFile, up.Track)
 		}
 
-		cmd := exec.Command(packageManager, "install", "--assumeyes", fmt.Sprintf("tailscale-%s-1", ver))
+		cmd := exec.Command(packageManager, "install", "--assumeyes", fmt.Sprintf("scaletail-%s-1", ver))
 		cmd.Stdout = up.Stdout
 		cmd.Stderr = up.Stderr
 		if err := cmd.Run(); err != nil {
@@ -626,24 +626,24 @@ func updateYUMRepoTrack(repoFile, dstTrack string) (rewrote bool, err error) {
 		return false, err
 	}
 
-	urlRe := regexp.MustCompile(`^(baseurl|gpgkey)=https://pkgs\.tailscale\.com/(stable|unstable|release-candidate)`)
-	urlReplacement := fmt.Sprintf("$1=https://pkgs.tailscale.com/%s", dstTrack)
+	urlRe := regexp.MustCompile(`^(baseurl|gpgkey)=https://pkgs\.scaletail\.com/(stable|unstable|release-candidate)`)
+	urlReplacement := fmt.Sprintf("$1=https://pkgs.scaletail.com/%s", dstTrack)
 
 	s := bufio.NewScanner(bytes.NewReader(was))
 	newContent := bytes.NewBuffer(make([]byte, 0, len(was)))
 	for s.Scan() {
 		line := s.Text()
-		// Handle repo section name, like "[tailscale-stable]".
+		// Handle repo section name, like "[scaletail-stable]".
 		if len(line) > 0 && line[0] == '[' {
-			if !strings.HasPrefix(line, "[tailscale-") {
-				return false, fmt.Errorf("%q does not look like a tailscale repo file, it contains an unexpected %q section", repoFile, line)
+			if !strings.HasPrefix(line, "[scaletail-") {
+				return false, fmt.Errorf("%q does not look like a scaletail repo file, it contains an unexpected %q section", repoFile, line)
 			}
-			fmt.Fprintf(newContent, "[tailscale-%s]\n", dstTrack)
+			fmt.Fprintf(newContent, "[scaletail-%s]\n", dstTrack)
 			continue
 		}
 		// Update the track mentioned in repo name.
 		if strings.HasPrefix(line, "name=") {
-			fmt.Fprintf(newContent, "name=Tailscale %s\n", dstTrack)
+			fmt.Fprintf(newContent, "name=ScaleTail %s\n", dstTrack)
 			continue
 		}
 		// Update the actual repo URLs.
@@ -666,15 +666,15 @@ func (up *Updater) updateAlpineLike() (err error) {
 	if err := requireRoot(); err != nil {
 		return err
 	}
-	if err := exec.Command("apk", "info", "--installed", "tailscale").Run(); err != nil && isExitError(err) {
-		// Tailscale was not installed via apk, update via tarball download
+	if err := exec.Command("apk", "info", "--installed", "scaletail").Run(); err != nil && isExitError(err) {
+		// ScaleTail was not installed via apk, update via tarball download
 		// instead.
 		return up.updateLinuxBinary()
 	}
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(`%w; you can try updating using "apk upgrade tailscale"`, err)
+			err = fmt.Errorf(`%w; you can try updating using "apk upgrade scaletail"`, err)
 		}
 	}()
 
@@ -682,13 +682,13 @@ func (up *Updater) updateAlpineLike() (err error) {
 	if err != nil {
 		return fmt.Errorf("failed refresh apk repository indexes: %w, output:\n%s", err, out)
 	}
-	out, err = exec.Command("apk", "info", "tailscale").CombinedOutput()
+	out, err = exec.Command("apk", "info", "scaletail").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed checking apk for latest tailscale version: %w, output:\n%s", err, out)
+		return fmt.Errorf("failed checking apk for latest scaletail version: %w, output:\n%s", err, out)
 	}
 	ver, err := parseAlpinePackageVersion(out)
 	if err != nil {
-		return fmt.Errorf(`failed to parse latest version from "apk info tailscale": %w`, err)
+		return fmt.Errorf(`failed to parse latest version from "apk info scaletail": %w`, err)
 	}
 	if !up.confirm(ver) {
 		if err := checkOutdatedAlpineRepo(up.Logf, apkDirPaths, ver, up.Track); err != nil {
@@ -697,11 +697,11 @@ func (up *Updater) updateAlpineLike() (err error) {
 		return nil
 	}
 
-	cmd := exec.Command("apk", "upgrade", "tailscale")
+	cmd := exec.Command("apk", "upgrade", "scaletail")
 	cmd.Stdout = up.Stdout
 	cmd.Stderr = up.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed tailscale update using apk: %w", err)
+		return fmt.Errorf("failed scaletail update using apk: %w", err)
 	}
 	return nil
 }
@@ -711,9 +711,9 @@ func parseAlpinePackageVersion(out []byte) (string, error) {
 	var maxVer string
 	for s.Scan() {
 		// The line should look like this:
-		// tailscale-1.44.2-r0 description:
+		// scaletail-1.44.2-r0 description:
 		line := strings.TrimSpace(s.Text())
-		if !strings.HasPrefix(line, "tailscale-") {
+		if !strings.HasPrefix(line, "scaletail-") {
 			continue
 		}
 		parts := strings.SplitN(line, "-", 3)
@@ -728,7 +728,7 @@ func parseAlpinePackageVersion(out []byte) (string, error) {
 	if maxVer != "" {
 		return maxVer, nil
 	}
-	return "", errors.New("tailscale version not found in output")
+	return "", errors.New("scaletail version not found in output")
 }
 
 var (
@@ -737,7 +737,7 @@ var (
 )
 
 func checkOutdatedAlpineRepo(logf logger.Logf, filePaths []string, apkVer, track string) error {
-	latest, err := LatestTailscaleVersion(track)
+	latest, err := LatestScaleTailVersion(track)
 	if err != nil {
 		return err
 	}
@@ -766,11 +766,11 @@ func checkOutdatedAlpineRepo(logf logger.Logf, filePaths []string, apkVer, track
 			if s.Err() != nil {
 				return s.Err()
 			}
-			logf("The latest Tailscale release for Linux is %q, but your apk repository only provides %q.\nYou may need to upgrade your Alpine system to get the latest Tailscale version: https://wiki.alpinelinux.org/wiki/Upgrading_Alpine", latest, apkVer)
+			logf("The latest ScaleTail release for Linux is %q, but your apk repository only provides %q.\nYou may need to upgrade your Alpine system to get the latest ScaleTail version: https://wiki.alpinelinux.org/wiki/Upgrading_Alpine", latest, apkVer)
 		}
 		alpineVer := apkRepoVersionRE.FindString(s.Text())
 		if alpineVer != "" {
-			logf("The latest Tailscale release for Linux is %q, but your apk repository only provides %q.\nYour Alpine version is %q, you may need to upgrade the system to get the latest Tailscale version: https://wiki.alpinelinux.org/wiki/Upgrading_Alpine", latest, apkVer, alpineVer)
+			logf("The latest ScaleTail release for Linux is %q, but your apk repository only provides %q.\nYour Alpine version is %q, you may need to upgrade the system to get the latest ScaleTail version: https://wiki.alpinelinux.org/wiki/Upgrading_Alpine", latest, apkVer, alpineVer)
 		}
 		return nil
 	}
@@ -778,17 +778,17 @@ func checkOutdatedAlpineRepo(logf logger.Logf, filePaths []string, apkVer, track
 }
 
 func (up *Updater) updateMacSys() error {
-	return errors.New("NOTREACHED: On MacSys builds, `tailscale update` is handled in Swift to launch the GUI updater")
+	return errors.New("NOTREACHED: On MacSys builds, `scaletail update` is handled in Swift to launch the GUI updater")
 }
 
 func (up *Updater) updateMacAppStore() error {
 	// We can't trigger the update via App Store from the sandboxed app. At
 	// most, we can open the App Store page for them.
-	up.Logf("Please use the App Store to update Tailscale.\nConsider enabling Automatic Updates in the App Store Settings, if you haven't already.\nOpening the Tailscale app page...")
+	up.Logf("Please use the App Store to update ScaleTail.\nConsider enabling Automatic Updates in the App Store Settings, if you haven't already.\nOpening the ScaleTail app page...")
 
-	out, err := exec.Command("open", "https://apps.apple.com/us/app/tailscale/id1475387142").CombinedOutput()
+	out, err := exec.Command("open", "https://apps.apple.com/us/app/scaletail/id1475387142").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("can't open the Tailscale page in App Store: %w, output:\n%s", err, string(out))
+		return fmt.Errorf("can't open the ScaleTail page in App Store: %w, output:\n%s", err, string(out))
 	}
 	return nil
 }
@@ -824,15 +824,15 @@ func (up *Updater) updateFreeBSD() (err error) {
 	if err := requireRoot(); err != nil {
 		return err
 	}
-	if err := exec.Command("pkg", "query", "%n", "tailscale").Run(); err != nil && isExitError(err) {
-		// Tailscale was not installed via pkg and we don't pre-compile
+	if err := exec.Command("pkg", "query", "%n", "scaletail").Run(); err != nil && isExitError(err) {
+		// ScaleTail was not installed via pkg and we don't pre-compile
 		// binaries for it.
-		return errors.New("Tailscale was not installed via pkg, binary updates on FreeBSD are not supported; please reinstall Tailscale using pkg or update manually")
+		return errors.New("ScaleTail was not installed via pkg, binary updates on FreeBSD are not supported; please reinstall ScaleTail using pkg or update manually")
 	}
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(`%w; you can try updating using "pkg upgrade tailscale"`, err)
+			err = fmt.Errorf(`%w; you can try updating using "pkg upgrade scaletail"`, err)
 		}
 	}()
 
@@ -840,26 +840,26 @@ func (up *Updater) updateFreeBSD() (err error) {
 	if err != nil {
 		return fmt.Errorf("failed refresh pkg repository indexes: %w, output:\n%s", err, out)
 	}
-	out, err = exec.Command("pkg", "rquery", "%v", "tailscale").CombinedOutput()
+	out, err = exec.Command("pkg", "rquery", "%v", "scaletail").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed checking pkg for latest tailscale version: %w, output:\n%s", err, out)
+		return fmt.Errorf("failed checking pkg for latest scaletail version: %w, output:\n%s", err, out)
 	}
 	ver := string(bytes.TrimSpace(out))
 	if !up.confirm(ver) {
 		return nil
 	}
 
-	cmd := exec.Command("pkg", "upgrade", "-y", "tailscale")
+	cmd := exec.Command("pkg", "upgrade", "-y", "scaletail")
 	cmd.Stdout = up.Stdout
 	cmd.Stderr = up.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed tailscale update using pkg: %w", err)
+		return fmt.Errorf("failed scaletail update using pkg: %w", err)
 	}
 
 	// pkg does not automatically restart services after upgrade.
-	out, err = exec.Command("service", "tailscaled", "restart").CombinedOutput()
+	out, err = exec.Command("service", "scaletaild", "restart").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to restart tailscaled after update: %w, output:\n%s", err, out)
+		return fmt.Errorf("failed to restart scaletaild after update: %w, output:\n%s", err, out)
 	}
 	return nil
 }
@@ -869,7 +869,7 @@ func (up *Updater) updateLinuxBinary() error {
 	if err := requireRoot(); err != nil {
 		return err
 	}
-	ver, err := requestedTailscaleVersion(up.Version, up.Track)
+	ver, err := requestedScaleTailVersion(up.Version, up.Track)
 	if err != nil {
 		return err
 	}
@@ -893,11 +893,11 @@ func (up *Updater) updateLinuxBinary() error {
 	if errors.Is(err, errors.ErrUnsupported) {
 		err = restartInitD()
 		if errors.Is(err, errors.ErrUnsupported) {
-			err = errors.New("tailscaled is not running under systemd or init.d")
+			err = errors.New("scaletaild is not running under systemd or init.d")
 		}
 	}
 	if err != nil {
-		up.Logf("Tailscale binaries updated successfully, but failed to restart tailscaled: %s.\nPlease restart tailscaled to finish the update.", err)
+		up.Logf("ScaleTail binaries updated successfully, but failed to restart scaletaild: %s.\nPlease restart scaletaild to finish the update.", err)
 
 	} else {
 		up.Logf("Success")
@@ -914,13 +914,13 @@ func restartSystemdUnit(logf logger.Logf) error {
 	if out, err := exec.Command("systemctl", "daemon-reload").CombinedOutput(); err != nil {
 		logf("systemctl daemon-reload failed: %w\noutput: %s", err, out)
 	}
-	if out, err := exec.Command("systemctl", "restart", "tailscaled.service").CombinedOutput(); err != nil {
+	if out, err := exec.Command("systemctl", "restart", "scaletaild.service").CombinedOutput(); err != nil {
 		return fmt.Errorf("systemctl restart failed: %w\noutput: %s", err, out)
 	}
 	return nil
 }
 
-// restartInitD attempts best-effort restart of tailscale on init.d systems
+// restartInitD attempts best-effort restart of scaletail on init.d systems
 // (for example, GL.iNet KVM devices running busybox). It returns
 // errors.ErrUnsupported if the expected service script is not found.
 //
@@ -940,9 +940,9 @@ func restartInitD() error {
 		if !f.Type().IsRegular() {
 			continue
 		}
-		// The script will be called something like /etc/init.d/tailscale or
-		// /etc/init.d/S99tailscale.
-		if n := f.Name(); strings.HasSuffix(n, "tailscale") {
+		// The script will be called something like /etc/init.d/scaletail or
+		// /etc/init.d/S99scaletail.
+		if n := f.Name(); strings.HasSuffix(n, "scaletail") {
 			path := filepath.Join(initDir, n)
 			if out, err := exec.Command(path, "restart").CombinedOutput(); err != nil {
 				return fmt.Errorf("%q failed: %w\noutput: %s", path+" restart", err, out)
@@ -950,7 +950,7 @@ func restartInitD() error {
 			return nil
 		}
 	}
-	// Init script for tailscale not found.
+	// Init script for scaletail not found.
 	return errors.ErrUnsupported
 }
 
@@ -959,11 +959,11 @@ func (up *Updater) downloadLinuxTarball(ver string) (string, error) {
 	if err != nil {
 		dlDir = os.TempDir()
 	}
-	dlDir = filepath.Join(dlDir, "tailscale-update")
+	dlDir = filepath.Join(dlDir, "scaletail-update")
 	if err := os.MkdirAll(dlDir, 0700); err != nil {
 		return "", err
 	}
-	pkgsPath := fmt.Sprintf("%s/tailscale_%s_%s.tgz", up.Track, ver, runtime.GOARCH)
+	pkgsPath := fmt.Sprintf("%s/scaletail_%s_%s.tgz", up.Track, ver, runtime.GOARCH)
 	dlPath := filepath.Join(dlDir, path.Base(pkgsPath))
 	if err := up.downloadURLToFile(pkgsPath, dlPath); err != nil {
 		return "", err
@@ -972,7 +972,7 @@ func (up *Updater) downloadLinuxTarball(ver string) (string, error) {
 }
 
 func (up *Updater) unpackLinuxTarball(path string) error {
-	tailscale, tailscaled, err := binaryPaths()
+	scaletail, scaletaild, err := binaryPaths()
 	if err != nil {
 		return err
 	}
@@ -989,8 +989,8 @@ func (up *Updater) unpackLinuxTarball(path string) error {
 	tr := tar.NewReader(gr)
 	files := make(map[string]int)
 	wantFiles := map[string]int{
-		"tailscale":  1,
-		"tailscaled": 1,
+		"scaletail":  1,
+		"scaletaild": 1,
 	}
 	for {
 		th, err := tr.Next()
@@ -1000,20 +1000,20 @@ func (up *Updater) unpackLinuxTarball(path string) error {
 		if err != nil {
 			return fmt.Errorf("failed extracting %q: %w", path, err)
 		}
-		// TODO(awly): try to also extract tailscaled.service. The tricky part
+		// TODO(awly): try to also extract scaletaild.service. The tricky part
 		// is fixing up binary paths in that file if they differ from where
-		// local tailscale/tailscaled are installed. Also, this may not be a
+		// local scaletail/scaletaild are installed. Also, this may not be a
 		// systemd distro.
 		switch filepath.Base(th.Name) {
-		case "tailscale":
-			files["tailscale"]++
-			if err := writeFile(tr, tailscale+".new", 0755); err != nil {
-				return fmt.Errorf("failed extracting the new tailscale binary from %q: %w", path, err)
+		case "scaletail":
+			files["scaletail"]++
+			if err := writeFile(tr, scaletail+".new", 0755); err != nil {
+				return fmt.Errorf("failed extracting the new scaletail binary from %q: %w", path, err)
 			}
-		case "tailscaled":
-			files["tailscaled"]++
-			if err := writeFile(tr, tailscaled+".new", 0755); err != nil {
-				return fmt.Errorf("failed extracting the new tailscaled binary from %q: %w", path, err)
+		case "scaletaild":
+			files["scaletaild"]++
+			if err := writeFile(tr, scaletaild+".new", 0755); err != nil {
+				return fmt.Errorf("failed extracting the new scaletaild binary from %q: %w", path, err)
 			}
 		}
 	}
@@ -1022,14 +1022,14 @@ func (up *Updater) unpackLinuxTarball(path string) error {
 	}
 
 	// Only place the files in final locations after everything extracted correctly.
-	if err := os.Rename(tailscale+".new", tailscale); err != nil {
+	if err := os.Rename(scaletail+".new", scaletail); err != nil {
 		return err
 	}
-	up.Logf("Updated %s", tailscale)
-	if err := os.Rename(tailscaled+".new", tailscaled); err != nil {
+	up.Logf("Updated %s", scaletail)
+	if err := os.Rename(scaletaild+".new", scaletaild); err != nil {
 		return err
 	}
-	up.Logf("Updated %s", tailscaled)
+	up.Logf("Updated %s", scaletaild)
 	return nil
 }
 
@@ -1043,24 +1043,24 @@ func (up *Updater) updateQNAP() (err error) {
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(`%w; you can try updating using "qpkg_cli --add Tailscale"`, err)
+			err = fmt.Errorf(`%w; you can try updating using "qpkg_cli --add ScaleTail"`, err)
 		}
 	}()
 
-	out, err := exec.Command("qpkg_cli", "--upgradable", "Tailscale").CombinedOutput()
+	out, err := exec.Command("qpkg_cli", "--upgradable", "ScaleTail").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to check if Tailscale is upgradable using qpkg_cli: %w, output: %q", err, out)
+		return fmt.Errorf("failed to check if ScaleTail is upgradable using qpkg_cli: %w, output: %q", err, out)
 	}
 
 	// Output should look like this:
 	//
-	// $ qpkg_cli -G Tailscale
-	// [Tailscale]
+	// $ qpkg_cli -G ScaleTail
+	// [ScaleTail]
 	// upgradeStatus = 1
 	statusRe := regexp.MustCompile(`upgradeStatus = (\d)`)
 	m := statusRe.FindStringSubmatch(string(out))
 	if len(m) < 2 {
-		return fmt.Errorf("failed to check if Tailscale is upgradable using qpkg_cli, output: %q", out)
+		return fmt.Errorf("failed to check if ScaleTail is upgradable using qpkg_cli, output: %q", out)
 	}
 	status, err := strconv.Atoi(m[1])
 	if err != nil {
@@ -1083,7 +1083,7 @@ func (up *Updater) updateQNAP() (err error) {
 	case 2, 3, 4:
 		return fmt.Errorf("failed to check update status with qpkg_cli (upgradeStatus = %d)", status)
 	case 5:
-		return errors.New("Tailscale was not found in the QNAP App Center")
+		return errors.New("ScaleTail was not found in the QNAP App Center")
 	default:
 		return fmt.Errorf("failed to check update status with qpkg_cli (upgradeStatus = %d)", status)
 	}
@@ -1094,12 +1094,12 @@ func (up *Updater) updateQNAP() (err error) {
 		return nil
 	}
 
-	up.Logf("c2n: running qpkg_cli --add Tailscale")
-	cmd := exec.Command("qpkg_cli", "--add", "Tailscale")
+	up.Logf("c2n: running qpkg_cli --add ScaleTail")
+	cmd := exec.Command("qpkg_cli", "--add", "ScaleTail")
 	cmd.Stdout = up.Stdout
 	cmd.Stderr = up.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed tailscale update using qpkg_cli: %w", err)
+		return fmt.Errorf("failed scaletail update using qpkg_cli: %w", err)
 	}
 	return nil
 }
@@ -1114,37 +1114,37 @@ func (up *Updater) updateUnraid() (err error) {
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(`%w; you can try updating using "plugin check tailscale.plg && plugin update tailscale.plg"`, err)
+			err = fmt.Errorf(`%w; you can try updating using "plugin check scaletail.plg && plugin update scaletail.plg"`, err)
 		}
 	}()
 
-	// We need to run `plugin check` for the latest tailscale.plg to get
+	// We need to run `plugin check` for the latest scaletail.plg to get
 	// downloaded. Unfortunately, the output of this command does not contain
-	// the latest tailscale version available. So we'll parse the downloaded
-	// tailscale.plg file manually below.
-	out, err := exec.Command("plugin", "check", "tailscale.plg").CombinedOutput()
+	// the latest scaletail version available. So we'll parse the downloaded
+	// scaletail.plg file manually below.
+	out, err := exec.Command("plugin", "check", "scaletail.plg").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to check if Tailscale plugin is upgradable: %w, output: %q", err, out)
+		return fmt.Errorf("failed to check if ScaleTail plugin is upgradable: %w, output: %q", err, out)
 	}
 
 	// Note: 'plugin check' downloads plugins to /tmp/plugins.
 	// The installed .plg files are in /boot/config/plugins/, but the pending
 	// ones are in /tmp/plugins. We should parse the pending file downloaded by
 	// 'plugin check'.
-	latest, err := parseUnraidPluginVersion("/tmp/plugins/tailscale.plg")
+	latest, err := parseUnraidPluginVersion("/tmp/plugins/scaletail.plg")
 	if err != nil {
-		return fmt.Errorf("failed to find latest Tailscale version in /boot/config/plugins/tailscale.plg: %w", err)
+		return fmt.Errorf("failed to find latest ScaleTail version in /boot/config/plugins/scaletail.plg: %w", err)
 	}
 	if !up.confirm(latest) {
 		return nil
 	}
 
-	up.Logf("c2n: running 'plugin update tailscale.plg'")
-	cmd := exec.Command("plugin", "update", "tailscale.plg")
+	up.Logf("c2n: running 'plugin update scaletail.plg'")
+	cmd := exec.Command("plugin", "update", "scaletail.plg")
 	cmd.Stdout = up.Stdout
 	cmd.Stderr = up.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed tailscale plugin update: %w", err)
+		return fmt.Errorf("failed scaletail plugin update: %w", err)
 	}
 	return nil
 }
@@ -1154,7 +1154,7 @@ func parseUnraidPluginVersion(plgPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	re := regexp.MustCompile(`<FILE Name="/boot/config/plugins/tailscale/tailscale_(\d+\.\d+\.\d+)_[a-z0-9]+.tgz">`)
+	re := regexp.MustCompile(`<FILE Name="/boot/config/plugins/scaletail/scaletail_(\d+\.\d+\.\d+)_[a-z0-9]+.tgz">`)
 	match := re.FindStringSubmatch(string(plg))
 	if len(match) < 2 {
 		return "", errors.New("version not found in plg file")
@@ -1178,15 +1178,15 @@ func writeFile(r io.Reader, path string, perm os.FileMode) error {
 }
 
 // Var allows overriding this in tests.
-var binaryPaths = func() (tailscale, tailscaled string, err error) {
-	// This can be either tailscale or tailscaled.
+var binaryPaths = func() (scaletail, scaletaild string, err error) {
+	// This can be either scaletail or scaletaild.
 	this, err := os.Executable()
 	if err != nil {
 		return "", "", err
 	}
-	otherName := "tailscaled"
-	if filepath.Base(this) == "tailscaled" {
-		otherName = "tailscale"
+	otherName := "scaletaild"
+	if filepath.Base(this) == "scaletaild" {
+		otherName = "scaletail"
 	}
 	// Try to find the other binary in the same directory.
 	other := filepath.Join(filepath.Dir(this), otherName)
@@ -1198,7 +1198,7 @@ var binaryPaths = func() (tailscale, tailscaled string, err error) {
 	if err != nil {
 		return "", "", fmt.Errorf("cannot find %q in neither %q nor $PATH: %w", otherName, filepath.Dir(this), err)
 	}
-	if otherName == "tailscaled" {
+	if otherName == "scaletaild" {
 		return this, other, nil
 	} else {
 		return other, this, nil
@@ -1210,16 +1210,16 @@ func haveExecutable(name string) bool {
 	return err == nil && path != ""
 }
 
-func requestedTailscaleVersion(ver, track string) (string, error) {
+func requestedScaleTailVersion(ver, track string) (string, error) {
 	if ver != "" {
 		return ver, nil
 	}
-	return LatestTailscaleVersion(track)
+	return LatestScaleTailVersion(track)
 }
 
-// LatestTailscaleVersion returns the latest released version for the given
-// track from pkgs.tailscale.com.
-func LatestTailscaleVersion(track string) (string, error) {
+// LatestScaleTailVersion returns the latest released version for the given
+// track from pkgs.scaletail.com.
+func LatestScaleTailVersion(track string) (string, error) {
 	if track == "" {
 		track = CurrentTrack
 	}
@@ -1261,13 +1261,13 @@ type trackPackages struct {
 	SPKsVersion     string
 }
 
-var tailscaleHTTPEndpoint = "https://pkgs.tailscale.com"
+var scaletailHTTPEndpoint = "https://pkgs.scaletail.com"
 
 func latestPackages(track string) (*trackPackages, error) {
-	url := fmt.Sprintf("%s/%s/?mode=json&os=%s", tailscaleHTTPEndpoint, track, runtime.GOOS)
+	url := fmt.Sprintf("%s/%s/?mode=json&os=%s", scaletailHTTPEndpoint, track, runtime.GOOS)
 	res, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("fetching latest tailscale version: %w", err)
+		return nil, fmt.Errorf("fetching latest scaletail version: %w", err)
 	}
 	defer res.Body.Close()
 	var latest trackPackages

@@ -157,7 +157,7 @@ func (m *peerMap) upsertEndpoint(ep *endpoint, oldDiscoKey key.DiscoPublic) {
 		// If the peer is a WireGuard only peer, add all of its endpoints.
 
 		// TODO(raggi,catzkorn): this could mean that if a "isWireguardOnly"
-		// peer has, say, 192.168.0.2 and so does a tailscale peer, the
+		// peer has, say, 192.168.0.2 and so does a scaletail peer, the
 		// wireguard one will win. That may not be the outcome that we want -
 		// perhaps we should prefer bestAddr.epAddr.ap if it is set?
 		// see tailscale/tailscale#7994

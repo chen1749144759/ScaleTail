@@ -13,7 +13,7 @@ import (
 // this node's peer relay server at a point in time.
 type ServerStatus struct {
 	// UDPPort is the UDP port number that the peer relay server forwards over,
-	// as configured by the user with 'tailscale set --relay-server-port=<PORT>'.
+	// as configured by the user with 'scaletail set --relay-server-port=<PORT>'.
 	// If the port has not been configured, UDPPort will be nil. A non-nil zero
 	// value signifies the user has opted for a random unused port.
 	UDPPort *uint16

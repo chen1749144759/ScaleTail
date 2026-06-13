@@ -70,7 +70,7 @@ export function useInstallUpdate(currentVersion: string, cv?: VersionInfo) {
             }
 
             if (up.status === "UpdateFinished") {
-              // if update finished and tailscaled did not go away (ie. did not restart),
+              // if update finished and scaletaild did not go away (ie. did not restart),
               // then the version being the same might not be an error, it might just require
               // the user to restart Tailscale manually (this is required in some cases in the
               // clientupdate package).
@@ -101,7 +101,7 @@ export function useInstallUpdate(currentVersion: string, cv?: VersionInfo) {
           if (tsAwayForPolls >= 5 * 60) {
             setUpdateState(UpdateState.Failed)
             appendUpdateLog(
-              "ERROR: tailscaled went away but did not come back!"
+              "ERROR: scaletaild went away but did not come back!"
             )
             appendUpdateLog("ERROR: last error received:")
             appendUpdateLog(err.toString())

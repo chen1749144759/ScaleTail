@@ -44,11 +44,11 @@ var (
 // serveFilePut sends a file to another node.
 //
 // It's sometimes possible for clients to do this themselves, without
-// tailscaled, except in the case of tailscaled running in
-// userspace-networking ("netstack") mode, in which case tailscaled
+// scaletaild, except in the case of scaletaild running in
+// userspace-networking ("netstack") mode, in which case scaletaild
 // needs to a do a netstack dial out.
 //
-// Instead, the CLI also goes through tailscaled so it doesn't need to be
+// Instead, the CLI also goes through scaletaild so it doesn't need to be
 // aware of the network mode in use.
 //
 // macOS/iOS have always used this localapi method to simplify the GUI

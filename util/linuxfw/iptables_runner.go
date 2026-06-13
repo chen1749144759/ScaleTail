@@ -88,7 +88,7 @@ func (i *iptablesRunner) AddLoopbackRule(addr netip.Addr) error {
 	return nil
 }
 
-// tsChain returns the name of the tailscale sub-chain corresponding
+// tsChain returns the name of the scaletail sub-chain corresponding
 // to the given "parent" chain (e.g. INPUT, FORWARD, ...).
 func tsChain(chain string) string {
 	return "ts-" + strings.ToLower(chain)
@@ -123,10 +123,10 @@ func (i *iptablesRunner) getNATTables() []iptablesInterface {
 }
 
 // AddHooks inserts calls to tailscale's netfilter chains in
-// the relevant main netfilter chains. The tailscale chains must
+// the relevant main netfilter chains. The scaletail chains must
 // already exist. If they do not, an error is returned.
 func (i *iptablesRunner) AddHooks() error {
-	// divert inserts a jump to the tailscale chain in the given table/chain.
+	// divert inserts a jump to the scaletail chain in the given table/chain.
 	// If the jump already exists, it is a no-op.
 	divert := func(ipt iptablesInterface, table, chain string) error {
 		tsChain := tsChain(chain)
@@ -221,7 +221,7 @@ func (i *iptablesRunner) addBase4(tunname string) error {
 	}
 
 	// Forward all traffic from the Tailscale interface, and drop
-	// traffic to the tailscale interface by default. We use packet
+	// traffic to the scaletail interface by default. We use packet
 	// marks here so both filter/FORWARD and nat/POSTROUTING can match
 	// on these packets of interest.
 	//
@@ -458,7 +458,7 @@ func statefulRuleArgs(tunname string) []string {
 // AddStatefulRule adds a netfilter rule for stateful packet filtering using
 // conntrack.
 func (i *iptablesRunner) AddStatefulRule(tunname string) error {
-	// Drop packets that are destined for the tailscale interface if
+	// Drop packets that are destined for the scaletail interface if
 	// they're a new connection, per conntrack, to prevent hosts on the
 	// same subnet from being able to use this device as a way to forward
 	// packets on to the Tailscale network.

@@ -11,13 +11,13 @@ import (
 )
 
 func init() {
-	restartTailscaled = restartTailscaledLinux
+	restartScaleTaild = restartScaleTaildLinux
 }
 
-// restartTailscaledLinux finds the tailscaled process by walking /proc and
-// sends it SIGKILL. On gokrazy, the supervisor will restart tailscaled within
+// restartScaleTaildLinux finds the scaletaild process by walking /proc and
+// sends it SIGKILL. On gokrazy, the supervisor will restart scaletaild within
 // a few seconds. The PID of the process that was killed is returned.
-func restartTailscaledLinux() (int, error) {
+func restartScaleTaildLinux() (int, error) {
 	ents, err := os.ReadDir("/proc")
 	if err != nil {
 		return 0, err
@@ -31,7 +31,7 @@ func restartTailscaledLinux() (int, error) {
 		if err != nil {
 			continue
 		}
-		if strings.TrimSpace(string(comm)) != "tailscaled" {
+		if strings.TrimSpace(string(comm)) != "scaletaild" {
 			continue
 		}
 		proc, err := os.FindProcess(pid)
@@ -39,9 +39,9 @@ func restartTailscaledLinux() (int, error) {
 			return 0, err
 		}
 		if err := proc.Kill(); err != nil {
-			return 0, fmt.Errorf("killing tailscaled pid %d: %w", pid, err)
+			return 0, fmt.Errorf("killing scaletaild pid %d: %w", pid, err)
 		}
 		return pid, nil
 	}
-	return 0, fmt.Errorf("tailscaled process not found in /proc")
+	return 0, fmt.Errorf("scaletaild process not found in /proc")
 }

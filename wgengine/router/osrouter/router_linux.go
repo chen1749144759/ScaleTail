@@ -152,7 +152,7 @@ func newUserspaceRouterAdvanced(logf logger.Logf, tunname string, netMon *netmon
 	// which coupled with an ip rule:
 	//  2001: from all fwmark 0x100/0x3f00 lookup 1
 	//
-	// has the effect of gobbling tailscale packets, because tailscale by default installs
+	// has the effect of gobbling scaletail packets, because scaletail by default installs
 	// its policy routing rules at priority 52xx.
 	//
 	// As such, if we are running on openWRT, detect a mwan3 config, AND detect a rule
@@ -840,7 +840,7 @@ func (r *linuxRouter) setNetfilterModeLocked(mode preftype.NetfilterMode) error 
 }
 
 // getV6FilteringAvailable returns true if the router is able to setup the
-// required tailscale filter rules for IPv6.
+// required scaletail filter rules for IPv6.
 func (r *linuxRouter) getV6FilteringAvailable() bool {
 	return r.nfr.HasIPV6() && r.nfr.HasIPV6Filter()
 }
@@ -1249,7 +1249,7 @@ func (r *linuxRouter) addrFamilies() []addrFamily {
 	return []addrFamily{v4}
 }
 
-// addIPRules adds the policy routing rule that avoids tailscaled
+// addIPRules adds the policy routing rule that avoids scaletaild
 // routing loops. If the rule exists and appears to be a
 // tailscale-managed rule, it is gracefully replaced.
 func (r *linuxRouter) addIPRules() error {
@@ -1358,14 +1358,14 @@ var baseIPRules = []netlink.Rule{
 	},
 	// If neither of those matched (no default route on this system?)
 	// then packets from us should be aborted rather than falling through
-	// to the tailscale routes, because that would create routing loops.
+	// to the scaletail routes, because that would create routing loops.
 	{
 		Priority: 50,
 		Mark:     tsconst.LinuxBypassMarkNum,
 		Type:     unix.RTN_UNREACHABLE,
 	},
 	// If we get to this point, capture all packets and send them
-	// through to the tailscale route table. For apps other than us
+	// through to the scaletail route table. For apps other than us
 	// (ie. with no fwmark set), this is the first routing table, so
 	// it takes precedence over all the others, ie. VPN routes always
 	// beat non-VPN routes.
@@ -1482,7 +1482,7 @@ func (r *linuxRouter) delRoutes() error {
 }
 
 // delIPRules removes the policy routing rules that avoid
-// tailscaled routing loops, if it exists.
+// scaletaild routing loops, if it exists.
 func (r *linuxRouter) delIPRules() error {
 	if !r.ipRuleAvailable {
 		return nil

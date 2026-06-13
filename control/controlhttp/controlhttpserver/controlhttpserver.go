@@ -55,11 +55,11 @@ func acceptHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request, pri
 	initB64 := r.Header.Get(controlhttpcommon.HandshakeHeaderName)
 	if initB64 == "" {
 		http.Error(w, "missing Tailscale handshake header", http.StatusBadRequest)
-		return nil, errors.New("no tailscale handshake header in HTTP request")
+		return nil, errors.New("no scaletail handshake header in HTTP request")
 	}
 	init, err := base64.StdEncoding.DecodeString(initB64)
 	if err != nil {
-		http.Error(w, "invalid tailscale handshake header", http.StatusBadRequest)
+		http.Error(w, "invalid scaletail handshake header", http.StatusBadRequest)
 		return nil, fmt.Errorf("decoding base64 handshake header: %v", err)
 	}
 
@@ -142,11 +142,11 @@ func acceptWebsocket(ctx context.Context, w http.ResponseWriter, r *http.Request
 	initB64 := r.Form.Get(controlhttpcommon.HandshakeHeaderName)
 	if initB64 == "" {
 		c.Close(websocket.StatusPolicyViolation, "missing Tailscale handshake parameter")
-		return nil, errors.New("no tailscale handshake parameter in HTTP request")
+		return nil, errors.New("no scaletail handshake parameter in HTTP request")
 	}
 	init, err := base64.StdEncoding.DecodeString(initB64)
 	if err != nil {
-		c.Close(websocket.StatusPolicyViolation, "invalid tailscale handshake parameter")
+		c.Close(websocket.StatusPolicyViolation, "invalid scaletail handshake parameter")
 		return nil, fmt.Errorf("decoding base64 handshake parameter: %v", err)
 	}
 

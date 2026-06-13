@@ -11,29 +11,29 @@
 #
 # To build a Tailscale image and push to the local docker registry:
 #
-#   $ REPO=local/tailscale TAGS=v0.0.1 PLATFORM=local  make publishdevimage
+#   $ REPO=local/scaletail TAGS=v0.0.1 PLATFORM=local  make publishdevimage
 #
 # To build a Tailscale image and push to a remote docker registry:
 #
-#   $ REPO=<your-registry>/<your-repo>/tailscale TAGS=v0.0.1  make publishdevimage
+#   $ REPO=<your-registry>/<your-repo>/scaletail TAGS=v0.0.1  make publishdevimage
 #
-# This Dockerfile includes all the tailscale binaries.
+# This Dockerfile includes all the scaletail binaries.
 #
 # To build the Dockerfile:
 #
-#     $ docker build -t tailscale/tailscale .
+#     $ docker build -t tailscale/scaletail .
 #
-# To run the tailscaled agent:
+# To run the scaletaild agent:
 #
-#     $ docker run -d --name=tailscaled -v /var/lib:/var/lib -v /dev/net/tun:/dev/net/tun --network=host --privileged tailscale/tailscale tailscaled
+#     $ docker run -d --name=scaletaild -v /var/lib:/var/lib -v /dev/net/tun:/dev/net/tun --network=host --privileged tailscale/scaletail scaletaild
 #
 # To then log in:
 #
-#     $ docker exec tailscaled tailscale up
+#     $ docker exec scaletaild scaletail up
 #
 # To see status:
 #
-#     $ docker exec tailscaled tailscale status
+#     $ docker exec scaletaild scaletail status
 
 
 FROM golang:1.26-alpine AS build-env
@@ -69,7 +69,7 @@ RUN GOARCH=$TARGETARCH go install -ldflags="\
       -X tailscale.com/version.longStamp=$VERSION_LONG \
       -X tailscale.com/version.shortStamp=$VERSION_SHORT \
       -X tailscale.com/version.gitCommitStamp=$VERSION_GIT_HASH" \
-      -v ./cmd/tailscale ./cmd/tailscaled ./cmd/containerboot
+      -v ./cmd/scaletail ./cmd/scaletaild ./cmd/containerboot
 
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates iptables iproute2 ip6tables
@@ -84,4 +84,4 @@ RUN rm /usr/sbin/ip6tables && ln -s /usr/sbin/ip6tables-legacy /usr/sbin/ip6tabl
 COPY --from=build-env /go/bin/* /usr/local/bin/
 # For compat with the previous run.sh, although ideally you should be
 # using build_docker.sh which sets an entrypoint for the image.
-RUN mkdir /tailscale && ln -s /usr/local/bin/containerboot /tailscale/run.sh
+RUN mkdir /scaletail && ln -s /usr/local/bin/containerboot /tailscale/run.sh

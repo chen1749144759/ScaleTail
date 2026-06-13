@@ -21,7 +21,7 @@ const defaultFlushDelay = 2 * time.Second
 
 const (
 	// CollectionNode is the name of a logtail Config.Collection
-	// for tailscaled (or equivalent: IPNExtension, Android app).
+	// for scaletaild (or equivalent: IPNExtension, Android app).
 	CollectionNode = "tailnode.log.tailscale.io"
 )
 

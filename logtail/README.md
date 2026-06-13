@@ -1,7 +1,7 @@
 # Tailscale Logs Service
 
 This github repository contains libraries, documentation, and examples
-for working with the public API of the tailscale logs service.
+for working with the public API of the scaletail logs service.
 
 For a very quick introduction to the core features, read the
 [API docs](api.md) and peruse the

@@ -71,7 +71,7 @@ type TKAInitFinishRequest struct {
 
 	// SupportDisablement is a disablement secret for Tailscale support.
 	// This is only generated if --gen-disablement-for-support is specified
-	// in an invocation to 'tailscale lock init'.
+	// in an invocation to 'scaletail lock init'.
 	SupportDisablement []byte `json:",omitempty"`
 }
 

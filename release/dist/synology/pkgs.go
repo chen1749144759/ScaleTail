@@ -204,11 +204,11 @@ func (m *synologyBuilds) buildInnerPackage(b *dist.Build, dsmVersion int, goenv 
 		if err := b.BuildWebClientAssets(); err != nil {
 			return nil, err
 		}
-		ts, err := b.BuildGoBinary("tailscale.com/cmd/tailscale", goenv)
+		ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", goenv)
 		if err != nil {
 			return nil, err
 		}
-		tsd, err := b.BuildGoBinary("tailscale.com/cmd/tailscaled", goenv)
+		tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", goenv)
 		if err != nil {
 			return nil, err
 		}
@@ -229,7 +229,7 @@ func (m *synologyBuilds) buildInnerPackage(b *dist.Build, dsmVersion int, goenv 
 
 		err = writeTar(tw, b.Time,
 			dir("bin"),
-			file(tsd, "bin/tailscaled", 0755),
+			file(tsd, "bin/scaletaild", 0755),
 			file(ts, "bin/tailscale", 0755),
 			dir("conf"),
 			static("Tailscale.sc", "conf/Tailscale.sc", 0644),

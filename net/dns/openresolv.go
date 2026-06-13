@@ -92,7 +92,7 @@ func (m openresolvManager) GetBaseConfig() (OSConfig, error) {
 	// List all resolvconf snippets except our own, and parse that as
 	// a resolv.conf. This effectively generates a blended config of
 	// "everyone except tailscale", which is what would be in use if
-	// tailscale hadn't set exclusive mode.
+	// scaletail hadn't set exclusive mode.
 	//
 	// Note that this is not _entirely_ true. To be perfectly correct,
 	// we should be looking for other interfaces marked exclusive that

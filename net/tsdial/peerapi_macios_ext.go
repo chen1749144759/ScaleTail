@@ -3,7 +3,7 @@
 
 // This file's built on iOS and on two of three macOS build variants:
 // the two GUI variants that both use Extensions (Network Extension
-// and System Extension). It's not used on tailscaled-on-macOS.
+// and System Extension). It's not used on scaletaild-on-macOS.
 
 //go:build ts_macext && (darwin || ios)
 

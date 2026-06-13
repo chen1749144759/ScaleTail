@@ -180,7 +180,7 @@ func (a *ServiceReconciler) maybeCleanup(ctx context.Context, logger *zap.Sugare
 
 	// Unlike most log entries in the reconcile loop, this will get printed
 	// exactly once at the very end of cleanup, because the final step of
-	// cleanup removes the tailscale finalizer, which will make all future
+	// cleanup removes the scaletail finalizer, which will make all future
 	// reconciles exit early.
 	logger.Infof("unexposed Service from tailnet")
 

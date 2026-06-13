@@ -33,8 +33,8 @@ import (
 )
 
 // TODO: this was randomly generated once. Maybe do it per process start? But
-// then an upgraded tailscaled would be visible to devices behind it. So
-// maybe instead make it a function of the tailscaled's wireguard public key?
+// then an upgraded scaletaild would be visible to devices behind it. So
+// maybe instead make it a function of the scaletaild's wireguard public key?
 // For now just hard code it.
 var ourMAC = net.HardwareAddr{0x30, 0x2D, 0x66, 0xEC, 0x7A, 0x93}
 

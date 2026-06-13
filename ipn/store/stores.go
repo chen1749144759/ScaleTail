@@ -119,35 +119,12 @@ func HasKnownProviderPrefix(path string) bool {
 	return false
 }
 
-// TryWindowsAppDataMigration attempts to copy the Windows state file
-// from its old location to the new location. (Issue 2856)
-//
-// Tailscale 1.14 and before stored state under %LocalAppData%
-// (usually "C:\WINDOWS\system32\config\systemprofile\AppData\Local"
-// when tailscaled.exe is running as a non-user system service).
-// However it is frequently cleared for almost any reason: Windows
-// updates, System Restore, even various System Cleaner utilities.
-//
-// Returns a string of the path to use for the state file.
-// This will be a fallback %LocalAppData% path if migration fails,
-// a %ProgramData% path otherwise.
+// TryWindowsAppDataMigration returns the configured Windows state path.
 func TryWindowsAppDataMigration(logf logger.Logf, path string) string {
-	if path != paths.DefaultTailscaledStateFile() {
+	if path != paths.DefaultScaleTaildStateFile() {
 		// If they're specifying a non-default path, just trust that they know
 		// what they are doing.
 		return path
-	}
-	for _, oldFile := range []string{paths.LegacySystemStateFilePath(), paths.LegacyStateFilePath()} {
-		if oldFile == "" || oldFile == path {
-			continue
-		}
-		nextPath := paths.TryConfigFileMigration(logf, oldFile, path)
-		if nextPath != path {
-			return nextPath
-		}
-		if _, err := os.Stat(path); err == nil {
-			return path
-		}
 	}
 	return path
 }

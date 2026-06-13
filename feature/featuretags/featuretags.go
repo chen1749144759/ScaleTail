@@ -129,7 +129,7 @@ var Features = map[FeatureTag]FeatureMeta{
 	},
 	"captiveportal": {Sym: "CaptivePortal", Desc: "Captive portal detection"},
 	"capture":       {Sym: "Capture", Desc: "Packet capture"},
-	"cli":           {Sym: "CLI", Desc: "embed the CLI into the tailscaled binary"},
+	"cli":           {Sym: "CLI", Desc: "embed the CLI into the scaletaild binary"},
 	"colorable":     {Sym: "Colorable", Desc: "Colorized terminal output"},
 	"cliconndiag":   {Sym: "CLIConnDiag", Desc: "CLI connection error diagnostics"},
 	"clientmetrics": {Sym: "ClientMetrics", Desc: "Client metrics support"},
@@ -168,7 +168,7 @@ var Features = map[FeatureTag]FeatureMeta{
 	"health":             {Sym: "Health", Desc: "Health checking support"},
 	"hujsonconf":         {Sym: "HuJSONConf", Desc: "HuJSON config file support"},
 	"identityfederation": {Sym: "IdentityFederation", Desc: "Auth key generation via identity federation support"},
-	"ipnbus":             {Sym: "IPNBus", Desc: "IPN notification bus (watch-ipn-bus) support, used by GUIs, debugging, and nicer 'tailscale up' support"},
+	"ipnbus":             {Sym: "IPNBus", Desc: "IPN notification bus (watch-ipn-bus) support, used by GUIs, debugging, and nicer 'scaletail up' support"},
 	"iptables":           {Sym: "IPTables", Desc: "Linux iptables support"},
 	"kube":               {Sym: "Kube", Desc: "Kubernetes integration"},
 	"linuxdnsfight":      {Sym: "LinuxDNSFight", Desc: "Linux support for detecting DNS fights (inotify watching of /etc/resolv.conf)"},
@@ -193,7 +193,7 @@ var Features = map[FeatureTag]FeatureMeta{
 	"osrouter": {
 		Sym:  "OSRouter",
 		Desc: "Configure the operating system's network stack, IPs, and routing tables",
-		// TODO(bradfitz): if this is omitted, and netstack is too, then tailscaled needs
+		// TODO(bradfitz): if this is omitted, and netstack is too, then scaletaild needs
 		// external config to be useful. Some people may want that, and we should support it,
 		// but it's rare. Maybe there should be a way to declare here that this "Provides"
 		// another feature (and netstack can too), and then if those required features provided
@@ -228,7 +228,7 @@ var Features = map[FeatureTag]FeatureMeta{
 		Desc: "Linux NetworkManager integration",
 		Deps: []FeatureTag{"dbus"},
 	},
-	"qrcodes":     {Sym: "QRCodes", Desc: "QR codes in tailscale CLI"},
+	"qrcodes":     {Sym: "QRCodes", Desc: "QR codes in scaletail CLI"},
 	"relayserver": {Sym: "RelayServer", Desc: "Relay server"},
 	"resolved": {
 		Sym:  "Resolved",

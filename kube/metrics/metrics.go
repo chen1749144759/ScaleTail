@@ -17,7 +17,7 @@ import (
 )
 
 // metrics is a simple metrics HTTP server, if enabled it forwards requests to
-// the tailscaled's LocalAPI usermetrics endpoint at /localapi/v0/usermetrics.
+// the scaletaild's LocalAPI usermetrics endpoint at /localapi/v0/usermetrics.
 type metrics struct {
 	debugEndpoint string
 	lc            *local.Client
@@ -65,9 +65,9 @@ func (m *metrics) handleDebug(w http.ResponseWriter, r *http.Request) {
 }
 
 // registerMetricsHandlers registers a simple HTTP metrics handler at /metrics, forwarding
-// requests to tailscaled's /localapi/v0/usermetrics API.
+// requests to scaletaild's /localapi/v0/usermetrics API.
 //
-// In 1.78.x and 1.80.x, it also proxies debug paths to tailscaled's debug
+// In 1.78.x and 1.80.x, it also proxies debug paths to scaletaild's debug
 // endpoint if configured to ease migration for a breaking change serving user
 // metrics instead of debug metrics on the "metrics" port.
 func RegisterMetricsHandlers(mux *http.ServeMux, lc *local.Client, debugAddrPort string) {

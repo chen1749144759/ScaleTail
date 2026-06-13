@@ -12,17 +12,17 @@ import (
 // headers above the link layer (e.g. IP headers, UDP headers, Wireguard
 // headers, etc.). We have to think about several different values of MTU:
 //
-// Wire MTU: The MTU of an interface underneath the tailscale TUN, e.g. an
+// Wire MTU: The MTU of an interface underneath the scaletail TUN, e.g. an
 // Ethernet network card will default to a 1500 byte MTU. The user may change
 // this MTU at any time.
 //
-// TUN MTU: The current MTU of the tailscale TUN. This MTU is adjusted downward
-// to make room for the wireguard/tailscale headers. For example, if the
+// TUN MTU: The current MTU of the scaletail TUN. This MTU is adjusted downward
+// to make room for the wireguard/scaletail headers. For example, if the
 // underlying network interface's MTU is 1500 bytes, the maximum size of a
-// packet entering the tailscale TUN is 1420 bytes. The user may change this MTU
+// packet entering the scaletail TUN is 1420 bytes. The user may change this MTU
 // at any time via the OS's tools (ifconfig, ip, etc.).
 //
-// User configured initial MTU: The MTU the tailscale TUN should be created
+// User configured initial MTU: The MTU the scaletail TUN should be created
 // with, set by the user via TS_DEBUG_MTU. It should be adjusted down from the
 // underlying interface MTU by 80 bytes to make room for the wireguard
 // headers. This envknob is mostly for debugging. This value is used once at TUN
@@ -35,7 +35,7 @@ import (
 // Maximum probed MTU: This is the largest MTU size that we send probe packets
 // for.
 //
-// Safe MTU: If the tailscale TUN MTU is set to this value, almost all packets
+// Safe MTU: If the scaletail TUN MTU is set to this value, almost all packets
 // will get to their destination. Tailscale defaults to this MTU in the absence
 // of path MTU probe information or user MTU configuration. We may occasionally
 // find a path that needs a smaller MTU but it is very rare.
@@ -43,7 +43,7 @@ import (
 // Peer MTU: This is the path MTU to a peer's current best endpoint. It defaults
 // to the Safe MTU unless we have path MTU probe results that tell us otherwise.
 //
-// Initial MTU: This is the MTU tailscaled creates the TUN with. In order of
+// Initial MTU: This is the MTU scaletaild creates the TUN with. In order of
 // priority, it is:
 //
 // 1. If set, the value of TS_DEBUG_MTU clamped to a maximum of 65536
@@ -51,7 +51,7 @@ import (
 //    overhead
 // 3. If TS_DEBUG_ENABLE_PMTUD is not set, the Safe MTU
 //
-// Current MTU: This the MTU of the tailscale TUN at any given moment
+// Current MTU: This the MTU of the scaletail TUN at any given moment
 // after TUN creation. In order of priority, it is:
 //
 // 1. The MTU set by the user via the OS, if it has ever been set
@@ -59,7 +59,7 @@ import (
 //    overhead
 // 4. If TS_DEBUG_ENABLE_PMTUD is not set, the Safe MTU
 
-// TUNMTU is the MTU for the tailscale TUN.
+// TUNMTU is the MTU for the scaletail TUN.
 type TUNMTU uint32
 
 // WireMTU is the MTU for the underlying network devices.

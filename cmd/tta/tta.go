@@ -53,7 +53,7 @@ const (
 )
 
 var (
-	driverAddr = flag.String("driver", "test-driver.tailscale:8008", "address of the test driver; by default we use the DNS name test-driver.tailscale which is special cased in the emulated network's DNS server")
+	driverAddr = flag.String("driver", "test-driver.tailscale:8008", "address of the test driver; by default we use the DNS name test-driver.scaletail which is special cased in the emulated network's DNS server")
 )
 
 func absify(cmd string) string {
@@ -174,7 +174,7 @@ func main() {
 	hs.ConnState = revSt.connState
 	conns := make(chan net.Conn, 1)
 
-	lcRP := httputil.NewSingleHostReverseProxy(must.Get(url.Parse("http://local-tailscaled.sock")))
+	lcRP := httputil.NewSingleHostReverseProxy(must.Get(url.Parse("http://local-scaletaild.sock")))
 	lcRP.Transport = new(localClientRoundTripper)
 	ttaMux.HandleFunc("/localapi/", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Got localapi request: %v", r.URL)
@@ -313,7 +313,7 @@ func main() {
 		defer cancel()
 		cmd := exec.CommandContext(ctx, absify("tailscale"), "file", "get", "--wait", dir)
 		if out, err := cmd.CombinedOutput(); err != nil {
-			http.Error(w, fmt.Sprintf("tailscale file get: %v\n%s", err, out), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("scaletail file get: %v\n%s", err, out), http.StatusInternalServerError)
 			return
 		}
 		ents, err := os.ReadDir(dir)
@@ -391,17 +391,17 @@ func main() {
 		}
 		wgServerUp(w, r)
 	})
-	ttaMux.HandleFunc("/restart-tailscaled", func(w http.ResponseWriter, r *http.Request) {
-		if restartTailscaled == nil {
-			http.Error(w, "restart-tailscaled not supported on this platform", http.StatusNotImplemented)
+	ttaMux.HandleFunc("/restart-scaletaild", func(w http.ResponseWriter, r *http.Request) {
+		if restartScaleTaild == nil {
+			http.Error(w, "restart-scaletaild not supported on this platform", http.StatusNotImplemented)
 			return
 		}
-		pid, err := restartTailscaled()
+		pid, err := restartScaleTaild()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, "killed tailscaled pid %d (supervisor will respawn)\n", pid)
+		fmt.Fprintf(w, "killed scaletaild pid %d (supervisor will respawn)\n", pid)
 	})
 	ttaMux.HandleFunc("/logs", func(w http.ResponseWriter, r *http.Request) {
 		logBuf.mu.Lock()
@@ -612,10 +612,10 @@ var addFirewall func() error // set by fw_linux.go
 // non-Linux.
 var wgServerUp func(w http.ResponseWriter, r *http.Request)
 
-// restartTailscaled sends SIGKILL to the local tailscaled process so the
-// gokrazy supervisor restarts it. It is set by restart_tailscaled_linux.go
+// restartScaleTaild sends SIGKILL to the local scaletaild process so the
+// gokrazy supervisor restarts it. It is set by restart_scaletaild_linux.go
 // and is nil on non-Linux.
-var restartTailscaled func() (pid int, err error)
+var restartScaleTaild func() (pid int, err error)
 
 // logBuffer is a bytes.Buffer that is safe for concurrent use
 // intended to capture early logs from the process, even if

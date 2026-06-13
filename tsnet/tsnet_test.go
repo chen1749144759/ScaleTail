@@ -336,7 +336,7 @@ func startServer(t *testing.T, ctx context.Context, controlURL, hostname string)
 	}
 	s.lb.ConfigureCertsForTest(testCertRoot.getCert)
 
-	return s, status.TailscaleIPs[0], status.Self.PublicKey
+	return s, status.ScaleTailIPs[0], status.Self.PublicKey
 }
 
 func TestDialBlocks(t *testing.T) {
@@ -646,7 +646,7 @@ func TestLoopbackSOCKS5(t *testing.T) {
 	}
 }
 
-func TestTailscaleIPs(t *testing.T) {
+func TestScaleTailIPs(t *testing.T) {
 	tstest.Shard(t)
 	controlURL, _ := startControl(t)
 
@@ -671,7 +671,7 @@ func TestTailscaleIPs(t *testing.T) {
 	}
 
 	var upIp4, upIp6 netip.Addr
-	for _, ip := range s1status.TailscaleIPs {
+	for _, ip := range s1status.ScaleTailIPs {
 		if ip.Is6() {
 			upIp6 = ip
 		}
@@ -680,9 +680,9 @@ func TestTailscaleIPs(t *testing.T) {
 		}
 	}
 
-	sIp4, sIp6 := s1.TailscaleIPs()
+	sIp4, sIp6 := s1.ScaleTailIPs()
 	if !(upIp4 == sIp4 && upIp6 == sIp6) {
-		t.Errorf("s1.TailscaleIPs returned a different result than S1.Up, (%s, %s) != (%s, %s)",
+		t.Errorf("s1.ScaleTailIPs returned a different result than S1.Up, (%s, %s) != (%s, %s)",
 			sIp4, upIp4, sIp6, upIp6)
 	}
 }
@@ -759,7 +759,7 @@ func TestStartStopStartGetsSameIP(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	firstIPs := s1status.TailscaleIPs
+	firstIPs := s1status.ScaleTailIPs
 	t.Logf("IPs: %v", firstIPs)
 
 	if err := s1.Close(); err != nil {
@@ -774,7 +774,7 @@ func TestStartStopStartGetsSameIP(t *testing.T) {
 		t.Fatalf("second Up: %v", err)
 	}
 
-	secondIPs := s2status.TailscaleIPs
+	secondIPs := s2status.ScaleTailIPs
 	t.Logf("IPs: %v", secondIPs)
 
 	if !reflect.DeepEqual(firstIPs, secondIPs) {
@@ -2031,14 +2031,14 @@ func TestUserMetricsByteCounters(t *testing.T) {
 	t.Logf("Metrics1:\n%s\n", metrics1)
 
 	// Verify that the amount of data recorded in bytes is higher or equal to the data sent
-	inboundBytes1 := parsedMetrics1[`tailscaled_inbound_bytes_total{path="direct_ipv4"}`]
+	inboundBytes1 := parsedMetrics1[`scaletaild_inbound_bytes_total{path="direct_ipv4"}`]
 	if inboundBytes1 < float64(bytesToSend) {
-		t.Errorf(`metrics1, tailscaled_inbound_bytes_total{path="direct_ipv4"}: expected higher (or equal) than %d, got: %f`, bytesToSend, inboundBytes1)
+		t.Errorf(`metrics1, scaletaild_inbound_bytes_total{path="direct_ipv4"}: expected higher (or equal) than %d, got: %f`, bytesToSend, inboundBytes1)
 	}
 
 	// But ensure that it is not too much higher than the data sent.
 	if inboundBytes1 > float64(bytesToSend)*bytesSentTolerance {
-		t.Errorf(`metrics1, tailscaled_inbound_bytes_total{path="direct_ipv4"}: expected lower than %f, got: %f`, float64(bytesToSend)*bytesSentTolerance, inboundBytes1)
+		t.Errorf(`metrics1, scaletaild_inbound_bytes_total{path="direct_ipv4"}: expected lower than %f, got: %f`, float64(bytesToSend)*bytesSentTolerance, inboundBytes1)
 	}
 
 	metrics2, err := lc2.UserMetrics(ctx)
@@ -2054,14 +2054,14 @@ func TestUserMetricsByteCounters(t *testing.T) {
 	t.Logf("Metrics2:\n%s\n", metrics2)
 
 	// Verify that the amount of data recorded in bytes is higher or equal than the data sent.
-	outboundBytes2 := parsedMetrics2[`tailscaled_outbound_bytes_total{path="direct_ipv4"}`]
+	outboundBytes2 := parsedMetrics2[`scaletaild_outbound_bytes_total{path="direct_ipv4"}`]
 	if outboundBytes2 < float64(bytesToSend) {
-		t.Errorf(`metrics2, tailscaled_outbound_bytes_total{path="direct_ipv4"}: expected higher (or equal) than %d, got: %f`, bytesToSend, outboundBytes2)
+		t.Errorf(`metrics2, scaletaild_outbound_bytes_total{path="direct_ipv4"}: expected higher (or equal) than %d, got: %f`, bytesToSend, outboundBytes2)
 	}
 
 	// But ensure that it is not too much higher than the data sent.
 	if outboundBytes2 > float64(bytesToSend)*bytesSentTolerance {
-		t.Errorf(`metrics2, tailscaled_outbound_bytes_total{path="direct_ipv4"}: expected lower than %f, got: %f`, float64(bytesToSend)*bytesSentTolerance, outboundBytes2)
+		t.Errorf(`metrics2, scaletaild_outbound_bytes_total{path="direct_ipv4"}: expected lower than %f, got: %f`, float64(bytesToSend)*bytesSentTolerance, outboundBytes2)
 	}
 }
 
@@ -2148,15 +2148,15 @@ func TestUserMetricsRouteGauges(t *testing.T) {
 	// - 192.0.2.0/24
 	// - 192.0.3.0/24
 	// - 192.0.5.1/32
-	if got, want := parsedMetrics1["tailscaled_advertised_routes"], 3.0; got != want {
-		t.Errorf("metrics1, tailscaled_advertised_routes: got %v, want %v", got, want)
+	if got, want := parsedMetrics1["scaletaild_advertised_routes"], 3.0; got != want {
+		t.Errorf("metrics1, scaletaild_advertised_routes: got %v, want %v", got, want)
 	}
 
 	// The control has approved 2 routes:
 	// - 192.0.2.0/24
 	// - 192.0.5.1/32
-	if got, want := parsedMetrics1["tailscaled_approved_routes"], wantRoutes; got != want {
-		t.Errorf("metrics1, tailscaled_approved_routes: got %v, want %v", got, want)
+	if got, want := parsedMetrics1["scaletaild_approved_routes"], wantRoutes; got != want {
+		t.Errorf("metrics1, scaletaild_approved_routes: got %v, want %v", got, want)
 	}
 
 	metrics2, err := lc2.UserMetrics(ctx)
@@ -2172,13 +2172,13 @@ func TestUserMetricsRouteGauges(t *testing.T) {
 	t.Logf("Metrics2:\n%s\n", metrics2)
 
 	// The node is advertising 0 routes
-	if got, want := parsedMetrics2["tailscaled_advertised_routes"], 0.0; got != want {
-		t.Errorf("metrics2, tailscaled_advertised_routes: got %v, want %v", got, want)
+	if got, want := parsedMetrics2["scaletaild_advertised_routes"], 0.0; got != want {
+		t.Errorf("metrics2, scaletaild_advertised_routes: got %v, want %v", got, want)
 	}
 
 	// The control has approved 0 routes
-	if got, want := parsedMetrics2["tailscaled_approved_routes"], 0.0; got != want {
-		t.Errorf("metrics2, tailscaled_approved_routes: got %v, want %v", got, want)
+	if got, want := parsedMetrics2["scaletaild_approved_routes"], 0.0; got != want {
+		t.Errorf("metrics2, scaletaild_approved_routes: got %v, want %v", got, want)
 	}
 }
 
@@ -2335,11 +2335,11 @@ func setupTwoClientTest(t *testing.T, useTUN bool) *listenTest {
 	}
 	s2.lb.ConfigureCertsForTest(testCertRoot.getCert)
 
-	s1ip4, s1ip6 := s1.TailscaleIPs()
-	s2ip4 := s2status.TailscaleIPs[0]
+	s1ip4, s1ip6 := s1.ScaleTailIPs()
+	s2ip4 := s2status.ScaleTailIPs[0]
 	var s2ip6 netip.Addr
-	if len(s2status.TailscaleIPs) > 1 {
-		s2ip6 = s2status.TailscaleIPs[1]
+	if len(s2status.ScaleTailIPs) > 1 {
+		s2ip6 = s2status.ScaleTailIPs[1]
 	}
 
 	lc1 := must.Get(s1.LocalClient())

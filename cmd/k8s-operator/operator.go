@@ -196,7 +196,7 @@ func initTSNet(zlog *zap.SugaredLogger, loginServer string) (*tsnet.Server, *tai
 
 	s := &tsnet.Server{
 		Hostname:   hostname,
-		Logf:       zlog.Named("tailscaled").Debugf,
+		Logf:       zlog.Named("scaletaild").Debugf,
 		ControlURL: loginServer,
 	}
 
@@ -217,7 +217,7 @@ func initTSNet(zlog *zap.SugaredLogger, loginServer string) (*tsnet.Server, *tai
 	}
 
 	if err := s.Start(); err != nil {
-		startlog.Fatalf("starting tailscale server: %v", err)
+		startlog.Fatalf("starting scaletail server: %v", err)
 	}
 	lc, err := s.LocalClient()
 	if err != nil {
@@ -229,7 +229,7 @@ func initTSNet(zlog *zap.SugaredLogger, loginServer string) (*tsnet.Server, *tai
 	machineAuthShown := false
 waitOnline:
 	for {
-		startlog.Debugf("querying tailscaled status")
+		startlog.Debugf("querying scaletaild status")
 		st, err := lc.StatusWithoutPeers(ctx)
 		if err != nil {
 			startlog.Fatalf("getting status: %v", err)
@@ -272,14 +272,14 @@ waitOnline:
 				machineAuthShown = true
 			}
 		default:
-			startlog.Debugf("waiting for tailscale to start: %v", st.BackendState)
+			startlog.Debugf("waiting for scaletail to start: %v", st.BackendState)
 		}
 		time.Sleep(time.Second)
 	}
 	return s, tsc
 }
 
-// predicate function for filtering to ensure we *don't* reconcile on tailscale managed Kubernetes Services
+// predicate function for filtering to ensure we *don't* reconcile on scaletail managed Kubernetes Services
 func serviceManagedResourceFilterPredicate() predicate.Predicate {
 	return predicate.NewPredicateFuncs(func(object client.Object) bool {
 		if svc, ok := object.(*corev1.Service); !ok {
@@ -430,7 +430,7 @@ func runReconcilers(opts reconcilerOpts) {
 	// If a ProxyClassChanges, enqueue all Ingresses labeled with that
 	// ProxyClass's name.
 	proxyClassFilterForIngress := handler.EnqueueRequestsFromMapFunc(proxyClassHandlerForIngress(mgr.GetClient(), startlog))
-	// Enque Ingress if a managed Service or backend Service associated with a tailscale Ingress changes.
+	// Enque Ingress if a managed Service or backend Service associated with a scaletail Ingress changes.
 	svcHandlerForIngress := handler.EnqueueRequestsFromMapFunc(serviceHandlerForIngress(mgr.GetClient(), startlog, opts.ingressClassName))
 	err = builder.
 		ControllerManagedBy(mgr).
@@ -662,7 +662,7 @@ func runReconcilers(opts reconcilerOpts) {
 	dnsRRDNSConfigOpts := handler.EnqueueRequestsFromMapFunc(enqueueAllIngressEgressProxySvcsInNS(opts.tailscaleNamespace, mgr.GetClient(), logger))
 	// On Service events, if it is an ingress/egress proxy headless Service, reconcile it.
 	dnsRRServiceOpts := handler.EnqueueRequestsFromMapFunc(dnsRecordsReconcilerServiceHandler)
-	// On Ingress events, if it is a tailscale Ingress or if tailscale is the default ingress controller, reconcile the proxy
+	// On Ingress events, if it is a scaletail Ingress or if scaletail is the default ingress controller, reconcile the proxy
 	// headless Service.
 	dnsRRIngressOpts := handler.EnqueueRequestsFromMapFunc(dnsRecordsReconcilerIngressHandler(opts.tailscaleNamespace, opts.proxyActAsDefaultLoadBalancer, mgr.GetClient(), logger))
 	err = builder.ControllerManagedBy(mgr).
@@ -833,7 +833,7 @@ func enqueueAllIngressEgressProxySvcsInNS(ns string, cl client.Client, logger *z
 		}
 		svcHeadlessSvcList := &corev1.ServiceList{}
 		if err := cl.List(ctx, svcHeadlessSvcList, client.InNamespace(ns), client.MatchingLabels(svcProxyLabels)); err != nil {
-			logger.Errorf("error listing headless Services for tailscale ingress/egress Services in operator namespace: %v", err)
+			logger.Errorf("error listing headless Services for scaletail ingress/egress Services in operator namespace: %v", err)
 			return nil
 		}
 		for _, svc := range svcHeadlessSvcList.Items {
@@ -847,7 +847,7 @@ func enqueueAllIngressEgressProxySvcsInNS(ns string, cl client.Client, logger *z
 		}
 		ingHeadlessSvcList := &corev1.ServiceList{}
 		if err := cl.List(ctx, ingHeadlessSvcList, client.InNamespace(ns), client.MatchingLabels(ingProxyLabels)); err != nil {
-			logger.Errorf("error listing headless Services for tailscale Ingresses in operator namespace: %v", err)
+			logger.Errorf("error listing headless Services for scaletail Ingresses in operator namespace: %v", err)
 			return nil
 		}
 		for _, svc := range ingHeadlessSvcList.Items {
@@ -884,8 +884,8 @@ func dnsRecordsReconcilerServiceHandler(ctx context.Context, o client.Object) []
 }
 
 // dnsRecordsReconcilerIngressHandler filters Ingress events to ensure that
-// dns-records-reconciler only reconciles on tailscale Ingress events. When an
-// event is observed on a tailscale Ingress, reconcile the proxy headless Service.
+// dns-records-reconciler only reconciles on scaletail Ingress events. When an
+// event is observed on a scaletail Ingress, reconcile the proxy headless Service.
 func dnsRecordsReconcilerIngressHandler(ns string, isDefaultLoadBalancer bool, cl client.Client, logger *zap.SugaredLogger) handler.MapFunc {
 	return func(ctx context.Context, o client.Object) []reconcile.Request {
 		ing, ok := o.(*networkingv1.Ingress)
@@ -1100,7 +1100,7 @@ func proxyClassHandlerForConnector(cl client.Client, logger *zap.SugaredLogger) 
 // nodeHandlerForProxyGroup returns a handler that, for a given Node, returns a
 // list of reconcile requests for ProxyGroups that should be reconciled for the
 // Node event. ProxyGroups need to be reconciled for Node events if they are
-// configured to expose tailscaled static endpoints to tailnet using NodePort
+// configured to expose scaletaild static endpoints to tailnet using NodePort
 // Services.
 func nodeHandlerForProxyGroup(cl client.Client, defaultProxyClass string, logger *zap.SugaredLogger) handler.MapFunc {
 	return func(ctx context.Context, o client.Object) []reconcile.Request {
@@ -1212,7 +1212,7 @@ func serviceAccountHandlerForProxyGroup(cl client.Client, logger *zap.SugaredLog
 // serviceHandlerForIngress returns a handler for Service events for ingress
 // reconciler that ensures that if the Service associated with an event is of
 // interest to the reconciler, the associated Ingress(es) gets be reconciled.
-// The Services of interest are backend Services for tailscale Ingress and
+// The Services of interest are backend Services for scaletail Ingress and
 // managed Services for an StatefulSet for a proxy configured for tailscale
 // Ingress
 func serviceHandlerForIngress(cl client.Client, logger *zap.SugaredLogger, ingressClassName string) handler.MapFunc {
@@ -1771,7 +1771,7 @@ func indexPGIngresses(o client.Object) []string {
 }
 
 // serviceHandlerForIngressPG returns a handler for Service events that ensures that if the Service
-// associated with an event is a backend Service for a tailscale Ingress with ProxyGroup annotation,
+// associated with an event is a backend Service for a scaletail Ingress with ProxyGroup annotation,
 // the associated Ingress gets reconciled.
 func serviceHandlerForIngressPG(cl client.Client, logger *zap.SugaredLogger, ingressClassName string) handler.MapFunc {
 	return func(ctx context.Context, o client.Object) []reconcile.Request {
@@ -1817,7 +1817,7 @@ func hasProxyClassAnnotation(obj client.Object) bool {
 func id(ctx context.Context, lc *local.Client) (string, error) {
 	st, err := lc.StatusWithoutPeers(ctx)
 	if err != nil {
-		return "", fmt.Errorf("error getting tailscale status: %w", err)
+		return "", fmt.Errorf("error getting scaletail status: %w", err)
 	}
 	if st.Self == nil {
 		return "", fmt.Errorf("unexpected: device's status does not contain self status")

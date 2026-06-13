@@ -60,11 +60,11 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/tailscale", t.goEnv)
+	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/tailscaled", t.goEnv)
+	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if err := addDir(dir); err != nil {
 		return nil, err
 	}
-	if err := addFile(tsd, filepath.Join(dir, "tailscaled"), 0755); err != nil {
+	if err := addFile(tsd, filepath.Join(dir, "scaletaild"), 0755); err != nil {
 		return nil, err
 	}
 	if err := addFile(ts, filepath.Join(dir, "tailscale"), 0755); err != nil {
@@ -137,20 +137,20 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err := addDir(dir); err != nil {
 			return nil, err
 		}
-		tailscaledDir, err := b.GoPkg("tailscale.com/cmd/tailscaled")
+		scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
 		if err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(tailscaledDir, "tailscaled.service"), filepath.Join(dir, "tailscaled.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.service"), filepath.Join(dir, "scaletaild.service"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(tailscaledDir, "tailscaled.defaults"), filepath.Join(dir, "tailscaled.defaults"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.defaults"), filepath.Join(dir, "scaletaild.defaults"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(tailscaledDir, "tailscale-online.target"), filepath.Join(dir, "tailscale-online.target"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "tailscale-online.target"), filepath.Join(dir, "tailscale-online.target"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(tailscaledDir, "tailscale-wait-online.service"), filepath.Join(dir, "tailscale-wait-online.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "tailscale-wait-online.service"), filepath.Join(dir, "tailscale-wait-online.service"), 0644); err != nil {
 			return nil, err
 		}
 	}
@@ -201,16 +201,16 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/tailscale", t.goEnv)
+	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/tailscaled", t.goEnv)
+	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
 
-	tailscaledDir, err := b.GoPkg("tailscale.com/cmd/tailscaled")
+	scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
 	if err != nil {
 		return nil, err
 	}
@@ -229,27 +229,27 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      tsd,
-			Destination: "/usr/sbin/tailscaled",
+			Destination: "/usr/sbin/scaletaild",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscaled.service"),
-			Destination: "/lib/systemd/system/tailscaled.service",
+			Source:      filepath.Join(scaletaildDir, "scaletaild.service"),
+			Destination: "/lib/systemd/system/scaletaild.service",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscale-online.target"),
+			Source:      filepath.Join(scaletaildDir, "tailscale-online.target"),
 			Destination: "/lib/systemd/system/tailscale-online.target",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscale-wait-online.service"),
+			Source:      filepath.Join(scaletaildDir, "tailscale-wait-online.service"),
 			Destination: "/lib/systemd/system/tailscale-wait-online.service",
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
-			Source:      filepath.Join(tailscaledDir, "tailscaled.defaults"),
-			Destination: "/etc/default/tailscaled",
+			Source:      filepath.Join(scaletaildDir, "scaletaild.defaults"),
+			Destination: "/etc/default/scaletaild",
 		},
 	}, 0, "deb", false)
 	if err != nil {
@@ -347,16 +347,16 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/tailscale", t.goEnv)
+	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/tailscaled", t.goEnv)
+	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
 
-	tailscaledDir, err := b.GoPkg("tailscale.com/cmd/tailscaled")
+	scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
 	if err != nil {
 		return nil, err
 	}
@@ -375,27 +375,27 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      tsd,
-			Destination: "/usr/sbin/tailscaled",
+			Destination: "/usr/sbin/scaletaild",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscaled.service"),
-			Destination: "/lib/systemd/system/tailscaled.service",
+			Source:      filepath.Join(scaletaildDir, "scaletaild.service"),
+			Destination: "/lib/systemd/system/scaletaild.service",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscale-online.target"),
+			Source:      filepath.Join(scaletaildDir, "tailscale-online.target"),
 			Destination: "/lib/systemd/system/tailscale-online.target",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(tailscaledDir, "tailscale-wait-online.service"),
+			Source:      filepath.Join(scaletaildDir, "tailscale-wait-online.service"),
 			Destination: "/lib/systemd/system/tailscale-wait-online.service",
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
-			Source:      filepath.Join(tailscaledDir, "tailscaled.defaults"),
-			Destination: "/etc/default/tailscaled",
+			Source:      filepath.Join(scaletaildDir, "scaletaild.defaults"),
+			Destination: "/etc/default/scaletaild",
 		},
 		// SELinux policy on e.g. CentOS 8 forbids writing to /var/cache.
 		// Creating an empty directory at install time resolves this issue.
@@ -501,7 +501,7 @@ func (t *guiPackageTarget) Build(b *dist.Build) ([]string, error) {
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(repoDir, "client/systray/tailscale.png"),
+			Source:      filepath.Join(repoDir, "client/systray/scaletail.png"),
 			Destination: "/usr/share/pixmaps/scaletail.png",
 		},
 	}, 0, t.pkgType, false)
@@ -567,7 +567,7 @@ Type=Application
 Version=1.0
 Name=ScaleTail
 Comment=ScaleTail desktop tray and dashboard
-Exec=/usr/bin/tailscale systray
+Exec=/usr/bin/scaletail systray
 TryExec=/usr/bin/tailscale
 Terminal=false
 NoDisplay=true
@@ -586,7 +586,7 @@ PartOf=default.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/tailscale systray
+ExecStart=/usr/bin/scaletail systray
 Restart=on-failure
 
 [Install]

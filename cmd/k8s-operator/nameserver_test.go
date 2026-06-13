@@ -155,7 +155,7 @@ func TestNameserverReconciler(t *testing.T) {
 
 	t.Run("dns-config-status-set", func(t *testing.T) {
 		// Verify that DNSConfig advertizes the nameserver's Service IP address,
-		// has the ready status condition and tailscale finalizer.
+		// has the ready status condition and scaletail finalizer.
 		mustUpdate(t, fc, "tailscale", "nameserver", func(svc *corev1.Service) {
 			svc.Spec.ClusterIP = "1.2.3.4"
 		})

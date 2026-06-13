@@ -82,7 +82,7 @@ func packageTypeWindows() string {
 	msiSentinel, _ := winutil.GetRegInteger("MSI")
 	if msiSentinel != 1 {
 		// Atypical. Not worth trying to detect. Likely open
-		// source tailscaled or a developer running by hand.
+		// source scaletaild or a developer running by hand.
 		return ""
 	}
 	result := "msi"

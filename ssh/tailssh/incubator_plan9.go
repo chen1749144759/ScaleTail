@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// This file contains the plan9-specific version of the incubator. Tailscaled
+// This file contains the plan9-specific version of the incubator. ScaleTaild
 // launches the incubator as the same user as it was launched as. The
 // incubator then registers a new session with the OS, sets its UID
 // and groups to the specified `--uid`, `--gid` and `--groups`, and
@@ -25,7 +25,7 @@ import (
 
 	"github.com/go4org/plan9netshell"
 	"github.com/pkg/sftp"
-	"tailscale.com/cmd/tailscaled/childproc"
+	"tailscale.com/cmd/scaletaild/childproc"
 	"tailscale.com/tailcfg"
 	"tailscale.com/types/logger"
 )
@@ -37,9 +37,9 @@ func init() {
 }
 
 // newIncubatorCommand returns a new exec.Cmd configured with
-// `tailscaled be-child ssh` as the entrypoint.
+// `scaletaild be-child ssh` as the entrypoint.
 //
-// If ss.srv.tailscaledPath is empty, this method is equivalent to
+// If ss.srv.scaletaildPath is empty, this method is equivalent to
 // exec.CommandContext.
 //
 // The returned Cmd.Env is guaranteed to be nil; the caller populates it.
@@ -60,11 +60,11 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 		panic(fmt.Sprintf("unexpected subsystem: %v", ss.Subsystem()))
 	}
 
-	if ss.conn.srv.tailscaledPath == "" {
+	if ss.conn.srv.scaletaildPath == "" {
 		if isSFTP {
-			// SFTP relies on the embedded Go-based SFTP server in tailscaled,
-			// so without tailscaled, we can't serve SFTP.
-			return nil, errors.New("no tailscaled found on path, can't serve SFTP")
+			// SFTP relies on the embedded Go-based SFTP server in scaletaild,
+			// so without scaletaild, we can't serve SFTP.
+			return nil, errors.New("no scaletaild found on path, can't serve SFTP")
 		}
 
 		loginShell := ss.conn.localUser.LoginShell()
@@ -105,12 +105,12 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 	switch {
 	case isSFTP:
 		// Note that we include both the `--sftp` flag and a command to launch
-		// tailscaled as `be-child sftp`. If login or su is available, and
+		// scaletaild as `be-child sftp`. If login or su is available, and
 		// we're not running with tailcfg.NodeAttrSSHBehaviorV1, this will
 		// result in serving SFTP within a login shell, with full PAM
 		// integration. Otherwise, we'll serve SFTP in the incubator process
 		// with no PAM integration.
-		incubatorArgs = append(incubatorArgs, "--sftp", fmt.Sprintf("--cmd=%s be-child sftp", ss.conn.srv.tailscaledPath))
+		incubatorArgs = append(incubatorArgs, "--sftp", fmt.Sprintf("--cmd=%s be-child sftp", ss.conn.srv.scaletaildPath))
 	case isShell:
 		incubatorArgs = append(incubatorArgs, "--shell")
 	default:
@@ -133,7 +133,7 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 		}
 	}
 
-	return exec.CommandContext(ss.ctx, ss.conn.srv.tailscaledPath, incubatorArgs...), nil
+	return exec.CommandContext(ss.ctx, ss.conn.srv.scaletaildPath, incubatorArgs...), nil
 }
 
 var debugTest atomic.Bool
@@ -223,12 +223,12 @@ func beNetshell(args []string) error {
 	return nil
 }
 
-// beIncubator is the entrypoint to the `tailscaled be-child ssh` subcommand.
+// beIncubator is the entrypoint to the `scaletaild be-child ssh` subcommand.
 // It is responsible for informing the system of a new login session for the
 // user. This is sometimes necessary for mounting home directories and
 // decrypting file systems.
 //
-// Tailscaled launches the incubator as the same user as it was launched as.
+// ScaleTaild launches the incubator as the same user as it was launched as.
 func beIncubator(args []string) error {
 	// To defend against issues like https://golang.org/issue/1435,
 	// defensively lock our current goroutine's thread to the current

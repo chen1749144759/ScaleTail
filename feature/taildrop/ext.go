@@ -18,7 +18,7 @@ import (
 	"sync/atomic"
 
 	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/cmd/tailscaled/tailscaledhooks"
+	"tailscale.com/cmd/scaletaild/scaletaildhooks"
 	"tailscale.com/ipn"
 	"tailscale.com/ipn/ipnext"
 	"tailscale.com/ipn/ipnstate"
@@ -34,7 +34,7 @@ func init() {
 	ipnext.RegisterExtension("taildrop", newExtension)
 
 	if runtime.GOOS == "windows" {
-		tailscaledhooks.UninstallSystemDaemonWindows.Add(func() {
+		scaletaildhooks.UninstallSystemDaemonWindows.Add(func() {
 			// Remove file sharing from Windows shell.
 			osshare.SetFileSharingEnabled(false, logger.Discard)
 		})

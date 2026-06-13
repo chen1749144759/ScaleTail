@@ -11,8 +11,8 @@ function cleanup() {
 trap cleanup EXIT
 
 mkdir -p /Tailscale/$ARCH
-cp /tailscaled /Tailscale/$ARCH/tailscaled
-cp /tailscale /Tailscale/$ARCH/tailscale
+cp /scaletaild /Tailscale/$ARCH/scaletaild
+cp /scaletail /Tailscale/$ARCH/tailscale
 
 sed "s/\$QPKG_VER/$TSTAG-$QNAPTAG/g" /Tailscale/qpkg.cfg.in >/Tailscale/qpkg.cfg
 

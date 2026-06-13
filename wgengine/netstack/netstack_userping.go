@@ -18,7 +18,7 @@ import (
 )
 
 // setAmbientCapsRaw is non-nil on Linux for Synology, to run ping with
-// CAP_NET_RAW from tailscaled's binary.
+// CAP_NET_RAW from scaletaild's binary.
 var setAmbientCapsRaw func(*exec.Cmd)
 
 var isSynology = runtime.GOOS == "linux" && buildfeatures.HasSynology && distro.Get() == distro.Synology

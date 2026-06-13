@@ -951,7 +951,7 @@ func (t *Wrapper) awaitStart() {
 		case <-t.startCh:
 			return
 		case <-time.After(1 * time.Second):
-			// Multiple times while remixing tailscaled I (Brad) have forgotten
+			// Multiple times while remixing scaletaild I (Brad) have forgotten
 			// to call Start and then wasted far too much time debugging.
 			// I do not wish that debugging on anyone else. Hopefully this'll help:
 			t.logf("tstun: awaiting Wrapper.Start call")
@@ -1220,7 +1220,7 @@ func (t *Wrapper) filterPacketInboundFromWireGuard(p *packet.Parsed, captHook pa
 
 		// Tell them, via TSMP, we're dropping them due to the ACL.
 		// Their host networking stack can translate this into ICMP
-		// or whatnot as required. But notably, their GUI or tailscale CLI
+		// or whatnot as required. But notably, their GUI or scaletail CLI
 		// can show them a rejection history with reasons.
 		if p.IPVersion == 4 && p.IPProto == ipproto.TCP && p.TCPFlags&packet.TCPSyn != 0 && !t.disableTSMPRejected {
 			rj := packet.TailscaleRejectedHeader{

@@ -333,13 +333,13 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 		switch d.InitSystem {
 		case "openrc":
 			// NOTE(Xe): this is a sin, however openrc doesn't really have the concept
-			// of service readiness. If this sleep is removed then tailscale will not be
-			// ready once the `tailscale up` command is sent. This is not ideal, but I
+			// of service readiness. If this sleep is removed then scaletail will not be
+			// ready once the `scaletail up` command is sent. This is not ideal, but I
 			// am not really sure there is a good way around this without a delay of
 			// some kind.
-			batch = append(batch, &expect.BSnd{S: "rc-service tailscaled start && sleep 2\n"})
+			batch = append(batch, &expect.BSnd{S: "rc-service scaletaild start && sleep 2\n"})
 		case "systemd":
-			batch = append(batch, &expect.BSnd{S: "systemctl start tailscaled.service\n"})
+			batch = append(batch, &expect.BSnd{S: "systemctl start scaletaild.service\n"})
 		}
 
 		batch = append(batch, &expect.BExp{R: `(\#)`})
@@ -349,7 +349,7 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 
 	t.Run("login", func(t *testing.T) {
 		runTestCommands(t, timeout, cli, []expect.Batcher{
-			&expect.BSnd{S: fmt.Sprintf("tailscale up --login-server=%s\n", loginServer)},
+			&expect.BSnd{S: fmt.Sprintf("scaletail up --login-server=%s\n", loginServer)},
 			&expect.BSnd{S: "echo Success.\n"},
 			&expect.BExp{R: `Success.`},
 		})
@@ -360,16 +360,16 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 		var outp []byte
 		var err error
 
-		// NOTE(Xe): retry `tailscale status` a few times until it works. When tailscaled
+		// NOTE(Xe): retry `scaletail status` a few times until it works. When scaletaild
 		// starts with testcontrol sometimes there can be up to a few seconds where
-		// tailscaled is in an unknown state on these virtual machines. This exponential
-		// delay loop should delay long enough for tailscaled to be ready.
+		// scaletaild is in an unknown state on these virtual machines. This exponential
+		// delay loop should delay long enough for scaletaild to be ready.
 		for range 10 {
 			sess := getSession(t, cli)
 
-			outp, err = sess.CombinedOutput("tailscale status")
+			outp, err = sess.CombinedOutput("scaletail status")
 			if err == nil {
-				t.Logf("tailscale status: %s", outp)
+				t.Logf("scaletail status: %s", outp)
 				if !strings.Contains(string(outp), "100.64.0.1") {
 					t.Fatal("can't find tester IP")
 				}
@@ -418,7 +418,7 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 		t.Run(tt.ipProto+"-address", func(t *testing.T) {
 			sess := getSession(t, cli)
 
-			ipBytes, err := sess.Output("tailscale ip -" + string(tt.ipProto[len(tt.ipProto)-1]))
+			ipBytes, err := sess.Output("scaletail ip -" + string(tt.ipProto[len(tt.ipProto)-1]))
 			if err != nil {
 				t.Fatalf("can't get IP: %v", err)
 			}
@@ -441,9 +441,9 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 			t.Fatalf("can't make incoming session: %v", err)
 		}
 		defer sess.Close()
-		ipBytes, err := sess.Output("tailscale ip -4")
+		ipBytes, err := sess.Output("scaletail ip -4")
 		if err != nil {
-			t.Fatalf("can't run `tailscale ip -4`: %v", err)
+			t.Fatalf("can't run `scaletail ip -4`: %v", err)
 		}
 		ip := string(bytes.TrimSpace(ipBytes))
 
@@ -469,7 +469,7 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 		}
 		defer sess.Close()
 
-		testIPBytes, err := sess.Output("tailscale ip -4")
+		testIPBytes, err := sess.Output("scaletail ip -4")
 		if err != nil {
 			t.Fatalf("can't run command on remote VM: %v", err)
 		}
@@ -568,7 +568,7 @@ func (h *Harness) testDistro(t *testing.T, d Distro, ipm ipMapping) {
 		}
 		defer sess.Close()
 
-		ip, err := sess.Output("tailscale ip -4")
+		ip, err := sess.Output("scaletail ip -4")
 		if err != nil {
 			t.Fatalf("can't nab ipv4 address: %v", err)
 		}
@@ -669,13 +669,13 @@ func runTestCommands(t *testing.T, timeout time.Duration, cli *ssh.Client, batch
 	if err != nil {
 		sess, terr := cli.NewSession()
 		if terr != nil {
-			t.Fatalf("can't dump tailscaled logs on failed test: %v", terr)
+			t.Fatalf("can't dump scaletaild logs on failed test: %v", terr)
 		}
 		sess.Stdout = logger.FuncWriter(t.Logf)
 		sess.Stderr = logger.FuncWriter(t.Logf)
-		terr = sess.Run("journalctl -u tailscaled")
+		terr = sess.Run("journalctl -u scaletaild")
 		if terr != nil {
-			t.Fatalf("can't dump tailscaled logs on failed test: %v", terr)
+			t.Fatalf("can't dump scaletaild logs on failed test: %v", terr)
 		}
 		t.Fatalf("not successful: %v", err)
 	}

@@ -4,13 +4,13 @@ This utility is designed to provide custom virtual machine tooling support for m
 is to quickly create and spin up small, preconfigured virtual machines, for executing integration
 and unit tests.
 
-The primary driver is to provide support for VZVirtioNetworkDeviceConfiguration which is not 
+The primary driver is to provide support for VZVirtioNetworkDeviceConfiguration which is not
 supported by other popular macOS VM hosts.  This also gives us the freedom to fully customize and script
 all virtual machine setup and interaction. VZVirtioNetworkDeviceConfiguration lets us
 directly inject and sink network traffic for simulating various network conditions,
 protocols, and topologies and ensure that the TailScale clients handle all of these situations correctly.
 
-This may also be used as a drop-in replacement for UTM or Tart on ARM Macs for quickly spinning up 
+This may also be used as a drop-in replacement for UTM or Tart on ARM Macs for quickly spinning up
 test VMs.  It has the added benefit that, unlike UTM which uses AppleScript, it can be run
 via SSH.
 
@@ -52,7 +52,7 @@ All binaries are copied to the bin directory.
 All vm images, restore images, block device files, save states, and other supporting files are persisted at ~/VM.bundle
 
 Each vm gets its own directory.  These can be archived for posterity to preserve a particular image and/or state.
-The mere existence of a directory containing all of the required files in ~/VM.bundle is sufficient for tailmac to 
+The mere existence of a directory containing all of the required files in ~/VM.bundle is sufficient for tailmac to
 be able to see and run it.  ~/VM.bundle and its contents *is* tailmac's state.  No other state is maintained elsewhere.
 
 Each vm has its own custom configuration which can be modified while the vm is idle.  It's simple JSON - you may
@@ -72,26 +72,26 @@ modify this directly, or using 'tailmac configure'.
 ### Creating and managing VMs
 
  You generally perform all interactions via the tailmac command line util. A NAT ethernet device is provided so
- you can ssh into your instance. The ethernet IP will be dhcp assigned by the host and can be determined by parsing 
+ you can ssh into your instance. The ethernet IP will be dhcp assigned by the host and can be determined by parsing
  the contents of /var/db/dhcpd_leases
 
 #### Creation
 
-To create a new VM (this will grab a restore image for what apples deems a 'latest; if needed).  Restore images are large 
+To create a new VM (this will grab a restore image for what apples deems a 'latest; if needed).  Restore images are large
 (on the order of 10 Gb) and installation after downloading takes a few minutes.   If you wish to use a custom restore image,
-specify it with the --image option.  If RestoreImage.ipsw  exists in ~/VM.bundle, it will be used.  macOS versions from 
+specify it with the --image option.  If RestoreImage.ipsw  exists in ~/VM.bundle, it will be used.  macOS versions from
 12 to 15 have been tested and appear to work correctly.
 ```
-tailmac create --id my_vm_id 
+tailmac create --id my_vm_id
 ```
 
 With a custom restore image and parameters:
 ```
-tailmac create --id my_custom_vm_id --image "/images/macos_ventura.ipsw" --mac 52:cc:cc:cc:cc:07 --mem 8000000000 --sock "/temp/custom.sock" --port 52345 
+tailmac create --id my_custom_vm_id --image "/images/macos_ventura.ipsw" --mac 52:cc:cc:cc:cc:07 --mem 8000000000 --sock "/temp/custom.sock" --port 52345
 ```
 
 A typical workflow would be to create single VM, manually set it up the way you wish including the installation of any required client side software
-(tailscaled or the client-side test harness for example)  then clone that images as required and back up your 
+(scaletaild or the client-side test harness for example)  then clone that images as required and back up your
 images for future use.
 
 Fetching and persisting pre-configured images is left as an exercise for the reader (for now).  A previously used image can simply be copied to the
@@ -103,7 +103,7 @@ To delete a VM image, you may simply remove it's directory under ~/VM.bundle or
 tailmac delete --id my_stale_vm
 ```
 
-Note that the disk size is fixed, but should be sufficient (perhaps even excessive) for most lightweight workflows. 
+Note that the disk size is fixed, but should be sufficient (perhaps even excessive) for most lightweight workflows.
 
 #### Restore Images
 
@@ -152,9 +152,9 @@ tailmac run --id machine_1
  ```
  tailmac stop --id machine_1
  ```
- 
+
 Manually closing a VM's window will save the VM's state (if possible) and is the equivalent of running 'tailmac stop --id vm_id'
- 
+
  To halt a running vm without saving its state:
  ```
  tailmac halt --id machine_1

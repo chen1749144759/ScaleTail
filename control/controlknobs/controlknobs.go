@@ -35,7 +35,7 @@ type Knobs struct {
 
 	// DisableDeltaUpdates is whether the node should not process
 	// incremental (delta) netmap updates and should treat all netmap
-	// changes as "full" ones as tailscaled did in 1.48.x and earlier.
+	// changes as "full" ones as scaletaild did in 1.48.x and earlier.
 	DisableDeltaUpdates atomic.Bool
 
 	// PeerMTUEnable is whether the node should do peer path MTU discovery.

@@ -127,7 +127,7 @@ func (r *ProxyGroupReconciler) Reconcile(ctx context.Context, req reconcile.Requ
 		oldPGStatus := pg.Status.DeepCopy()
 		nrr := &notReadyReason{
 			reason:  reasonProxyGroupTailnetUnavailable,
-			message: fmt.Errorf("failed to get tailscale client and loginUrl: %w", err).Error(),
+			message: fmt.Errorf("failed to get scaletail client and loginUrl: %w", err).Error(),
 		}
 
 		return reconcile.Result{}, errors.Join(err, r.maybeUpdateStatus(ctx, logger, pg, oldPGStatus, nrr, make(map[string][]netip.AddrPort)))
@@ -302,10 +302,10 @@ func (r *ProxyGroupReconciler) maybeProvision(ctx context.Context, tsClient tscl
 	r.mu.Unlock()
 
 	svcToNodePorts := make(map[string]uint16)
-	var tailscaledPort *uint16
+	var scaletaildPort *uint16
 	if proxyClass != nil && proxyClass.Spec.StaticEndpoints != nil {
 		var err error
-		svcToNodePorts, tailscaledPort, err = r.ensureNodePortServiceCreated(ctx, pg, proxyClass)
+		svcToNodePorts, scaletaildPort, err = r.ensureNodePortServiceCreated(ctx, pg, proxyClass)
 		if err != nil {
 			if _, ok := errors.AsType[*allocatePortsErr](err); ok {
 				reason := reasonProxyGroupCreationFailed
@@ -400,7 +400,7 @@ func (r *ProxyGroupReconciler) maybeProvision(ctx context.Context, tsClient tscl
 	if pg.Spec.Type == tsapi.ProxyGroupTypeKubernetesAPIServer {
 		defaultImage = r.k8sProxyImage
 	}
-	ss, err := pgStatefulSet(pg, r.tsNamespace, defaultImage, r.tsFirewallMode, tailscaledPort, proxyClass)
+	ss, err := pgStatefulSet(pg, r.tsNamespace, defaultImage, r.tsFirewallMode, scaletaildPort, proxyClass)
 	if err != nil {
 		return r.notReadyErrf(pg, logger, "error generating StatefulSet spec: %w", err)
 	}
@@ -573,7 +573,7 @@ func (r *ProxyGroupReconciler) allocatePorts(ctx context.Context, pg *tsapi.Prox
 
 func (r *ProxyGroupReconciler) ensureNodePortServiceCreated(ctx context.Context, pg *tsapi.ProxyGroup, pc *tsapi.ProxyClass) (map[string]uint16, *uint16, error) {
 	// NOTE: (ChaosInTheCRD) we want the same TargetPort for every static endpoint NodePort Service for the ProxyGroup
-	tailscaledPort := getRandomPort()
+	scaletaildPort := getRandomPort()
 	svcs := []*corev1.Service{}
 	for i := range pgReplicas(pg) {
 		nodePortSvcName := pgNodePortServiceName(pg.Name, i)
@@ -586,11 +586,11 @@ func (r *ProxyGroupReconciler) ensureNodePortServiceCreated(ctx context.Context,
 		if apierrors.IsNotFound(err) {
 			svcs = append(svcs, pgNodePortService(pg, nodePortSvcName, r.tsNamespace))
 		} else {
-			// NOTE: if we can we want to recover the random port used for tailscaled,
+			// NOTE: if we can we want to recover the random port used for scaletaild,
 			// as well as the NodePort previously used for that Service
 			if len(svc.Spec.Ports) == 1 {
 				if svc.Spec.Ports[0].Port != 0 {
-					tailscaledPort = uint16(svc.Spec.Ports[0].Port)
+					scaletaildPort = uint16(svc.Spec.Ports[0].Port)
 				}
 			}
 			svcs = append(svcs, svc)
@@ -604,8 +604,8 @@ func (r *ProxyGroupReconciler) ensureNodePortServiceCreated(ctx context.Context,
 
 	for _, svc := range svcs {
 		// NOTE: we know that every service is going to have 1 port here
-		svc.Spec.Ports[0].Port = int32(tailscaledPort)
-		svc.Spec.Ports[0].TargetPort = intstr.FromInt(int(tailscaledPort))
+		svc.Spec.Ports[0].Port = int32(scaletaildPort)
+		svc.Spec.Ports[0].TargetPort = intstr.FromInt(int(scaletaildPort))
 		svc.Spec.Ports[0].NodePort = int32(svcToNodePorts[svc.Name])
 
 		_, err = createOrUpdate(ctx, r.Client, r.tsNamespace, svc, func(s *corev1.Service) {
@@ -620,7 +620,7 @@ func (r *ProxyGroupReconciler) ensureNodePortServiceCreated(ctx context.Context,
 		}
 	}
 
-	return svcToNodePorts, new(tailscaledPort), nil
+	return svcToNodePorts, new(scaletaildPort), nil
 }
 
 // cleanupDanglingResources ensures we don't leak config secrets, state secrets, and
@@ -865,17 +865,17 @@ func (r *ProxyGroupReconciler) ensureConfigSecretsCreated(
 				return nil, err
 			}
 
-			configs, err := pgTailscaledConfig(pg, tsClient.LoginURL(), proxyClass, i, authKey, endpoints[nodePortSvcName], existingAdvertiseServices)
+			configs, err := pgScaleTaildConfig(pg, tsClient.LoginURL(), proxyClass, i, authKey, endpoints[nodePortSvcName], existingAdvertiseServices)
 			if err != nil {
-				return nil, fmt.Errorf("error creating tailscaled config: %w", err)
+				return nil, fmt.Errorf("error creating scaletaild config: %w", err)
 			}
 
 			for cap, cfg := range configs {
 				cfgJSON, err := json.Marshal(cfg)
 				if err != nil {
-					return nil, fmt.Errorf("error marshalling tailscaled config: %w", err)
+					return nil, fmt.Errorf("error marshalling scaletaild config: %w", err)
 				}
-				mak.Set(&cfgSecret.Data, tsoperator.TailscaledConfigFileName(cap), cfgJSON)
+				mak.Set(&cfgSecret.Data, tsoperator.ScaleTaildConfigFileName(cap), cfgJSON)
 			}
 		}
 
@@ -1036,16 +1036,16 @@ func (e *FindStaticEndpointErr) Error() string {
 func (r *ProxyGroupReconciler) findStaticEndpoints(ctx context.Context, existingCfgSecret *corev1.Secret, proxyClass *tsapi.ProxyClass, port uint16, logger *zap.SugaredLogger) ([]netip.AddrPort, error) {
 	var currAddrs []netip.AddrPort
 	if existingCfgSecret != nil {
-		oldConfB := existingCfgSecret.Data[tsoperator.TailscaledConfigFileName(106)]
+		oldConfB := existingCfgSecret.Data[tsoperator.ScaleTaildConfigFileName(106)]
 		if len(oldConfB) > 0 {
 			var oldConf ipn.ConfigVAlpha
 			if err := json.Unmarshal(oldConfB, &oldConf); err == nil {
 				currAddrs = oldConf.StaticEndpoints
 			} else {
-				logger.Debugf("failed to unmarshal tailscaled config from secret %q: %v", existingCfgSecret.Name, err)
+				logger.Debugf("failed to unmarshal scaletaild config from secret %q: %v", existingCfgSecret.Name, err)
 			}
 		} else {
-			logger.Debugf("failed to get tailscaled config from secret %q: empty data", existingCfgSecret.Name)
+			logger.Debugf("failed to get scaletaild config from secret %q: empty data", existingCfgSecret.Name)
 		}
 	}
 
@@ -1165,7 +1165,7 @@ func (r *ProxyGroupReconciler) ensureStateRemovedForProxyGroup(pg *tsapi.ProxyGr
 	}
 }
 
-func pgTailscaledConfig(pg *tsapi.ProxyGroup, loginServer string, pc *tsapi.ProxyClass, idx int32, authKey *string, staticEndpoints []netip.AddrPort, oldAdvertiseServices []string) (tailscaledConfigs, error) {
+func pgScaleTaildConfig(pg *tsapi.ProxyGroup, loginServer string, pc *tsapi.ProxyClass, idx int32, authKey *string, staticEndpoints []netip.AddrPort, oldAdvertiseServices []string) (scaletaildConfigs, error) {
 	conf := &ipn.ConfigVAlpha{
 		Version:           "alpha0",
 		AcceptDNS:         "false",

@@ -142,7 +142,7 @@ func Tailscale4To6(ipv4 netip.Addr) netip.Addr {
 }
 
 // Tailscale6to4 returns the IPv4 address corresponding to the given
-// tailscale IPv6 address within the 4To6 range. The IPv4 address
+// scaletail IPv6 address within the 4To6 range. The IPv4 address
 // and true are returned if the given address was in the correct range,
 // false if not.
 func Tailscale6to4(ipv6 netip.Addr) (netip.Addr, bool) {

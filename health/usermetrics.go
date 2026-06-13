@@ -32,7 +32,7 @@ func (t *Tracker) SetMetricsRegistry(reg *usermetric.Registry) {
 
 	m := usermetric.NewMultiLabelMapWithRegistry[metricHealthMessageLabel](
 		reg,
-		"tailscaled_health_messages",
+		"scaletaild_health_messages",
 		"gauge",
 		"Number of health messages broken down by type.",
 	)

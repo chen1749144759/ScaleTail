@@ -117,10 +117,10 @@ func metricStoreRoutes(rate, nRoutes int64) {
 }
 
 // AppConnector is an implementation of an AppConnector that performs
-// its function as a subsystem inside of a tailscale node. At the control plane
+// its function as a subsystem inside of a scaletail node. At the control plane
 // side App Connector routing is configured in terms of domains rather than IP
 // addresses.
-// The AppConnectors responsibility inside tailscaled is to apply the routing
+// The AppConnectors responsibility inside scaletaild is to apply the routing
 // and domain configuration as supplied in the map response.
 // DNS requests for configured domains are observed. If the domains resolve to
 // routes not yet served by the AppConnector the local node configuration is

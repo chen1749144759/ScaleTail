@@ -252,7 +252,7 @@ func (m *directManager) restoreBackup() (restored bool, err error) {
 	resolvConfExists := !os.IsNotExist(err)
 
 	if resolvConfExists && !owned {
-		// There's already a non-tailscale config in place, get rid of
+		// There's already a non-scaletail config in place, get rid of
 		// our backup.
 		m.fs.Remove(backupConf)
 		return false, nil
@@ -520,7 +520,7 @@ func (m *directManager) Close() error {
 		m.eventClient.Close()
 	}
 
-	// We used to keep a file for the tailscale config and symlinked
+	// We used to keep a file for the scaletail config and symlinked
 	// to it, but then we stopped because /etc/resolv.conf being a
 	// symlink to surprising places breaks snaps and other sandboxing
 	// things. Clean it up if it's still there.
@@ -544,7 +544,7 @@ func (m *directManager) Close() error {
 	resolvConfExists := !os.IsNotExist(err)
 
 	if resolvConfExists && !owned {
-		// There's already a non-tailscale config in place, get rid of
+		// There's already a non-scaletail config in place, get rid of
 		// our backup.
 		m.fs.Remove(backupConf)
 		return nil

@@ -942,7 +942,7 @@ var (
 // in most places; many writes go via stderr which filch redirects to the
 // singleton Logger set up early. For better or worse, there's basically only
 // one Logger within the program. This mechanism at least works well for
-// tailscaled. It works less well for a binary with multiple tsnet.Servers. Oh
+// scaletaild. It works less well for a binary with multiple tsnet.Servers. Oh
 // well. This then subscribes to all of them.
 func RegisterLogTap(dst chan<- string) (unregister func()) {
 	tapMu.Lock()
@@ -958,7 +958,7 @@ func RegisterLogTap(dst chan<- string) (unregister func()) {
 }
 
 // tapSend relays the JSON blob to any/all registered local debug log watchers
-// (somebody running "tailscale debug daemon-logs").
+// (somebody running "scaletail debug daemon-logs").
 func tapSend(jsonBlob []byte) {
 	if tapSetSize.Load() == 0 {
 		return

@@ -639,7 +639,7 @@ func TestControlHealth(t *testing.T) {
 		}
 	})
 
-	t.Run("tailscaled_health_messages", func(t *testing.T) {
+	t.Run("scaletaild_health_messages", func(t *testing.T) {
 		var r usermetric.Registry
 		ht.SetMetricsRegistry(&r)
 

@@ -1,0 +1,25 @@
+#!/sbin/openrc-run
+
+set -a
+source /etc/default/scaletaild
+set +a
+
+command="/usr/sbin/scaletaild"
+command_args="--state=/var/lib/scaletail/scaletaild.state --port=$PORT --socket=/var/run/scaletail/scaletaild.sock $FLAGS"
+command_background=true
+pidfile="/run/scaletaild.pid"
+start_stop_daemon_args="-1 /var/log/scaletaild.log -2 /var/log/scaletaild.log"
+
+depend() {
+    need net
+}
+
+start_pre() {
+    mkdir -p /var/run/scaletail
+    mkdir -p /var/lib/scaletail
+    $command --cleanup
+}
+
+stop_post() {
+    $command --cleanup
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# This is a fake tailscale daemon that records its arguments, symlinks a
+# This is a fake scaletail daemon that records its arguments, symlinks a
 # fake LocalAPI socket into place, and does nothing until terminated.
 #
 # It is used by main_test.go to test the behavior of containerboot.

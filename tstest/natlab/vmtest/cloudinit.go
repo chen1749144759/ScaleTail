@@ -106,13 +106,13 @@ func (e *Env) generateLinuxUserData(n *Node) string {
 	// The debug NIC is only for SSH access from the host.
 	ud.WriteString("  - [\"/bin/sh\", \"-c\", \"ip route del default via 10.0.2.2 dev enp0s4 2>/dev/null || true\"]\n")
 
-	// Download binaries from the files.tailscale VIP (52.52.0.6).
+	// Download binaries from the files.scaletail VIP (52.52.0.6).
 	// Use the IP directly to avoid DNS resolution issues during early boot.
 	binDir := n.os.GOOS() + "_" + n.os.GOARCH()
-	for _, bin := range []string{"tailscaled", "tailscale", "tta"} {
+	for _, bin := range []string{"scaletaild", "tailscale", "tta"} {
 		fmt.Fprintf(&ud, "  - [\"/bin/sh\", \"-c\", \"curl -v --retry 10 --retry-delay 2 --retry-all-errors -o /usr/local/bin/%s http://52.52.0.6/%s/%s 2>&1\"]\n", bin, binDir, bin)
 	}
-	ud.WriteString("  - [\"chmod\", \"+x\", \"/usr/local/bin/tailscaled\", \"/usr/local/bin/tailscale\", \"/usr/local/bin/tta\"]\n")
+	ud.WriteString("  - [\"chmod\", \"+x\", \"/usr/local/bin/scaletaild\", \"/usr/local/bin/tailscale\", \"/usr/local/bin/tta\"]\n")
 
 	// Enable IP forwarding for subnet routers.
 	if n.advertiseRoutes != "" {
@@ -120,11 +120,11 @@ func (e *Env) generateLinuxUserData(n *Node) string {
 		ud.WriteString("  - [\"sysctl\", \"-w\", \"net.ipv6.conf.all.forwarding=1\"]\n")
 	}
 
-	// Start tailscaled in the background. --statedir provides a VarRoot so
+	// Start scaletaild in the background. --statedir provides a VarRoot so
 	// features like Taildrop (which needs a place to stash incoming files)
 	// have a directory to work with.
 	ud.WriteString("  - [\"mkdir\", \"-p\", \"/var/lib/tailscale\"]\n")
-	ud.WriteString("  - [\"/bin/sh\", \"-c\", \"/usr/local/bin/tailscaled --state=mem: --statedir=/var/lib/tailscale &\"]\n")
+	ud.WriteString("  - [\"/bin/sh\", \"-c\", \"/usr/local/bin/scaletaild --state=mem: --statedir=/var/lib/scaletail &\"]\n")
 	ud.WriteString("  - [\"sleep\", \"2\"]\n")
 
 	// Start tta (Tailscale Test Agent).
@@ -155,14 +155,14 @@ func (e *Env) generateFreeBSDUserData(n *Node) string {
 	// traffic goes through the vnet NICs. The debug NIC is only for SSH.
 	ud.WriteString("  - \"route delete default 10.0.2.2 2>/dev/null || true\"\n")
 
-	// Download binaries from the files.tailscale VIP (52.52.0.6).
+	// Download binaries from the files.scaletail VIP (52.52.0.6).
 	// FreeBSD's fetch(1) is part of the base system (no curl needed).
 	// Retry in a loop since the file server may not be ready immediately.
 	binDir := n.os.GOOS() + "_" + n.os.GOARCH()
-	for _, bin := range []string{"tailscaled", "tailscale", "tta"} {
+	for _, bin := range []string{"scaletaild", "tailscale", "tta"} {
 		fmt.Fprintf(&ud, "  - \"n=0; while [ $n -lt 10 ]; do fetch -o /usr/local/bin/%s http://52.52.0.6/%s/%s && break; n=$((n+1)); sleep 2; done\"\n", bin, binDir, bin)
 	}
-	ud.WriteString("  - \"chmod +x /usr/local/bin/tailscaled /usr/local/bin/tailscale /usr/local/bin/tta\"\n")
+	ud.WriteString("  - \"chmod +x /usr/local/bin/scaletaild /usr/local/bin/scaletail /usr/local/bin/tta\"\n")
 
 	// Enable IP forwarding for subnet routers.
 	// This is currently a noop as of 2026-04-08 because FreeBSD uses
@@ -173,12 +173,12 @@ func (e *Env) generateFreeBSDUserData(n *Node) string {
 		ud.WriteString("  - \"sysctl net.inet6.ip6.forwarding=1\"\n")
 	}
 
-	// Start tailscaled and tta in the background.
+	// Start scaletaild and tta in the background.
 	// Set PATH to include /usr/local/bin so that tta can find "tailscale"
 	// (TTA uses exec.Command("tailscale", ...) without a full path).
 	// --statedir provides a VarRoot so features like Taildrop have a directory.
 	ud.WriteString("  - \"mkdir -p /var/lib/tailscale\"\n")
-	ud.WriteString("  - \"export PATH=/usr/local/bin:$PATH && /usr/local/bin/tailscaled --state=mem: --statedir=/var/lib/tailscale &\"\n")
+	ud.WriteString("  - \"export PATH=/usr/local/bin:$PATH && /usr/local/bin/scaletaild --state=mem: --statedir=/var/lib/scaletail &\"\n")
 	ud.WriteString("  - \"sleep 2\"\n")
 
 	// Start tta (Tailscale Test Agent).

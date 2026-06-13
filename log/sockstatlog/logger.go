@@ -97,7 +97,7 @@ func SockstatLogID(logID logid.PublicID) logid.PrivateID {
 // Logs will be uploaded to the log server using a new log ID derived from the provided backend logID.
 //
 // The netMon parameter is optional. It should be specified in environments where
-// Tailscaled is manipulating the routing table.
+// ScaleTaild is manipulating the routing table.
 func NewLogger(logdir string, logf logger.Logf, logID logid.PublicID, netMon *netmon.Monitor, health *health.Tracker, bus *eventbus.Bus) (*Logger, error) {
 	if !sockstats.IsAvailable || !buildfeatures.HasLogTail {
 		return nil, nil

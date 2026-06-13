@@ -19,16 +19,16 @@ import (
 	"tailscale.com/client/freedesktop"
 )
 
-//go:embed tailscale-systray.service
+//go:embed scaletail-systray.service
 var embedSystemd string
 
-//go:embed tailscale-systray.desktop
+//go:embed scaletail-systray.desktop
 var embedFreedesktop string
 
-//go:embed tailscale.svg
+//go:embed scaletail.svg
 var embedLogoSvg string
 
-//go:embed tailscale.png
+//go:embed scaletail.png
 var embedLogoPng string
 
 func InstallStartupScript(initSystem string) error {
@@ -43,11 +43,11 @@ func InstallStartupScript(initSystem string) error {
 }
 
 func installSystemd() error {
-	// Find the path to tailscale, just in case it's not where the example file
+	// Find the path to scaletail, just in case it's not where the example file
 	// has it placed, and replace that before writing the file.
-	tailscaleBin, err := exec.LookPath("tailscale")
+	scaletailBin, err := exec.LookPath("scaletail")
 	if err != nil {
-		return fmt.Errorf("failed to find tailscale binary %w", err)
+		return fmt.Errorf("failed to find scaletail binary %w", err)
 	}
 
 	var output bytes.Buffer
@@ -55,7 +55,7 @@ func installSystemd() error {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.HasPrefix(line, "ExecStart=") {
-			line = fmt.Sprintf("ExecStart=%s systray", tailscaleBin)
+			line = fmt.Sprintf("ExecStart=%s systray", scaletailBin)
 		}
 		output.WriteString(line + "\n")
 	}
@@ -74,7 +74,7 @@ func installSystemd() error {
 		return fmt.Errorf("failed creating systemd user dir: %w", err)
 	}
 
-	serviceFile := filepath.Join(systemdDir, "tailscale-systray.service")
+	serviceFile := filepath.Join(systemdDir, "scaletail-systray.service")
 
 	if err := os.WriteFile(serviceFile, output.Bytes(), 0o755); err != nil {
 		return fmt.Errorf("failed writing systemd user service: %w", err)
@@ -83,13 +83,13 @@ func installSystemd() error {
 	fmt.Printf("Successfully installed systemd service to: %s\n", serviceFile)
 	fmt.Println("To enable and start the service, run:")
 	fmt.Println("  systemctl --user daemon-reload")
-	fmt.Println("  systemctl --user enable --now tailscale-systray")
+	fmt.Println("  systemctl --user enable --now scaletail-systray")
 
 	return nil
 }
 
 func installFreedesktop() error {
-	tmpDir, err := os.MkdirTemp("", "tailscale-systray")
+	tmpDir, err := os.MkdirTemp("", "scaletail-systray")
 	if err != nil {
 		return fmt.Errorf("unable to make tmpDir: %w", err)
 	}
@@ -97,14 +97,14 @@ func installFreedesktop() error {
 
 	// Install icon, and use it if it works, and if not change to some generic
 	// network/vpn icon.
-	iconName := "tailscale"
+	iconName := "scaletail"
 	if err := installIcon(tmpDir); err != nil {
 		iconName = "network-transmit"
 		fmt.Printf("unable to install icon, continuing without: %s\n", err.Error())
 	}
 
 	// Create desktop file in a tmp dir
-	desktopTmpPath := filepath.Join(tmpDir, "tailscale-systray.desktop")
+	desktopTmpPath := filepath.Join(tmpDir, "scaletail-systray.desktop")
 	if err := os.WriteFile(desktopTmpPath, []byte(embedFreedesktop),
 		0o0755); err != nil {
 		return fmt.Errorf("unable to create desktop file: %w", err)
@@ -131,13 +131,13 @@ func installFreedesktop() error {
 		return fmt.Errorf("unable to install desktop file: %w - %s", err, output)
 	}
 
-	// Find the path to tailscale, just in case it's not where the example file
+	// Find the path to scaletail, just in case it's not where the example file
 	// has it placed, and replace that before writing the file.
-	tailscaleBin, err := os.Executable()
+	scaletailBin, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("failed to find tailscale binary %w", err)
+		return fmt.Errorf("failed to find scaletail binary %w", err)
 	}
-	tailscaleBin = freedesktop.Quote(tailscaleBin)
+	scaletailBin = freedesktop.Quote(scaletailBin)
 
 	// Make possible changes to the desktop file
 	runEdit := func(args ...string) error {
@@ -150,13 +150,13 @@ func installFreedesktop() error {
 	}
 
 	edits := [][]string{
-		{"--set-key=Exec", "--set-value=" + tailscaleBin + " systray"},
-		{"--set-key=TryExec", "--set-value=" + tailscaleBin},
+		{"--set-key=Exec", "--set-value=" + scaletailBin + " systray"},
+		{"--set-key=TryExec", "--set-value=" + scaletailBin},
 		{"--set-icon=" + iconName},
 	}
 
 	var errs []error
-	desktopFile := filepath.Join(autostartDir, "tailscale-systray.desktop")
+	desktopFile := filepath.Join(autostartDir, "scaletail-systray.desktop")
 	for _, args := range edits {
 		args = append(args, desktopFile)
 		if err := runEdit(args...); err != nil {
@@ -181,12 +181,12 @@ func installFreedesktop() error {
 // available.
 // Reference: https://gitlab.freedesktop.org/xdg/xdg-utils/-/merge_requests/116
 func installIcon(tmpDir string) error {
-	svgPath := filepath.Join(tmpDir, "tailscale.svg")
+	svgPath := filepath.Join(tmpDir, "scaletail.svg")
 	if err := os.WriteFile(svgPath, []byte(embedLogoSvg), 0o0644); err != nil {
 		return fmt.Errorf("unable to create svg: %w", err)
 	}
 
-	pngPath := filepath.Join(tmpDir, "tailscale.png")
+	pngPath := filepath.Join(tmpDir, "scaletail.png")
 	if err := os.WriteFile(pngPath, []byte(embedLogoPng), 0o0644); err != nil {
 		return fmt.Errorf("unable to create png: %w", err)
 	}
@@ -194,14 +194,14 @@ func installIcon(tmpDir string) error {
 	var errs []error
 	installed := false
 	svgCmd := exec.Command("xdg-icon-resource", "install", "--size", "scalable",
-		"--novendor", svgPath, "tailscale")
+		"--novendor", svgPath, "scaletail")
 	if output, err := svgCmd.Output(); err != nil {
 		errs = append(errs, fmt.Errorf("unable to install svg: %s - %s", err, output))
 	} else {
 		installed = true
 	}
 	pngCmd := exec.Command("xdg-icon-resource", "install", "--size", "512",
-		"--novendor", pngPath, "tailscale")
+		"--novendor", pngPath, "scaletail")
 	if output, err := pngCmd.Output(); err != nil {
 		errs = append(errs, fmt.Errorf("unable to install png: %s - %s", err, output))
 	} else {

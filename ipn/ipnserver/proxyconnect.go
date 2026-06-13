@@ -19,11 +19,11 @@ import (
 // log.tailscale.com (or whatever the configured log server is). This
 // is intended for use by the Windows GUI client to log via when an
 // exit node is in use, so the logs don't go out via the exit node and
-// instead go directly, like tailscaled's. The dialer tried to do that
+// instead go directly, like scaletaild's. The dialer tried to do that
 // in the unprivileged GUI by binding to a specific interface, but the
-// "Internet Kill Switch" installed by tailscaled for exit nodes
+// "Internet Kill Switch" installed by scaletaild for exit nodes
 // precludes that from working and instead the GUI fails to dial out.
-// So, go through tailscaled (with a CONNECT request) instead.
+// So, go through scaletaild (with a CONNECT request) instead.
 func (s *Server) handleProxyConnectConn(w http.ResponseWriter, r *http.Request) {
 	if !buildfeatures.HasOutboundProxy {
 		http.Error(w, feature.ErrUnavailable.Error(), http.StatusNotImplemented)

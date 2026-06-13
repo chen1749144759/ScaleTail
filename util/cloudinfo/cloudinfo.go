@@ -57,7 +57,7 @@ func New(logf logger.Logf) *CloudInfo {
 }
 
 // GetPublicIPs returns any public IPs attached to the current cloud instance,
-// if the tailscaled process is running in a known cloud and there are any such
+// if the scaletaild process is running in a known cloud and there are any such
 // IPs present.
 //
 // Currently supports only AWS.

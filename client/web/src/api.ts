@@ -135,7 +135,7 @@ export function useAPI() {
          */
         case "logout":
           // For logout, must increment metric before running api call,
-          // as tailscaled will be unreachable after the call completes.
+          // as scaletaild will be unreachable after the call completes.
           incrementMetric("web_client_node_disconnect")
           return apiFetch("/local/v0/logout", "POST")
             .then(() => mutate("/auth"))

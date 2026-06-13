@@ -301,7 +301,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `enable` _boolean_ | Enable tailscaled's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/<br />and internal debug metrics endpoint at <pod-ip>:9001/debug/metrics, where<br />9001 is a container port named "debug". The endpoints and their responses<br />may change in backwards incompatible ways in the future, and should not<br />be considered stable.<br />In 1.78.x and 1.80.x, this setting will default to the value of<br />.spec.metrics.enable, and requests to the "metrics" port matching the<br />mux pattern /debug/ will be forwarded to the "debug" port. In 1.82.x,<br />this setting will default to false, and no requests will be proxied. |  |  |
+| `enable` _boolean_ | Enable scaletaild's HTTP pprof endpoints at <pod-ip>:9001/debug/pprof/<br />and internal debug metrics endpoint at <pod-ip>:9001/debug/metrics, where<br />9001 is a container port named "debug". The endpoints and their responses<br />may change in backwards incompatible ways in the future, and should not<br />be considered stable.<br />In 1.78.x and 1.80.x, this setting will default to the value of<br />.spec.metrics.enable, and requests to the "metrics" port matching the<br />mux pattern /debug/ will be forwarded to the "debug" port. In 1.82.x,<br />this setting will default to false, and no requests will be proxied. |  |  |
 
 
 #### Env
@@ -591,7 +591,7 @@ _Appears in:_
 
 ProxyClass describes a set of configuration parameters that can be applied to
 proxy resources created by the Tailscale Kubernetes operator.
-To apply a given ProxyClass to resources created for a tailscale Ingress or
+To apply a given ProxyClass to resources created for a scaletail Ingress or
 Service, use tailscale.com/proxy-class=<proxyclass-name> label. To apply a
 given ProxyClass to resources created for a Connector, use
 connector.spec.proxyClass field.
@@ -1360,6 +1360,6 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `acceptRoutes` _boolean_ | AcceptRoutes can be set to true to make the proxy instance accept<br />routes advertized by other nodes on the tailnet, such as subnet<br />routes.<br />This is equivalent of passing --accept-routes flag to a tailscale Linux client.<br />https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices<br />Defaults to false. |  |  |
+| `acceptRoutes` _boolean_ | AcceptRoutes can be set to true to make the proxy instance accept<br />routes advertized by other nodes on the tailnet, such as subnet<br />routes.<br />This is equivalent of passing --accept-routes flag to a scaletail Linux client.<br />https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices<br />Defaults to false. |  |  |
 
 

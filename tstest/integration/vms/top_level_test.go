@@ -27,8 +27,8 @@ func TestRunNixos2505(t *testing.T) {
 // Encountering such proxies is unfortunately commonplace in more
 // traditional enterprise networks.
 //
-// We invoke tailscale netcheck because the networking check is done
-// by tailscale rather than tailscaled, making it easier to configure
+// We invoke scaletail netcheck because the networking check is done
+// by scaletail rather than scaletaild, making it easier to configure
 // the proxy.
 //
 // To provide the actual MITM server, we use squid.
@@ -108,7 +108,7 @@ func TestMITMProxy(t *testing.T) {
 	// })
 
 	runTestCommands(t, 30*time.Second, cli, []expect.Batcher{
-		&expect.BSnd{S: "SSL_CERT_FILE=/tmp/squid/myca-mitm.pem HTTPS_PROXY=http://127.0.0.1:3128 tailscale netcheck\n"},
+		&expect.BSnd{S: "SSL_CERT_FILE=/tmp/squid/myca-mitm.pem HTTPS_PROXY=http://127.0.0.1:3128 scaletail netcheck\n"},
 		&expect.BExp{R: `IPv4: yes`},
 	})
 }

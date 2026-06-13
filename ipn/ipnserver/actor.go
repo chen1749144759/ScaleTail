@@ -205,7 +205,7 @@ func connIsLocalSystem(ci *ipnauth.ConnIdentity) bool {
 // access to the local machine, for whatever that means with respect to the
 // current OS.
 //
-// This is useful because tailscaled itself always runs with elevated rights:
+// This is useful because scaletaild itself always runs with elevated rights:
 // we want to avoid privilege escalation for certain mutative operations.
 func connIsLocalAdmin(logf logger.Logf, ci *ipnauth.ConnIdentity, operatorUID string) bool {
 	if ci == nil {
@@ -234,7 +234,7 @@ func connIsLocalAdmin(logf logger.Logf, ci *ipnauth.ConnIdentity, operatorUID st
 		if version.IsSandboxedMacOS() {
 			return false
 		}
-		// This is a standalone tailscaled setup, use the same logic as on
+		// This is a standalone scaletaild setup, use the same logic as on
 		// Linux.
 		fallthrough
 	case "linux", "solaris", "illumos":

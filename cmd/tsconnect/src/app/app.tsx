@@ -55,7 +55,7 @@ class App extends Component<{}, AppState> {
 
           <p>
             Run the following command on a device with a trusted tailnet lock key:
-            <pre>tailscale lock sign {netMap.self.nodeKey}</pre>
+            <pre>scaletail lock sign {netMap.self.nodeKey}</pre>
           </p>
         </div>
       )

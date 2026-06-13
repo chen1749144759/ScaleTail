@@ -17,7 +17,7 @@ import (
 // TestUserspaceWhoIsProxyMap verifies that WhoIs lookups work via the
 // proxymap in userspace-networking mode. It sets up two nodes (n1 and
 // n2), starts a TCP listener on localhost, and has n1 connect to n2's
-// Tailscale IP on the listener's port via "tailscale nc". Node n2's
+// Tailscale IP on the listener's port via "scaletail nc". Node n2's
 // netstack forwards the connection to localhost, and the listener
 // calls WhoIs on n2's LocalAPI to identify the remote peer as n1.
 func TestUserspaceWhoIsProxyMap(t *testing.T) {
@@ -113,8 +113,8 @@ func TestUserspaceWhoIsProxyMap(t *testing.T) {
 		resultCh <- result{msg: msg}
 	}()
 
-	// Use "tailscale nc" on n1 to connect to n2's Tailscale IP on
-	// the listener port. This goes through n1's tailscaled, over
+	// Use "scaletail nc" on n1 to connect to n2's Tailscale IP on
+	// the listener port. This goes through n1's scaletaild, over
 	// wireguard to n2's netstack, which dials localhost:<port>.
 	//
 	// We need to keep stdin open so nc doesn't exit before reading
@@ -128,7 +128,7 @@ func TestUserspaceWhoIsProxyMap(t *testing.T) {
 	out, err := cmd.Output()
 	stdin.Close()
 	if err != nil {
-		t.Fatalf("tailscale nc: %v", err)
+		t.Fatalf("scaletail nc: %v", err)
 	}
 
 	// Verify the listener goroutine completed without error.

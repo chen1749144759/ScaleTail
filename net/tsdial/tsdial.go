@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package tsdial provides a Dialer type that can dial out of tailscaled.
+// Package tsdial provides a Dialer type that can dial out of scaletaild.
 package tsdial
 
 import (
@@ -37,7 +37,7 @@ import (
 	"tailscale.com/version"
 )
 
-// NewDialer returns a new Dialer that can dial out of tailscaled.
+// NewDialer returns a new Dialer that can dial out of scaletaild.
 // Its exported fields should be set before use, if any.
 func NewDialer(netMon *netmon.Monitor) *Dialer {
 	if netMon == nil {
@@ -49,13 +49,13 @@ func NewDialer(netMon *netmon.Monitor) *Dialer {
 }
 
 // NewFromFuncForDebug is like NewDialer but takes a netx.DialFunc
-// and no netMon. It's meant exclusively for the "tailscale debug ts2021"
+// and no netMon. It's meant exclusively for the "scaletail debug ts2021"
 // debug command, and perhaps tests.
 func NewFromFuncForDebug(logf logger.Logf, dial netx.DialFunc) *Dialer {
 	return &Dialer{sysDialForTest: dial, Logf: logf}
 }
 
-// Dialer dials out of tailscaled, while taking care of details while
+// Dialer dials out of scaletaild, while taking care of details while
 // handling the dozens of edge cases depending on the server mode
 // (TUN, netstack), the OS network sandboxing style (macOS/iOS
 // Extension, none), user-selected route acceptance prefs, etc.
@@ -569,7 +569,7 @@ func (d *Dialer) dialPeerAPI(ctx context.Context, network, addr string) (net.Con
 }
 
 // getPeerDialer returns the *net.Dialer to use to dial peers (e.g. for peerapi,
-// "tailscale nc", or querying internal DNS servers over Tailscale)
+// "scaletail nc", or querying internal DNS servers over Tailscale)
 //
 // This is not used in netstack mode.
 //

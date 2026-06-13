@@ -45,7 +45,7 @@ import (
 	"tailscale.com/version/distro"
 )
 
-// ListenPort is the static port used for the web client when run inside tailscaled.
+// ListenPort is the static port used for the web client when run inside scaletaild.
 // (5252 are the numbers above the letters "TSTS" on a qwerty keyboard.)
 const ListenPort = 5252
 
@@ -438,7 +438,7 @@ func (s *Server) requireTailscaleIP(w http.ResponseWriter, r *http.Request) (han
 // selfNodeAddresses return the Tailscale IPv4 and IPv6 addresses for the self node.
 // st is expected to be a status with peers included.
 func (s *Server) selfNodeAddresses(r *http.Request, st *ipnstate.Status) (ipv4, ipv6 netip.Addr) {
-	for _, ip := range st.Self.TailscaleIPs {
+	for _, ip := range st.Self.ScaleTailIPs {
 		if ip.Is4() {
 			ipv4 = ip
 		} else if ip.Is6() {
@@ -471,7 +471,7 @@ func (s *Server) selfNodeAddresses(r *http.Request, st *ipnstate.Status) (ipv4, 
 // authorizeRequest manages writing out any relevant authorization
 // errors to the ResponseWriter itself.
 func (s *Server) authorizeRequest(w http.ResponseWriter, r *http.Request) (ok bool) {
-	if s.mode == ManageServerMode { // client using tailscale auth
+	if s.mode == ManageServerMode { // client using scaletail auth
 		session, _, _, err := s.getSession(r)
 		switch {
 		case errors.Is(err, errNotUsingTailscale):
@@ -989,8 +989,8 @@ func (s *Server) serveGetNodeData(w http.ResponseWriter, r *http.Request) {
 		if data.UsingExitNode.Name == "" {
 			// Falling back to TailscaleIP/StableNodeID when the peer
 			// is no longer included in status.
-			if len(e.TailscaleIPs) > 0 {
-				data.UsingExitNode.Name = e.TailscaleIPs[0].Addr().String()
+			if len(e.ScaleTailIPs) > 0 {
+				data.UsingExitNode.Name = e.ScaleTailIPs[0].Addr().String()
 			} else {
 				data.UsingExitNode.Name = string(e.ID)
 			}
@@ -1272,7 +1272,7 @@ func normalizeControlURL(raw string) (string, error) {
 
 type tailscaleUpOptions struct {
 	// If true, force reauthentication of the client.
-	// Otherwise simply reconnect, the same as running `tailscale up`.
+	// Otherwise simply reconnect, the same as running `scaletail up`.
 	Reauthenticate bool
 
 	ControlURL string
@@ -1360,7 +1360,7 @@ func (s *Server) proxyRequestToLocalAPI(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Make request to tailscaled localapi.
+	// Make request to scaletaild localapi.
 	resp, err := s.lc.DoLocalRequest(req)
 	if err != nil {
 		http.Error(w, err.Error(), resp.StatusCode)

@@ -335,7 +335,7 @@ type debugEventError struct {
 	Error string
 }
 
-// serveDebugBusEvents taps into the tailscaled/utils/eventbus and streams
+// serveDebugBusEvents taps into the scaletaild/utils/eventbus and streams
 // events to the client.
 func (h *Handler) serveDebugBusEvents(w http.ResponseWriter, r *http.Request) {
 	// Require write access (~root) as the logs could contain something

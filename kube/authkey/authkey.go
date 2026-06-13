@@ -111,7 +111,7 @@ func WaitForAuthKeyReissue(ctx context.Context, oldAuthKey string, maxWait time.
 	}
 }
 
-// AuthKeyFromConfig extracts the auth key from a tailscaled config file.
+// AuthKeyFromConfig extracts the auth key from a scaletaild config file.
 // Returns empty string if the file cannot be read or contains no auth key.
 func AuthKeyFromConfig(path string) string {
 	if cfg, err := conffile.Load(path); err == nil && cfg.Parsed.AuthKey != nil {

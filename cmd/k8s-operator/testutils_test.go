@@ -117,7 +117,7 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 	var volumes []corev1.Volume
 	volumes = []corev1.Volume{
 		{
-			Name: "tailscaledconfig-0",
+			Name: "scaletaildconfig-0",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: opts.secretName,
@@ -126,7 +126,7 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 		},
 	}
 	tsContainer.VolumeMounts = []corev1.VolumeMount{{
-		Name:      "tailscaledconfig-0",
+		Name:      "scaletaildconfig-0",
 		ReadOnly:  true,
 		MountPath: "/etc/tsconfig/" + opts.secretName,
 	}}
@@ -165,7 +165,7 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 	if opts.serveConfig != nil {
 		tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
 			Name:  "TS_SERVE_CONFIG",
-			Value: "/etc/tailscaled/$(POD_NAME)/serve-config",
+			Value: "/etc/scaletaild/$(POD_NAME)/serve-config",
 		})
 		volumes = append(volumes, corev1.Volume{
 			Name: "serve-config-0",
@@ -179,7 +179,7 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 				},
 			},
 		})
-		tsContainer.VolumeMounts = append(tsContainer.VolumeMounts, corev1.VolumeMount{Name: "serve-config-0", ReadOnly: true, MountPath: path.Join("/etc/tailscaled", opts.secretName)})
+		tsContainer.VolumeMounts = append(tsContainer.VolumeMounts, corev1.VolumeMount{Name: "serve-config-0", ReadOnly: true, MountPath: path.Join("/etc/scaletaild", opts.secretName)})
 	}
 	tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
 		Name:  "TS_INTERNAL_APP",
@@ -191,7 +191,7 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 				Name:  "TS_DEBUG_ADDR_PORT",
 				Value: "$(POD_IP):9001"},
 			corev1.EnvVar{
-				Name:  "TS_TAILSCALED_EXTRA_ARGS",
+				Name:  "TS_SCALETAILD_EXTRA_ARGS",
 				Value: "--debug=$(TS_DEBUG_ADDR_PORT)",
 			},
 			corev1.EnvVar{
@@ -292,13 +292,13 @@ func expectedSTSUserspace(t *testing.T, cl client.Client, opts configOpts) *apps
 			{Name: "TS_EXPERIMENTAL_SERVICE_AUTO_ADVERTISEMENT", Value: "false"},
 			{Name: "TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR", Value: "/etc/tsconfig/$(POD_NAME)"},
 			{Name: "TS_DEBUG_ACME_FORCE_RENEWAL", Value: "true"},
-			{Name: "TS_SERVE_CONFIG", Value: "/etc/tailscaled/$(POD_NAME)/serve-config"},
+			{Name: "TS_SERVE_CONFIG", Value: "/etc/scaletaild/$(POD_NAME)/serve-config"},
 			{Name: "TS_INTERNAL_APP", Value: opts.app},
 		},
 		ImagePullPolicy: "Always",
 		VolumeMounts: []corev1.VolumeMount{
-			{Name: "tailscaledconfig-0", ReadOnly: true, MountPath: path.Join("/etc/tsconfig", opts.secretName)},
-			{Name: "serve-config-0", ReadOnly: true, MountPath: path.Join("/etc/tailscaled", opts.secretName)},
+			{Name: "scaletaildconfig-0", ReadOnly: true, MountPath: path.Join("/etc/tsconfig", opts.secretName)},
+			{Name: "serve-config-0", ReadOnly: true, MountPath: path.Join("/etc/scaletaild", opts.secretName)},
 		},
 		Resources: corev1.ResourceRequirements{
 			Requests: corev1.ResourceList{
@@ -313,7 +313,7 @@ func expectedSTSUserspace(t *testing.T, cl client.Client, opts configOpts) *apps
 				Name:  "TS_DEBUG_ADDR_PORT",
 				Value: "$(POD_IP):9001"},
 			corev1.EnvVar{
-				Name:  "TS_TAILSCALED_EXTRA_ARGS",
+				Name:  "TS_SCALETAILD_EXTRA_ARGS",
 				Value: "--debug=$(TS_DEBUG_ADDR_PORT)",
 			},
 			corev1.EnvVar{
@@ -332,7 +332,7 @@ func expectedSTSUserspace(t *testing.T, cl client.Client, opts configOpts) *apps
 	}
 	volumes := []corev1.Volume{
 		{
-			Name: "tailscaledconfig-0",
+			Name: "scaletaildconfig-0",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: opts.secretName,
@@ -568,12 +568,12 @@ func expectedSecret(t *testing.T, cl client.Client, opts configOpts) *corev1.Sec
 	conf.AdvertiseRoutes = routes
 	bnn, err := json.Marshal(conf)
 	if err != nil {
-		t.Fatalf("error marshalling tailscaled config")
+		t.Fatalf("error marshalling scaletaild config")
 	}
 	conf.AppConnector = nil
 	bn, err := json.Marshal(conf)
 	if err != nil {
-		t.Fatalf("error marshalling tailscaled config")
+		t.Fatalf("error marshalling scaletaild config")
 	}
 	mak.Set(&s.StringData, "cap-95.hujson", string(bn))
 	mak.Set(&s.StringData, "cap-107.hujson", string(bnn))

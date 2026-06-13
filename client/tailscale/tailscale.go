@@ -3,7 +3,7 @@
 
 //go:build go1.19
 
-// Package tailscale contains a Go client for the Tailscale control plane API.
+// Package scaletail contains a Go client for the Tailscale control plane API.
 //
 // This package is only intended for internal and transitional use.
 //

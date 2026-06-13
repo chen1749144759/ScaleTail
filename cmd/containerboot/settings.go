@@ -58,7 +58,7 @@ type settings struct {
 	AuthOnce                      bool
 	Root                          string
 	KubernetesCanPatch            bool
-	TailscaledConfigFilePath      string
+	ScaleTaildConfigFilePath      string
 	EnableForwardingOptimizations bool
 	// If set to true and, if this containerboot instance is a Kubernetes
 	// ingress proxy, set up rules to forward incoming cluster traffic to be
@@ -101,7 +101,7 @@ func configFromEnv() (*settings, error) {
 		ProxyTargetDNSName: defaultEnv("TS_EXPERIMENTAL_DEST_DNS_NAME", ""),
 		TailnetTargetIP:    defaultEnv("TS_TAILNET_TARGET_IP", ""),
 		TailnetTargetFQDN:  defaultEnv("TS_TAILNET_TARGET_FQDN", ""),
-		DaemonExtraArgs:    defaultEnv("TS_TAILSCALED_EXTRA_ARGS", ""),
+		DaemonExtraArgs:    defaultEnv("TS_SCALETAILD_EXTRA_ARGS", ""),
 		ExtraArgs:          defaultEnv("TS_EXTRA_ARGS", ""),
 		InKubernetes:       os.Getenv("KUBERNETES_SERVICE_HOST") != "",
 		UserspaceMode:      defaultBool("TS_USERSPACE", true),
@@ -115,10 +115,10 @@ func configFromEnv() (*settings, error) {
 		}(),
 		SOCKSProxyAddr:                        defaultEnv("TS_SOCKS5_SERVER", ""),
 		HTTPProxyAddr:                         defaultEnv("TS_OUTBOUND_HTTP_PROXY_LISTEN", ""),
-		Socket:                                defaultEnv("TS_SOCKET", "/tmp/tailscaled.sock"),
+		Socket:                                defaultEnv("TS_SOCKET", "/tmp/scaletaild.sock"),
 		AuthOnce:                              defaultBool("TS_AUTH_ONCE", false),
 		Root:                                  defaultEnv("TS_TEST_ONLY_ROOT", "/"),
-		TailscaledConfigFilePath:              tailscaledConfigFilePath(),
+		ScaleTaildConfigFilePath:              scaletaildConfigFilePath(),
 		AllowProxyingClusterTrafficViaIngress: defaultBool("EXPERIMENTAL_ALLOW_PROXYING_CLUSTER_TRAFFIC_VIA_INGRESS", false),
 		PodIP:                                 defaultEnv("POD_IP", ""),
 		EnableForwardingOptimizations:         defaultBool("TS_EXPERIMENTAL_ENABLE_FORWARDING_OPTIMIZATIONS", false),
@@ -193,14 +193,14 @@ func configFromEnv() (*settings, error) {
 // --accept-dns flag, override the acceptDNS value with the one from
 // TS_EXTRA_ARGS.
 // The value of extraArgs can be empty string or one or more whitespace-separate
-// key value pairs for 'tailscale up' command. The value for boolean flags can
+// key value pairs for 'scaletail up' command. The value for boolean flags can
 // be omitted (default to true).
 func parseAcceptDNS(extraArgs string, acceptDNS bool) (string, bool) {
 	if !strings.Contains(extraArgs, "--accept-dns") {
 		return extraArgs, acceptDNS
 	}
 	// TODO(irbekrm): we should validate that TS_EXTRA_ARGS contains legit
-	// 'tailscale up' flag values separated by whitespace.
+	// 'scaletail up' flag values separated by whitespace.
 	argsArr := strings.Fields(extraArgs)
 	i := -1
 	for key, val := range argsArr {
@@ -236,16 +236,16 @@ func parseAcceptDNS(extraArgs string, acceptDNS bool) (string, bool) {
 }
 
 func (s *settings) validate() error {
-	if s.TailscaledConfigFilePath != "" {
-		dir, file := path.Split(s.TailscaledConfigFilePath)
+	if s.ScaleTaildConfigFilePath != "" {
+		dir, file := path.Split(s.ScaleTaildConfigFilePath)
 		if _, err := os.Stat(dir); err != nil {
-			return fmt.Errorf("error validating whether directory with tailscaled config file %s exists: %w", dir, err)
+			return fmt.Errorf("error validating whether directory with scaletaild config file %s exists: %w", dir, err)
 		}
-		if _, err := os.Stat(s.TailscaledConfigFilePath); err != nil {
-			return fmt.Errorf("error validating whether tailscaled config directory %q contains tailscaled config for current capability version %q: %w. If this is a Tailscale Kubernetes operator proxy, please ensure that the version of the operator is not older than the version of the proxy", dir, file, err)
+		if _, err := os.Stat(s.ScaleTaildConfigFilePath); err != nil {
+			return fmt.Errorf("error validating whether scaletaild config directory %q contains scaletaild config for current capability version %q: %w. If this is a Tailscale Kubernetes operator proxy, please ensure that the version of the operator is not older than the version of the proxy", dir, file, err)
 		}
-		if _, err := conffile.Load(s.TailscaledConfigFilePath); err != nil {
-			return fmt.Errorf("error validating tailscaled configfile contents: %w", err)
+		if _, err := conffile.Load(s.ScaleTaildConfigFilePath); err != nil {
+			return fmt.Errorf("error validating scaletaild configfile contents: %w", err)
 		}
 	}
 	if s.ProxyTargetIP != "" && s.UserspaceMode {
@@ -266,7 +266,7 @@ func (s *settings) validate() error {
 	if s.TailnetTargetFQDN != "" && s.TailnetTargetIP != "" {
 		return errors.New("Both TS_TAILNET_TARGET_IP and TS_TAILNET_FQDN cannot be set")
 	}
-	if s.TailscaledConfigFilePath != "" &&
+	if s.ScaleTaildConfigFilePath != "" &&
 		(s.AcceptDNS != nil ||
 			s.AuthKey != "" ||
 			s.Routes != nil ||
@@ -348,7 +348,7 @@ func (s *settings) validate() error {
 }
 
 // setupKube is responsible for doing any necessary configuration and checks to
-// ensure that tailscale state storage and authentication mechanism will work on
+// ensure that scaletail state storage and authentication mechanism will work on
 // Kubernetes.
 func (cfg *settings) setupKube(ctx context.Context, kc *kubeClient) error {
 	if cfg.KubeSecret == "" {
@@ -368,8 +368,8 @@ func (cfg *settings) setupKube(ctx context.Context, kc *kubeClient) error {
 		}
 
 		if !canCreate {
-			return fmt.Errorf("tailscale state Secret %s does not exist and we don't have permissions to create it. "+
-				"If you intend to store tailscale state elsewhere than a Kubernetes Secret, "+
+			return fmt.Errorf("scaletail state Secret %s does not exist and we don't have permissions to create it. "+
+				"If you intend to store scaletail state elsewhere than a Kubernetes Secret, "+
 				"you can explicitly set TS_KUBE_SECRET env var to an empty string. "+
 				"Else ensure that RBAC is set up that allows the service account associated with this installation to create Secrets.", cfg.KubeSecret)
 		}
@@ -407,26 +407,26 @@ func (cfg *settings) setupKube(ctx context.Context, kc *kubeClient) error {
 
 // isTwoStepConfigAuthOnce returns true if the Tailscale node should be configured
 // in two steps and login should only happen once.
-// Step 1: run 'tailscaled'
+// Step 1: run 'scaletaild'
 // Step 2):
-// A) if this is the first time starting this node run 'tailscale up --authkey <authkey> <config opts>'
-// B) if this is not the first time starting this node run 'tailscale set <config opts>'.
+// A) if this is the first time starting this node run 'scaletail up --authkey <authkey> <config opts>'
+// B) if this is not the first time starting this node run 'scaletail set <config opts>'.
 func isTwoStepConfigAuthOnce(cfg *settings) bool {
-	return cfg.AuthOnce && cfg.TailscaledConfigFilePath == ""
+	return cfg.AuthOnce && cfg.ScaleTaildConfigFilePath == ""
 }
 
 // isTwoStepConfigAlwaysAuth returns true if the Tailscale node should be configured
 // in two steps and we should log in every time it starts.
-// Step 1: run 'tailscaled'
-// Step 2): run 'tailscale up --authkey <authkey> <config opts>'
+// Step 1: run 'scaletaild'
+// Step 2): run 'scaletail up --authkey <authkey> <config opts>'
 func isTwoStepConfigAlwaysAuth(cfg *settings) bool {
-	return !cfg.AuthOnce && cfg.TailscaledConfigFilePath == ""
+	return !cfg.AuthOnce && cfg.ScaleTaildConfigFilePath == ""
 }
 
 // isOneStepConfig returns true if the Tailscale node should always be ran and
-// configured in a single step by running 'tailscaled <config opts>'
+// configured in a single step by running 'scaletaild <config opts>'
 func isOneStepConfig(cfg *settings) bool {
-	return cfg.TailscaledConfigFilePath != ""
+	return cfg.ScaleTaildConfigFilePath != ""
 }
 
 // isL3Proxy returns true if the Tailscale node needs to be configured to act

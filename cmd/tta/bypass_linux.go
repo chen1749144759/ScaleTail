@@ -12,14 +12,14 @@ import (
 )
 
 // bypassControlFunc is set as net.Dialer.Control so that sockets dialed by
-// TTA bypass tailscaled's policy routing. Without it, sockets opened before
-// tailscaled installs an exit-node route would have their packets rerouted
+// TTA bypass scaletaild's policy routing. Without it, sockets opened before
+// scaletaild installs an exit-node route would have their packets rerouted
 // via the exit node when the route is later installed, breaking the
 // existing connection.
 //
 // We bind the socket to the default route's interface (typically the VM's
 // LAN-facing NIC) rather than relying on the bypass fwmark. The fwmark
-// approach is conditional on tailscaled having configured SO_MARK-based
+// approach is conditional on scaletaild having configured SO_MARK-based
 // policy routing; binding to the underlying interface is unconditional.
 func bypassControlFunc(network, address string, c syscall.RawConn) error {
 	ifc, err := netmon.DefaultRouteInterface()

@@ -1462,7 +1462,7 @@ func TestIngressAdvertiseServicesConfigPreserved(t *testing.T) {
 			Namespace: tsNamespace,
 		},
 		Data: map[string][]byte{
-			tsoperator.TailscaledConfigFileName(pgMinCapabilityVersion): existingConfigBytes,
+			tsoperator.ScaleTaildConfigFileName(pgMinCapabilityVersion): existingConfigBytes,
 		},
 	})
 
@@ -1499,7 +1499,7 @@ func TestIngressAdvertiseServicesConfigPreserved(t *testing.T) {
 			ResourceVersion: "2",
 		},
 		Data: map[string][]byte{
-			tsoperator.TailscaledConfigFileName(pgMinCapabilityVersion): expectedConfigBytes,
+			tsoperator.ScaleTaildConfigFileName(pgMinCapabilityVersion): expectedConfigBytes,
 		},
 	})
 }
@@ -1690,7 +1690,7 @@ func TestProxyGroupGetAuthKey(t *testing.T) {
 			value = fmt.Appendf(nil, `{"AuthKey": "%s"}`, *authKey)
 		}
 		return map[string][]byte{
-			tsoperator.TailscaledConfigFileName(pgMinCapabilityVersion): value,
+			tsoperator.ScaleTaildConfigFileName(pgMinCapabilityVersion): value,
 		}
 	}
 

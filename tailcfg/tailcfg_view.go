@@ -306,7 +306,7 @@ func (v NodeView) CapMap() views.MapSlice[NodeCapability, RawMessage] {
 // UnsignedPeerAPIOnly means that this node is not signed nor subject to TKA
 // restrictions. However, in exchange for that privilege, it does not get
 // network access. It can only access this node's peerapi, which may not let
-// it do anything. It is the tailscaled client's job to double-check the
+// it do anything. It is the scaletaild client's job to double-check the
 // MapResponse's PacketFilter to verify that its AllowedIPs will not be
 // accepted by the packet filter.
 func (v NodeView) UnsignedPeerAPIOnly() bool { return v.ж.UnsignedPeerAPIOnly }
@@ -802,7 +802,7 @@ func (v NetInfoView) DERPLatency() views.Map[string, float64] { return views.Map
 // debug iptables-vs-nftables issues. The string is of the form
 // "{nft,ift}-REASON", like "nft-forced" or "ipt-default". Empty means
 // either not Linux or a configuration in which the host firewall rules
-// are not managed by tailscaled.
+// are not managed by scaletaild.
 func (v NetInfoView) FirewallMode() string { return v.ж.FirewallMode }
 func (v NetInfoView) String() string       { return v.ж.String() }
 
@@ -2110,7 +2110,7 @@ func (v SSHActionView) AllowAgentForwarding() bool { return v.ж.AllowAgentForwa
 // response, it should be re-fetched as long as the SSH
 // session is open.
 //
-// The following variables in the URL are expanded by tailscaled:
+// The following variables in the URL are expanded by scaletaild:
 //
 //   - $SRC_NODE_IP (URL escaped)
 //   - $SRC_NODE_ID (Node.ID as int64 string)

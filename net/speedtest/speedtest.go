@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package speedtest contains both server and client code for
-// running speedtests between tailscale nodes.
+// running speedtests between scaletail nodes.
 package speedtest
 
 import (

@@ -64,11 +64,11 @@ var policyLockRestricted atomic.Int32
 // be removed once. If [RestrictPolicyLocks] is called multiple times, each call must be
 // matched by a corresponding call to the returned function to fully remove the restrictions.
 //
-// It is primarily used to prevent certain deadlocks, such as when tailscaled attempts to acquire
+// It is primarily used to prevent certain deadlocks, such as when scaletaild attempts to acquire
 // a policy lock during startup. If the service starts due to Tailscale being installed by GPSI,
 // the write lock will be held by the Group Policy service throughout the installation,
-// preventing tailscaled from acquiring the read lock. Since Group Policy waits for the installation
-// to complete, and therefore for tailscaled to start, before releasing the write lock, this scenario
+// preventing scaletaild from acquiring the read lock. Since Group Policy waits for the installation
+// to complete, and therefore for scaletaild to start, before releasing the write lock, this scenario
 // would result in a deadlock. See tailscale/tailscale#14416 for more information.
 func RestrictPolicyLocks() (removeRestriction func()) {
 	policyLockRestricted.Add(1)

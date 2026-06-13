@@ -20,7 +20,7 @@ var (
 	fakeLogCatcher        = newVIP("log.tailscale.com", 4)
 	fakeSyslog            = newVIP("syslog.tailscale", 9)
 	fakeCloudInit         = newVIP("cloud-init.tailscale", 5) // serves cloud-init metadata/userdata per node
-	fakeFiles             = newVIP("files.tailscale", 6)      // serves binary files (tta, tailscale, tailscaled) to VMs
+	fakeFiles             = newVIP("files.tailscale", 6)      // serves binary files (tta, tailscale, scaletaild) to VMs
 )
 
 type virtualIP struct {

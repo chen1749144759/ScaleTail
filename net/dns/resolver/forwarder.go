@@ -577,7 +577,7 @@ func (f *forwarder) sendDoH(ctx context.Context, urlBase string, c *http.Client,
 	}
 	req.Header.Set("Content-Type", dohType)
 	req.Header.Set("Accept", dohType)
-	req.Header.Set("User-Agent", "tailscaled/"+version.Long())
+	req.Header.Set("User-Agent", "scaletaild/"+version.Long())
 
 	hres, err := c.Do(req)
 	if err != nil {
@@ -696,7 +696,7 @@ func (f *forwarder) send(ctx context.Context, fq *forwardQuery, rr resolverAndDe
 
 		// If this is a UDP query, return it regardless of whether the
 		// response is truncated or not; the client can retry
-		// communicating with tailscaled over TCP. There's no point
+		// communicating with scaletaild over TCP. There's no point
 		// falling back to TCP for a truncated query if we can't return
 		// the results to the client.
 		if isUDPQuery {

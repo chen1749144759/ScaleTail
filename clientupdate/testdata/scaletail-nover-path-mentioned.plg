@@ -1,0 +1,110 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN>
+
+<PLUGIN
+  name="scaletail"
+  author="Derek Kaser"
+  version="2023.11.01"
+  pluginURL="https://raw.githubusercontent.com/dkaser/unraid-scaletail/main/plugin/scaletail.plg"
+  launch="Settings/ScaleTail"
+  support="https://forums.unraid.net/topic/136889-plugin-scaletail/"
+>
+
+<CHANGES>
+<![CDATA[
+###2023.11.01###
+- Update ScaleTail to 1.52.0 (new checksum from upstream package server)
+
+###2023.10.31###
+- Update ScaleTail to 1.52.0
+
+###2023.10.29###
+- Update ScaleTail to 1.50.1
+- Fix nginx hang when ScaleTail restarts
+
+###2023.09.26###
+- Update ScaleTail to 1.50.0
+- New ScaleTail web interface
+
+###2023.09.14a###
+- Update ScaleTail to 1.48.2
+
+###2023.08.22###
+- Update ScaleTail to 1.48.1
+
+For older releases, see https://github.com/dkaser/unraid-scaletail/releases
+]]>
+</CHANGES>
+
+<FILE Name="/boot/config/plugins/scaletail/unraid-scaletail-utils-1.4.1-noarch-1.txz">
+<URL>https://github.com/dkaser/unraid-scaletail-utils/releases/download/1.4.1/unraid-scaletail-utils-1.4.1-noarch-1.txz</URL>
+<MD5>7095ab4b88b34d8f5da6483865883267</MD5>
+</FILE>
+
+<FILE Name="/boot/config/plugins/scaletail/unraid-plugin-diagnostics-1.2.2-noarch-1.txz">
+<URL>https://github.com/dkaser/unraid-plugin-diagnostics/releases/download/1.2.2/unraid-plugin-diagnostics-1.2.2-noarch-1.txz</URL>
+<MD5>9d358575499305889962d83ebd90c20c</MD5>
+</FILE>
+
+<!--
+The 'install' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+<![CDATA[
+if [ -d "/usr/local/emhttp/plugins/scaletail" ]; then
+    rm -rf /usr/local/emhttp/plugins/scaletail
+fi
+
+upgradepkg --install-new /boot/config/plugins/scaletail/unraid-plugin-diagnostics-1.2.2-noarch-1.txz
+upgradepkg --install-new --reinstall /boot/config/plugins/scaletail/unraid-scaletail-utils-1.4.1-noarch-1.txz
+
+mkdir -p /usr/local/emhttp/plugins/scaletail/bin
+tar xzf /boot/config/plugins/scaletail/scaletail_1.52.0_amd64.tgz --strip-components 1 -C /usr/local/emhttp/plugins/scaletail/bin
+
+ln -s /usr/local/emhttp/plugins/scaletail/bin/scaletail /usr/local/sbin/scaletail
+ln -s /usr/local/emhttp/plugins/scaletail/bin/scaletaild /usr/local/sbin/scaletaild
+
+mkdir -p /var/local/emhttp/plugins/scaletail
+echo "VERSION=2023.11.01" >> /var/local/emhttp/plugins/scaletail/scaletail.ini
+
+# start scaletaild
+/usr/local/emhttp/plugins/scaletail/restart.sh
+
+# cleanup old versions
+rm -f /boot/config/plugins/scaletail/scaletail-utils-*.txz
+rm -f $(ls /boot/config/plugins/scaletail/unraid-scaletail-utils-*.txz 2>/dev/null | grep -v '1.4.1')
+rm -f $(ls /boot/config/plugins/scaletail/unraid-plugin-diagnostics-*.txz 2>/dev/null | grep -v '1.2.2')
+rm -f $(ls /boot/config/plugins/scaletail/*.tgz 2>/dev/null | grep -v 'scaletail_1.52.0_amd64')
+
+echo ""
+echo "----------------------------------------------------"
+echo " scaletail has been installed."
+echo " Version: 2023.11.01"
+echo "----------------------------------------------------"
+echo ""
+]]>
+</INLINE>
+</FILE>
+
+<!--
+The 'remove' script.
+-->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+<![CDATA[
+# Stop service
+/etc/rc.d/rc.scaletail stop 2>/dev/null
+
+rm /usr/local/sbin/scaletail
+rm /usr/local/sbin/scaletaild
+
+removepkg unraid-scaletail-utils-1.4.1
+
+rm -rf /usr/local/emhttp/plugins/scaletail
+rm -rf /boot/config/plugins/scaletail
+]]>
+</INLINE>
+</FILE>
+
+</PLUGIN>

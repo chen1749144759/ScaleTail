@@ -795,7 +795,7 @@ func acmeClient(cs certStore) (*acme.Client, error) {
 	// shouldStartDomainRenewalARI).
 	return &acme.Client{
 		Key:          key,
-		UserAgent:    "tailscaled/" + version.Long(),
+		UserAgent:    "scaletaild/" + version.Long(),
 		DirectoryURL: envknob.String("TS_DEBUG_ACME_DIRECTORY_URL"),
 	}, nil
 }

@@ -76,7 +76,7 @@ func (t *target) buildQPKG(b *dist.Build, qnapBuilds *qnapBuilds, inner *innerPk
 		"-e", fmt.Sprintf("TSTAG=%s", b.Version.Short),
 		"-e", fmt.Sprintf("QNAPTAG=%s", qnapTag),
 		"-v", fmt.Sprintf("%s:/tailscale", inner.tailscalePath),
-		"-v", fmt.Sprintf("%s:/tailscaled", inner.tailscaledPath),
+		"-v", fmt.Sprintf("%s:/scaletaild", inner.scaletaildPath),
 		// Tailscale folder has QNAP package setup files needed for building.
 		"-v", fmt.Sprintf("%s:/Tailscale", filepath.Join(qnapBuilds.tmpDir, "files/Tailscale")),
 		"-v", fmt.Sprintf("%s:/build-qpkg.sh", filepath.Join(qnapBuilds.tmpDir, "files/scripts/build-qpkg.sh")),
@@ -134,7 +134,7 @@ type qnapBuildsMemoizeKey struct{}
 
 type innerPkg struct {
 	tailscalePath  string
-	tailscaledPath string
+	scaletaildPath string
 }
 
 // qnapBuilds holds extra build context shared by all qnap builds.
@@ -220,11 +220,11 @@ func (m *qnapBuilds) buildInnerPackage(b *dist.Build, goenv map[string]string) (
 		if err := b.BuildWebClientAssets(); err != nil {
 			return nil, err
 		}
-		ts, err := b.BuildGoBinary("tailscale.com/cmd/tailscale", goenv)
+		ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", goenv)
 		if err != nil {
 			return nil, err
 		}
-		tsd, err := b.BuildGoBinary("tailscale.com/cmd/tailscaled", goenv)
+		tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", goenv)
 		if err != nil {
 			return nil, err
 		}
@@ -259,12 +259,12 @@ func (m *qnapBuilds) buildInnerPackage(b *dist.Build, goenv map[string]string) (
 		if err := os.WriteFile(tsPath, tsBytes, 0755); err != nil {
 			return nil, err
 		}
-		tsdPath := filepath.Join(tmpDir, "tailscaled")
+		tsdPath := filepath.Join(tmpDir, "scaletaild")
 		if err := os.WriteFile(tsdPath, tsdBytes, 0755); err != nil {
 			return nil, err
 		}
 
-		return &innerPkg{tailscalePath: tsPath, tailscaledPath: tsdPath}, nil
+		return &innerPkg{tailscalePath: tsPath, scaletaildPath: tsdPath}, nil
 	})
 }
 

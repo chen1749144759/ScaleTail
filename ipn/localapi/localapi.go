@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package localapi contains the HTTP server handlers for tailscaled's API server.
+// Package localapi contains the HTTP server handlers for scaletaild's API server.
 package localapi
 
 import (
@@ -280,7 +280,7 @@ var validLocalHostForTesting = false
 
 // validHost reports whether h is a valid Host header value for a LocalAPI request.
 func (h *Handler) validHost(hostname string) bool {
-	// The client code sends a hostname of "local-tailscaled.sock".
+	// The client code sends a hostname of "local-scaletaild.sock".
 	switch hostname {
 	case "", apitype.LocalAPIHost:
 		return true
@@ -342,7 +342,7 @@ func (h *Handler) logRequest(method, route string) {
 }
 
 func (*Handler) serveLocalAPIRoot(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "tailscaled\n")
+	io.WriteString(w, "scaletaild\n")
 }
 
 // serveIDToken handles requests to get an OIDC ID token.
@@ -496,7 +496,7 @@ func (h *Handler) serveBugReport(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, io.EOF):
 		// good
 	case errors.Is(err, io.ErrUnexpectedEOF):
-		// this happens when Ctrl-C'ing the tailscale client; don't
+		// this happens when Ctrl-C'ing the scaletail client; don't
 		// bother logging an error
 	default:
 		// Log but continue anyway.
@@ -617,7 +617,7 @@ func (h *Handler) serveGoroutines(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf)
 }
 
-// serveLogTap taps into the tailscaled/logtail server output and streams
+// serveLogTap taps into the scaletaild/logtail server output and streams
 // it to the client.
 func (h *Handler) serveLogTap(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -1769,12 +1769,12 @@ func (h *Handler) serveSuggestExitNode(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
-// Shutdown is an eventbus value published when tailscaled shutdown
+// Shutdown is an eventbus value published when scaletaild shutdown
 // is requested via LocalAPI. Its only consumer is [ipnserver.Server].
 type Shutdown struct{}
 
-// serveShutdown shuts down tailscaled. It requires write access
-// and the [pkey.AllowTailscaledRestart] policy to be enabled.
+// serveShutdown shuts down scaletaild. It requires write access
+// and the [pkey.AllowScaleTaildRestart] policy to be enabled.
 // See tailscale/corp#32674.
 func (h *Handler) serveShutdown(w http.ResponseWriter, r *http.Request) {
 	if r.Method != httpm.POST {
@@ -1788,7 +1788,7 @@ func (h *Handler) serveShutdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	polc := h.b.Sys().PolicyClientOrDefault()
-	if permitShutdown, _ := polc.GetBoolean(pkey.AllowTailscaledRestart, false); !permitShutdown {
+	if permitShutdown, _ := polc.GetBoolean(pkey.AllowScaleTaildRestart, false); !permitShutdown {
 		http.Error(w, "shutdown access denied by policy", http.StatusForbidden)
 		return
 	}

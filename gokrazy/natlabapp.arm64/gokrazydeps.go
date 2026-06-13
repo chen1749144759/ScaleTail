@@ -10,7 +10,7 @@ import (
 	_ "github.com/gokrazy/kernel.arm64"
 	_ "github.com/gokrazy/serial-busybox"
 	_ "github.com/tailscale/ts-gokrazy/gokrazyinit"
-	_ "tailscale.com/cmd/tailscale"
-	_ "tailscale.com/cmd/tailscaled"
+	_ "tailscale.com/cmd/scaletail"
+	_ "tailscale.com/cmd/scaletaild"
 	_ "tailscale.com/cmd/tta"
 )

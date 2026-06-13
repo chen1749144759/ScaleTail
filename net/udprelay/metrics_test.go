@@ -21,9 +21,9 @@ func TestMetricsLifecycle(t *testing.T) {
 	// Expect certain prom names registered.
 	have := r.MetricNames()
 	want := []string{
-		"tailscaled_peer_relay_forwarded_packets_total",
-		"tailscaled_peer_relay_forwarded_bytes_total",
-		"tailscaled_peer_relay_endpoints",
+		"scaletaild_peer_relay_forwarded_packets_total",
+		"scaletaild_peer_relay_forwarded_bytes_total",
+		"scaletaild_peer_relay_endpoints",
 	}
 	slices.Sort(have)
 	slices.Sort(want)

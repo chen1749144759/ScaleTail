@@ -82,7 +82,7 @@ func New(logf logger.Logf, tundev tun.Device, netMon *netmon.Monitor,
 		})
 	}
 	if !buildfeatures.HasOSRouter {
-		return nil, errors.New("router: tailscaled was built without OSRouter support")
+		return nil, errors.New("router: scaletaild was built without OSRouter support")
 	}
 	return nil, fmt.Errorf("unsupported OS %q", runtime.GOOS)
 }

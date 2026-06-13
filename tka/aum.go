@@ -213,7 +213,7 @@ func (a *AUM) StaticValidate() error {
 	case AUMNoOp:
 	default:
 		// An AUM with an unknown message kind was received! That means
-		// that a future version of tailscaled added some feature we don't
+		// that a future version of scaletaild added some feature we don't
 		// understand.
 		//
 		// The future-compatibility contract for AUM message types is that

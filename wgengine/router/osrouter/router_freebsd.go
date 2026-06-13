@@ -17,7 +17,7 @@ func init() {
 
 func cleanUp(logf logger.Logf, interfaceName string) {
 	// If the interface was left behind, ifconfig down will not remove it.
-	// In fact, this will leave a system in a tainted state where starting tailscaled
+	// In fact, this will leave a system in a tainted state where starting scaletaild
 	// will result in "interface tailscale0 already exists"
 	// until the defunct interface is ifconfig-destroyed.
 	ifup := []string{"ifconfig", interfaceName, "destroy"}

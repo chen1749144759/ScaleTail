@@ -408,9 +408,9 @@ func TKASkipSignatureCheck() bool { return Bool("TS_UNSAFE_SKIP_NKS_VERIFICATION
 // AssumeNetworkUp reports whether to assume network connectivity for development.
 func AssumeNetworkUp() bool { return Bool("TS_ASSUME_NETWORK_UP_FOR_TEST") }
 
-// App returns the tailscale app type of this instance, if set via
+// App returns the scaletail app type of this instance, if set via
 // TS_INTERNAL_APP env var. TS_INTERNAL_APP can be used to set app type for
-// components that wrap tailscaled, such as containerboot. App type is intended
+// components that wrap scaletaild, such as containerboot. App type is intended
 // to only be used to set known predefined app types, such as Tailscale
 // Kubernetes Operator components.
 func App() string {
@@ -533,17 +533,17 @@ func ApplyDiskConfigError() error { return applyDiskConfigErr }
 //
 // It exists primarily for Windows and macOS to make it easy to apply
 // environment variables to a running service in a way similar to modifying
-// /etc/default/tailscaled on Linux.
+// /etc/default/scaletaild on Linux.
 //
-// On Windows, you use %ProgramData%\ScaleTail\tailscaled-env.txt instead.
+// On Windows, you use %ProgramData%\ScaleTail\scaletaild-env.txt instead.
 //
 // On macOS, use one of:
 //
-//   - /private/var/root/Library/Containers/io.tailscale.ipn.macsys.network-extension/Data/tailscaled-env.txt
+//   - /private/var/root/Library/Containers/io.tailscale.ipn.macsys.network-extension/Data/scaletaild-env.txt
 //     for standalone macOS GUI builds
-//   - ~/Library/Containers/io.tailscale.ipn.macos.network-extension/Data/tailscaled-env.txt
+//   - ~/Library/Containers/io.tailscale.ipn.macos.network-extension/Data/scaletaild-env.txt
 //     for App Store builds
-//   - /etc/tailscale/tailscaled-env.txt for tailscaled-on-macOS (homebrew, etc)
+//   - /etc/tailscale/scaletaild-env.txt for scaletaild-on-macOS (homebrew, etc)
 func ApplyDiskConfig() (err error) {
 	if runtime.GOOS == "linux" && !(buildfeatures.HasDebug || buildfeatures.HasSynology) {
 		// This function does nothing on Linux, unless you're
@@ -601,18 +601,18 @@ func ApplyDiskConfig() (err error) {
 }
 
 // getPlatformEnvFiles returns a list of paths to the current platform's
-// optional tailscaled-env.txt file. It returns an empty list if none is
+// optional scaletaild-env.txt file. It returns an empty list if none is
 // defined for the platform.
 func getPlatformEnvFiles() []string {
 	switch runtime.GOOS {
 	case "windows":
 		return []string{
-			filepath.Join(os.Getenv("ProgramData"), "ScaleTail", "tailscaled-env.txt"),
-			filepath.Join(os.Getenv("ProgramData"), "Tailscale", "tailscaled-env.txt"),
+			filepath.Join(os.Getenv("ProgramData"), "ScaleTail", "scaletaild-env.txt"),
+			filepath.Join(os.Getenv("ProgramData"), "Tailscale", "scaletaild-env.txt"),
 		}
 	case "linux":
 		if buildfeatures.HasSynology && distro.Get() == distro.Synology {
-			return []string{"/etc/tailscale/tailscaled-env.txt"}
+			return []string{"/etc/tailscale/scaletaild-env.txt"}
 		}
 	case "darwin":
 		if version.IsSandboxedMacOS() { // the two GUI variants (App Store or separate download)
@@ -629,16 +629,16 @@ func getPlatformEnvFiles() []string {
 			// location.
 			var candidates []string
 			if home := os.Getenv("HOME"); home != "" {
-				candidates = append(candidates, filepath.Join(home, "tailscaled-env.txt"))
+				candidates = append(candidates, filepath.Join(home, "scaletaild-env.txt"))
 			}
 			if wd, err := os.Getwd(); err == nil {
-				candidates = append(candidates, filepath.Join(wd, "tailscaled-env.txt"))
+				candidates = append(candidates, filepath.Join(wd, "scaletaild-env.txt"))
 			}
 
 			return candidates
 		} else {
-			// Open source / homebrew variable, running tailscaled-on-macOS.
-			return []string{"/etc/tailscale/tailscaled-env.txt"}
+			// Open source / homebrew variable, running scaletaild-on-macOS.
+			return []string{"/etc/tailscale/scaletaild-env.txt"}
 		}
 	}
 	return nil

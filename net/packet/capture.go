@@ -63,10 +63,10 @@ const (
 	FromLocal CapturePath = 0
 	// FromPeer indicates the packet was logged upon reception from a remote peer.
 	FromPeer CapturePath = 1
-	// SynthesizedToLocal indicates the packet was generated from within tailscaled,
+	// SynthesizedToLocal indicates the packet was generated from within scaletaild,
 	// and is being routed to the local machine's network stack.
 	SynthesizedToLocal CapturePath = 2
-	// SynthesizedToPeer indicates the packet was generated from within tailscaled,
+	// SynthesizedToPeer indicates the packet was generated from within scaletaild,
 	// and is being routed to a remote Wireguard peer.
 	SynthesizedToPeer CapturePath = 3
 

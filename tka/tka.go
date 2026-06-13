@@ -32,7 +32,7 @@ var cborDecOpts = cbor.DecOptions{
 }
 
 // Authority is a Tailnet Key Authority. This type is the main coupling
-// point to the rest of the tailscale client.
+// point to the rest of the scaletail client.
 //
 // Authority objects can either be created from an existing, non-empty
 // tailchonk (via tka.Open()), or created from scratch using tka.Bootstrap()

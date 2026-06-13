@@ -115,7 +115,7 @@ func (s *Server) getSession(r *http.Request) (*browserSession, *apitype.WhoIsRes
 	case statusErr != nil:
 		return nil, whoIs, nil, statusErr
 	case status.Self == nil:
-		return nil, whoIs, status, errors.New("missing self node in tailscale status")
+		return nil, whoIs, status, errors.New("missing self node in scaletail status")
 	case whoIs.Node.IsTagged() && whoIs.Node.StableID == status.Self.ID:
 		return nil, whoIs, status, errTaggedLocalSource
 	case whoIs.Node.IsTagged():
@@ -138,7 +138,7 @@ func (s *Server) getSession(r *http.Request) (*browserSession, *apitype.WhoIsRes
 	}
 	session := v.(*browserSession)
 	if session.SrcNode != srcNode || session.SrcUser != srcUser {
-		// In this case the browser cookie is associated with another tailscale node.
+		// In this case the browser cookie is associated with another scaletail node.
 		// Maybe the source browser's machine was logged out and then back in as a different node.
 		// Return errNoSession because there is no session for this user.
 		return nil, whoIs, status, errNoSession

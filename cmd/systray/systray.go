@@ -15,7 +15,7 @@ import (
 	"tailscale.com/paths"
 )
 
-var socket = flag.String("socket", paths.DefaultTailscaledSocket(), "tailscaled socket 路径")
+var socket = flag.String("socket", paths.DefaultScaleTaildSocket(), "scaletaild socket 路径")
 var theme = flag.String("theme", "dark", "Tailscale 图标主题：dark, dark:nobg, light, light:nobg")
 var openDashboard = flag.Bool("open-dashboard", false, "启动后打开仪表台")
 

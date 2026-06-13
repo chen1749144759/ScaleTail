@@ -288,7 +288,7 @@ func (c *Client) MakeNextReportFull() {
 
 // ReceiveSTUNPacket must be called when a STUN packet is received as a reply to
 // packet the client sent using SendPacket. In Standalone this is performed by
-// the loop started by Standalone, in normal operation in tailscaled incoming
+// the loop started by Standalone, in normal operation in scaletaild incoming
 // STUN replies are routed to this method.
 func (c *Client) ReceiveSTUNPacket(pkt []byte, src netip.AddrPort) {
 	c.vlogf("received STUN packet from %s", src)

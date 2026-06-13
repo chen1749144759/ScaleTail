@@ -123,7 +123,7 @@ func (r *HAServiceReconciler) Reconcile(ctx context.Context, req reconcile.Reque
 
 	tsClient, err := r.clients.For(pg.Spec.Tailnet)
 	if err != nil {
-		return res, fmt.Errorf("failed to get tailscale client: %w", err)
+		return res, fmt.Errorf("failed to get scaletail client: %w", err)
 	}
 
 	hostname := nameForService(svc)
@@ -327,10 +327,10 @@ func (r *HAServiceReconciler) maybeProvision(ctx context.Context, hostname strin
 	}
 
 	logger.Infof("updating AdvertiseServices config")
-	// 4. Update tailscaled's AdvertiseServices config, which should add the Tailscale Service
+	// 4. Update scaletaild's AdvertiseServices config, which should add the Tailscale Service
 	// IPs to the ProxyGroup Pods' AllowedIPs in the next netmap update if approved.
 	if err = r.maybeUpdateAdvertiseServicesConfig(ctx, svc, pg.Name, serviceName, &cfg, true, logger); err != nil {
-		return false, fmt.Errorf("failed to update tailscaled config: %w", err)
+		return false, fmt.Errorf("failed to update scaletaild config: %w", err)
 	}
 
 	count, err := r.numberPodsAdvertising(ctx, pg.Name, serviceName)
@@ -401,7 +401,7 @@ func (r *HAServiceReconciler) maybeCleanup(ctx context.Context, hostname string,
 	// 2. Unadvertise the Tailscale Service.
 	pgName := svc.Annotations[AnnotationProxyGroup]
 	if err = r.maybeUpdateAdvertiseServicesConfig(ctx, svc, pgName, serviceName, nil, false, logger); err != nil {
-		return false, fmt.Errorf("failed to update tailscaled config services: %w", err)
+		return false, fmt.Errorf("failed to update scaletaild config services: %w", err)
 	}
 
 	// TODO: maybe wait for the service to be unadvertised, only then remove the backend routing
@@ -449,9 +449,9 @@ func (r *HAServiceReconciler) maybeCleanupProxyGroup(ctx context.Context, proxyG
 		if !found {
 			logger.Infof("Tailscale Service %q is not owned by any Service, cleaning up", tsSvcName)
 
-			// Make sure the Tailscale Service is not advertised in tailscaled or serve config.
+			// Make sure the Tailscale Service is not advertised in scaletaild or serve config.
 			if err = r.maybeUpdateAdvertiseServicesConfig(ctx, nil, proxyGroupName, tailcfg.ServiceName(tsSvcName), &cfg, false, logger); err != nil {
-				return false, fmt.Errorf("failed to update tailscaled config services: %w", err)
+				return false, fmt.Errorf("failed to update scaletaild config services: %w", err)
 			}
 
 			svcsChanged, err = cleanupTailscaleService(ctx, tsClient, tsSvcName, r.operatorID, logger)

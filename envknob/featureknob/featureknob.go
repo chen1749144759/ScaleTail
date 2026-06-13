@@ -27,7 +27,7 @@ func CanRunTailscaleSSH() error {
 		}
 		// otherwise okay
 	case "darwin":
-		// okay only in tailscaled mode for now.
+		// okay only in scaletaild mode for now.
 		if version.IsSandboxedMacOS() {
 			return errors.New("The Tailscale SSH server does not run in sandboxed Tailscale GUI builds.")
 		}

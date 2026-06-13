@@ -1,9 +1,9 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 //go:build cgo || !darwin
 
-// Package systray provides a minimal Tailscale systray application.
+// Package systray provides a minimal ScaleTail systray application.
 package systray
 
 import (
@@ -72,7 +72,7 @@ func (menu *Menu) Run(client *local.Client) {
 	systray.Run(menu.onReady, menu.onExit)
 }
 
-// Menu represents the systray menu, its items, and the current Tailscale state.
+// Menu represents the systray menu, its items, and the current ScaleTail state.
 type Menu struct {
 	mu sync.Mutex // protects the entire Menu
 
@@ -121,7 +121,7 @@ func (menu *Menu) init() {
 	menu.exitNodeCh = make(chan tailcfg.StableNodeID)
 
 	// dbus wants a file path for notification icons, so copy to a temp file.
-	menu.notificationIcon, _ = os.CreateTemp("", "tailscale-systray.png")
+	menu.notificationIcon, _ = os.CreateTemp("", "scaletail-systray.png")
 	io.Copy(menu.notificationIcon, connected.renderWithBorder(3))
 
 	menu.bgCtx, menu.bgCancel = context.WithCancel(context.Background())
@@ -177,7 +177,7 @@ See https://tailscale.com/kb/1597/linux-systray for more information.`)
 
 	// set initial title, which is used by the systray package as the ID of the StatusNotifierItem.
 	// This value will get overwritten later as the client status changes.
-	systray.SetTitle("tailscale")
+	systray.SetTitle("ScaleTail")
 	systray.SetOnTapped(func() {
 		go menu.openDefaultWindow()
 	})
@@ -189,7 +189,7 @@ See https://tailscale.com/kb/1597/linux-systray for more information.`)
 	menu.mu.Lock()
 	if menu.readonly {
 		fmt.Fprintln(os.Stderr, `
-No permission to manage Tailscale. Set operator by running:
+No permission to manage ScaleTail. Set operator by running:
 
 sudo tailscale set --operator=$USER
 
@@ -198,7 +198,7 @@ See https://tailscale.com/s/cli-operator for more information.`)
 	menu.mu.Unlock()
 }
 
-// updateState updates the Menu state from the Tailscale local client.
+// updateState updates the Menu state from the ScaleTail local client.
 func (menu *Menu) updateState() {
 	menu.init()
 
@@ -246,7 +246,7 @@ func (menu *Menu) refreshStateFromBackend() {
 	}
 }
 
-// rebuild the systray menu based on the current Tailscale state.
+// rebuild the systray menu based on the current ScaleTail state.
 //
 // We currently rebuild the entire menu because it is not easy to update the existing menu.
 // You cannot iterate over the items in a menu, nor can you remove some items like separators.
@@ -265,7 +265,7 @@ func (menu *Menu) rebuild() {
 	systray.ResetMenu()
 
 	if menu.readonly {
-		const readonlyMsg = "没有权限管理 Tailscale。\n请查看 tailscale.com/s/cli-operator"
+		const readonlyMsg = "没有权限管理 ScaleTail。\n请查看 tailscale.com/s/cli-operator"
 		m := systray.AddMenuItem(readonlyMsg, "")
 		onClick(ctx, m, func(_ context.Context) {
 			webbrowser.Open("https://tailscale.com/s/cli-operator")
@@ -345,8 +345,8 @@ func (menu *Menu) rebuild() {
 		}
 	}
 
-	if menu.status != nil && menu.status.Self != nil && len(menu.status.Self.TailscaleIPs) > 0 {
-		title := fmt.Sprintf("当前设备: %s (%s)", menu.status.Self.HostName, menu.status.Self.TailscaleIPs[0])
+	if menu.status != nil && menu.status.Self != nil && len(menu.status.Self.ScaleTailIPs) > 0 {
+		title := fmt.Sprintf("当前设备: %s (%s)", menu.status.Self.HostName, menu.status.Self.ScaleTailIPs[0])
 		menu.self = systray.AddMenuItem(title, "")
 	} else {
 		menu.self = systray.AddMenuItem("当前设备: 未连接", "")
@@ -487,7 +487,7 @@ func setTooltip(text string) {
 }
 
 // eventLoop is the main event loop for handling click events on menu items
-// and responding to Tailscale state changes.
+// and responding to ScaleTail state changes.
 // This method does not return until ctx.Done is closed.
 func (menu *Menu) eventLoop(ctx context.Context) {
 	for {
@@ -512,7 +512,7 @@ func (menu *Menu) eventLoop(ctx context.Context) {
 			}
 
 		case <-menu.self.ClickedCh:
-			menu.copyTailscaleIP(menu.status.Self)
+			menu.copyScaleTailIP(menu.status.Self)
 
 		case id := <-menu.accountsCh:
 			if err := menu.lc.SwitchProfile(ctx, id); err != nil {
@@ -571,7 +571,7 @@ func (menu *Menu) watchIPNBus() {
 			}
 		}
 		// If our watch connection breaks, wait a bit before reconnecting. No
-		// reason to spam the logs if e.g. tailscaled is restarting or goes
+		// reason to spam the logs if e.g. scaletaild is restarting or goes
 		// down.
 		time.Sleep(3 * time.Second)
 	}
@@ -625,14 +625,14 @@ func (menu *Menu) watchIPNBusInner() error {
 	}
 }
 
-// copyTailscaleIP copies the first Tailscale IP of the given device to the clipboard
+// copyScaleTailIP copies the first ScaleTail IP of the given device to the clipboard
 // and sends a notification with the copied value.
-func (menu *Menu) copyTailscaleIP(device *ipnstate.PeerStatus) {
-	if device == nil || len(device.TailscaleIPs) == 0 {
+func (menu *Menu) copyScaleTailIP(device *ipnstate.PeerStatus) {
+	if device == nil || len(device.ScaleTailIPs) == 0 {
 		return
 	}
 	name := strings.Split(device.DNSName, ".")[0]
-	ip := device.TailscaleIPs[0].String()
+	ip := device.ScaleTailIPs[0].String()
 	err := clipboard.WriteAll(ip)
 	if err != nil {
 		log.Printf("clipboard error: %v", err)
@@ -650,7 +650,7 @@ func (menu *Menu) sendNotification(title, content string) {
 	}
 	timeout := 3 * time.Second
 	obj := conn.Object("org.freedesktop.Notifications", "/org/freedesktop/Notifications")
-	call := obj.Call("org.freedesktop.Notifications.Notify", 0, "Tailscale", uint32(0),
+	call := obj.Call("org.freedesktop.Notifications.Notify", 0, "ScaleTail", uint32(0),
 		menu.notificationIcon.Name(), title, content, []string{}, map[string]dbus.Variant{}, int32(timeout.Milliseconds()))
 	if call.Err != nil {
 		log.Printf("dbus: %v", call.Err)

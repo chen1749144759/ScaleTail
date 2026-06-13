@@ -39,7 +39,7 @@ import (
 //
 // TODO: this code is insufficient to control the MTU correctly. The
 // correct way to do it is per-peer PMTU discovery, and synthesizing
-// ICMP fragmentation-needed messages within tailscaled. This code may
+// ICMP fragmentation-needed messages within scaletaild. This code may
 // address a few rare corner cases, but is unlikely to significantly
 // help with MTU issues compared to a static 1280B implementation.
 func monitorDefaultRoutes(tun *tun.NativeTun) (*winipcfg.RouteChangeCallback, error) {

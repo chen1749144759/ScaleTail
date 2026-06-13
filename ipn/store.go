@@ -23,7 +23,7 @@ const (
 	// in its key.NodePrivate.MarshalText representation.
 	MachineKeyStateKey = StateKey("_machinekey")
 
-	// LegacyGlobalDaemonStateKey is the ipn.StateKey that tailscaled
+	// LegacyGlobalDaemonStateKey is the ipn.StateKey that scaletaild
 	// loads on startup.
 	//
 	// We have to support multiple state keys for other OSes (Windows in

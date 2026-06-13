@@ -75,7 +75,7 @@ var (
 	flagVerbose                       = flag.Bool("verbose", false, "be verbose")
 	flagPort                          = flag.Int("port", 443, "port to listen on")
 	flagLocalPort                     = flag.Int("local-port", -1, "allow requests from localhost")
-	flagUseLocalTailscaled            = flag.Bool("use-local-tailscaled", false, "use local tailscaled instead of tsnet")
+	flagUseLocalScaleTaild            = flag.Bool("use-local-scaletaild", false, "use local scaletaild instead of tsnet")
 	flagFunnel                        = flag.Bool("funnel", false, "use Tailscale Funnel to make tsidp available on the public internet")
 	flagHostname                      = flag.String("hostname", "idp", "tsnet hostname to use instead of idp")
 	flagDir                           = flag.String("dir", "", "tsnet state directory; a default one will be created if not provided")
@@ -113,7 +113,7 @@ func main() {
 		lns []net.Listener
 	)
 
-	if *flagUseLocalTailscaled {
+	if *flagUseLocalScaleTaild {
 		lc = &local.Client{}
 		st, err = lc.StatusWithoutPeers(ctx)
 		if err != nil {
@@ -121,7 +121,7 @@ func main() {
 		}
 		portStr := fmt.Sprint(*flagPort)
 		anySuccess := false
-		for _, ip := range st.TailscaleIPs {
+		for _, ip := range st.ScaleTailIPs {
 			ln, err := net.Listen("tcp", net.JoinHostPort(ip.String(), portStr))
 			if err != nil {
 				log.Printf("failed to listen on %v: %v", ip, err)
@@ -134,7 +134,7 @@ func main() {
 			lns = append(lns, ln)
 		}
 		if !anySuccess {
-			log.Fatalf("failed to listen on any of %v", st.TailscaleIPs)
+			log.Fatalf("failed to listen on any of %v", st.ScaleTailIPs)
 		}
 
 		if flagDir == nil || *flagDir == "" {
@@ -146,15 +146,15 @@ func main() {
 			rootPath = filepath.Join(configDir, "tsidp")
 		}
 
-		// tailscaled needs to be setting an HTTP header for funneled requests
+		// scaletaild needs to be setting an HTTP header for funneled requests
 		// that older versions don't provide.
 		// TODO(naman): is this the correct check?
 		if *flagFunnel && !version.AtLeast(st.Version, "1.71.0") {
-			log.Fatalf("Local tailscaled not new enough to support -funnel. Update Tailscale or use tsnet mode.")
+			log.Fatalf("Local scaletaild not new enough to support -funnel. Update Tailscale or use tsnet mode.")
 		}
-		cleanup, watcherChan, err = serveOnLocalTailscaled(ctx, lc, st, uint16(*flagPort), *flagFunnel)
+		cleanup, watcherChan, err = serveOnLocalScaleTaild(ctx, lc, st, uint16(*flagPort), *flagFunnel)
 		if err != nil {
-			log.Fatalf("could not serve on local tailscaled: %v", err)
+			log.Fatalf("could not serve on local scaletaild: %v", err)
 		}
 		defer cleanup()
 	} else {
@@ -195,7 +195,7 @@ func main() {
 	srv := &idpServer{
 		lc:                        lc,
 		funnel:                    *flagFunnel,
-		localTSMode:               *flagUseLocalTailscaled,
+		localTSMode:               *flagUseLocalScaleTaild,
 		rootPath:                  rootPath,
 		allowInsecureRegistration: getAllowInsecureRegistration(),
 	}
@@ -269,11 +269,11 @@ func main() {
 	}
 }
 
-// serveOnLocalTailscaled starts a serve session using an already-running
-// tailscaled instead of starting a fresh tsnet server, making something
+// serveOnLocalScaleTaild starts a serve session using an already-running
+// scaletaild instead of starting a fresh tsnet server, making something
 // listening on clientDNSName:dstPort accessible over serve/funnel.
-func serveOnLocalTailscaled(ctx context.Context, lc *local.Client, st *ipnstate.Status, dstPort uint16, shouldFunnel bool) (cleanup func(), watcherChan chan error, err error) {
-	// In order to support funneling out in local tailscaled mode, we need
+func serveOnLocalScaleTaild(ctx context.Context, lc *local.Client, st *ipnstate.Status, dstPort uint16, shouldFunnel bool) (cleanup func(), watcherChan chan error, err error) {
+	// In order to support funneling out in local scaletaild mode, we need
 	// to add a serve config to forward the listeners we bound above and
 	// allow those forwarders to be funneled out.
 	sc, err := lc.GetServeConfig(ctx)
@@ -524,7 +524,7 @@ func (s *idpServer) authorize(w http.ResponseWriter, r *http.Request) {
 
 	var remoteAddr string
 	if s.localTSMode {
-		// in local tailscaled mode, the local tailscaled is forwarding us
+		// in local scaletaild mode, the local scaletaild is forwarding us
 		// HTTP requests, so reading r.RemoteAddr will just get us our own
 		// address.
 		remoteAddr = r.Header.Get("X-Forwarded-For")
@@ -1467,7 +1467,7 @@ func parseID[T ~int64](input string) (_ T, ok bool) {
 
 // isFunnelRequest checks if an HTTP request is coming over Tailscale Funnel.
 func isFunnelRequest(r *http.Request) bool {
-	// If we're funneling through the local tailscaled, it will set this HTTP
+	// If we're funneling through the local scaletaild, it will set this HTTP
 	// header.
 	if r.Header.Get("Tailscale-Funnel-Request") != "" {
 		return true

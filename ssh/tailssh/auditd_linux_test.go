@@ -44,7 +44,7 @@ func TestBuildAuditNetlinkMessage(t *testing.T) {
 		{
 			name:     "message-with-quoted-fields",
 			msgType:  auditUserLogin,
-			message:  `op=login hostname="test-host" exe="/usr/bin/tailscaled" ts_user="user@example.com" ts_node="node.tail-scale.ts.net"`,
+			message:  `op=login hostname="test-host" exe="/usr/bin/scaletaild" ts_user="user@example.com" ts_node="node.tail-scale.ts.net"`,
 			wantType: auditUserLogin,
 		},
 		{

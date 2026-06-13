@@ -883,7 +883,7 @@ func DefaultRouteInterface() (string, error) {
 }
 
 // DefaultRoute returns details of the network interface that owns
-// the default route, not including any tailscale interfaces.
+// the default route, not including any scaletail interfaces.
 func DefaultRoute() (DefaultRouteDetails, error) {
 	return defaultRoute()
 }

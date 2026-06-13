@@ -71,7 +71,7 @@ func TestIngressPGReconciler(t *testing.T) {
 	expectReconciled(t, ingPGR, "default", "test-ingress")
 	verifyServeConfig(t, fc, "svc:my-svc", false)
 	verifyTailscaleService(t, ft, "svc:my-svc", []string{"tcp:443"})
-	verifyTailscaledConfig(t, fc, "test-pg", []string{"svc:my-svc"})
+	verifyScaleTaildConfig(t, fc, "test-pg", []string{"svc:my-svc"})
 
 	// Verify that Role and RoleBinding have been created for the first Ingress.
 	// Do not verify the cert Secret as that was already verified implicitly above.
@@ -148,7 +148,7 @@ func TestIngressPGReconciler(t *testing.T) {
 	verifyServeConfig(t, fc, "svc:my-svc", false)
 	verifyTailscaleService(t, ft, "svc:my-svc", []string{"tcp:443"})
 
-	verifyTailscaledConfig(t, fc, "test-pg", []string{"svc:my-svc", "svc:my-other-svc"})
+	verifyScaleTaildConfig(t, fc, "test-pg", []string{"svc:my-svc", "svc:my-other-svc"})
 
 	// Delete second Ingress
 	if err := fc.Delete(t.Context(), ing2); err != nil {
@@ -179,7 +179,7 @@ func TestIngressPGReconciler(t *testing.T) {
 		t.Error("second Ingress service config was not cleaned up")
 	}
 
-	verifyTailscaledConfig(t, fc, "test-pg", []string{"svc:my-svc"})
+	verifyScaleTaildConfig(t, fc, "test-pg", []string{"svc:my-svc"})
 	expectMissing[corev1.Secret](t, fc, "operator-ns", "my-other-svc.ts.net")
 	expectMissing[rbacv1.Role](t, fc, "operator-ns", "my-other-svc.ts.net")
 	expectMissing[rbacv1.RoleBinding](t, fc, "operator-ns", "my-other-svc.ts.net")
@@ -222,7 +222,7 @@ func TestIngressPGReconciler(t *testing.T) {
 	if len(cfg.Services) > 0 {
 		t.Error("serve config not cleaned up")
 	}
-	verifyTailscaledConfig(t, fc, "test-pg-second", nil)
+	verifyScaleTaildConfig(t, fc, "test-pg-second", nil)
 
 	// Add verification that cert resources were cleaned up
 	expectMissing[corev1.Secret](t, fc, "operator-ns", "my-svc.ts.net")
@@ -307,7 +307,7 @@ func TestIngressPGReconciler_UpdateIngressHostname(t *testing.T) {
 	expectReconciled(t, ingPGR, "default", "test-ingress")
 	verifyServeConfig(t, fc, "svc:my-svc", false)
 	verifyTailscaleService(t, ft, "svc:my-svc", []string{"tcp:443"})
-	verifyTailscaledConfig(t, fc, "test-pg", []string{"svc:my-svc"})
+	verifyScaleTaildConfig(t, fc, "test-pg", []string{"svc:my-svc"})
 
 	// Update the Ingress hostname and make sure the original Tailscale Service is deleted.
 	mustUpdate(t, fc, "default", "test-ingress", func(ing *networkingv1.Ingress) {
@@ -318,7 +318,7 @@ func TestIngressPGReconciler_UpdateIngressHostname(t *testing.T) {
 	expectReconciled(t, ingPGR, "default", "test-ingress")
 	verifyServeConfig(t, fc, "svc:updated-svc", false)
 	verifyTailscaleService(t, ft, "svc:updated-svc", []string{"tcp:443"})
-	verifyTailscaledConfig(t, fc, "test-pg", []string{"svc:updated-svc"})
+	verifyScaleTaildConfig(t, fc, "test-pg", []string{"svc:updated-svc"})
 
 	_, err := ft.VIPServices().Get(context.Background(), "svc:my-svc")
 	if err == nil {
@@ -1089,7 +1089,7 @@ func verifyServeConfig(t *testing.T, fc client.Client, serviceName string, wantH
 	}
 }
 
-func verifyTailscaledConfig(t *testing.T, fc client.Client, pgName string, expectedServices []string) {
+func verifyScaleTaildConfig(t *testing.T, fc client.Client, pgName string, expectedServices []string) {
 	t.Helper()
 	var expected string
 	if expectedServices != nil && len(expectedServices) > 0 {
@@ -1106,7 +1106,7 @@ func verifyTailscaledConfig(t *testing.T, fc client.Client, pgName string, expec
 			Labels:    pgSecretLabels(pgName, kubetypes.LabelSecretTypeConfig),
 		},
 		Data: map[string][]byte{
-			tsoperator.TailscaledConfigFileName(pgMinCapabilityVersion): fmt.Appendf(nil, `{"Version":""%s}`, expected),
+			tsoperator.ScaleTaildConfigFileName(pgMinCapabilityVersion): fmt.Appendf(nil, `{"Version":""%s}`, expected),
 		},
 	})
 }
@@ -1146,7 +1146,7 @@ func createPGResources(t *testing.T, fc client.Client, pgName string) {
 			Labels:    pgSecretLabels(pgName, kubetypes.LabelSecretTypeConfig),
 		},
 		Data: map[string][]byte{
-			tsoperator.TailscaledConfigFileName(pgMinCapabilityVersion): []byte("{}"),
+			tsoperator.ScaleTaildConfigFileName(pgMinCapabilityVersion): []byte("{}"),
 		},
 	}
 	mustCreate(t, fc, pgCfgSecret)

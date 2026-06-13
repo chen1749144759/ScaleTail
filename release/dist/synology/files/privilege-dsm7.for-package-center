@@ -5,7 +5,7 @@
   "username": "tailscale",
   "groupname": "tailscale",
   "tool": [{
-    "relpath": "bin/tailscaled",
+    "relpath": "bin/scaletaild",
     "user": "package",
     "group": "package",
     "capabilities": "cap_net_admin,cap_chown,cap_net_raw"

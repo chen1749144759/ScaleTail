@@ -112,7 +112,7 @@ func installEgressForwardingRule(_ context.Context, dstStr string, tsIPs []netip
 		break
 	}
 	if !local.IsValid() {
-		return fmt.Errorf("no tailscale IP matching family of %s found in %v", dstStr, tsIPs)
+		return fmt.Errorf("no scaletail IP matching family of %s found in %v", dstStr, tsIPs)
 	}
 	if err := nfr.DNATNonTailscaleTraffic("tailscale0", dst); err != nil {
 		return fmt.Errorf("installing egress proxy rules: %w", err)
@@ -147,7 +147,7 @@ func installTSForwardingRuleForDestination(_ context.Context, dstFilter string, 
 		break
 	}
 	if !local.IsValid() {
-		return fmt.Errorf("no tailscale IP matching family of %s found in %v", dstFilter, tsIPs)
+		return fmt.Errorf("no scaletail IP matching family of %s found in %v", dstFilter, tsIPs)
 	}
 	if err := nfr.AddDNATRule(dst, local); err != nil {
 		return fmt.Errorf("installing rule for forwarding traffic to tailnet IP: %w", err)
@@ -179,7 +179,7 @@ func installIngressForwardingRule(_ context.Context, dstStr string, tsIPs []neti
 		log.Printf("Warning: proxy backend ClusterIP is an IPv6 address and the proxy has a IPv4 tailnet address. You might need to disable IPv4 address allocation for the proxy for forwarding to work. See https://github.com/tailscale/tailscale/issues/12156")
 	}
 	if !local.IsValid() {
-		return fmt.Errorf("no tailscale IP matching family of %s found in %v", dstStr, tsIPs)
+		return fmt.Errorf("no scaletail IP matching family of %s found in %v", dstStr, tsIPs)
 	}
 	if err := nfr.AddDNATRule(local, dst); err != nil {
 		return fmt.Errorf("installing ingress proxy rules: %w", err)
@@ -233,7 +233,7 @@ func installIngressForwardingRuleForDNSTarget(_ context.Context, backendAddrs []
 			return fmt.Errorf("installing DNAT rules for ingress backends %+#v: %w", backendTargets, err)
 		}
 		// The backend might advertize MSS higher than that of the
-		// tailscale interfaces. Clamp MSS of packets going out via
+		// scaletail interfaces. Clamp MSS of packets going out via
 		// tailscale0 interface to its MTU to prevent broken connections
 		// in environments where path MTU discovery is not working.
 		if err := nfr.ClampMSSToPMTU("tailscale0", dst); err != nil {

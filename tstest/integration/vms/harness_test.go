@@ -139,7 +139,7 @@ func newHarness(t *testing.T) *Harness {
 		pubKey:         string(pubkey),
 		binaryDir:      binaries.Dir,
 		cli:            binaries.Tailscale.Path,
-		daemon:         binaries.Tailscaled.Path,
+		daemon:         binaries.ScaleTaild.Path,
 		signer:         signer,
 		loginServerURL: loginServer,
 		cs:             cs,
@@ -166,10 +166,10 @@ func (h *Harness) Tailscale(t *testing.T, args ...string) []byte {
 	return out
 }
 
-// makeTestNode creates a userspace tailscaled running in netstack mode that
-// enables us to make connections to and from the tailscale network being
+// makeTestNode creates a userspace scaletaild running in netstack mode that
+// enables us to make connections to and from the scaletail network being
 // tested. This mutates the Harness to allow tests to dial into the tailscale
-// network as well as control the tester's tailscaled.
+// network as well as control the tester's scaletaild.
 func (h *Harness) makeTestNode(t *testing.T, controlURL string) {
 	dir := t.TempDir()
 	h.testerDir = dir
@@ -195,7 +195,7 @@ func (h *Harness) makeTestNode(t *testing.T, controlURL string) {
 
 	err = cmd.Start()
 	if err != nil {
-		t.Fatalf("can't start tailscaled: %v", err)
+		t.Fatalf("can't start scaletaild: %v", err)
 	}
 
 	t.Cleanup(func() {
@@ -210,7 +210,7 @@ outer:
 	for {
 		select {
 		case <-ctx.Done():
-			t.Fatal("timed out waiting for tailscaled to come up")
+			t.Fatal("timed out waiting for scaletaild to come up")
 			return
 		case <-ticker.C:
 			conn, err := net.Dial("unix", filepath.Join(dir, "sock"))

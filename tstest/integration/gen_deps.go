@@ -25,7 +25,7 @@ func generate(goos string) {
 	var x struct {
 		Imports []string
 	}
-	cmd := exec.Command("go", "list", "-json", "tailscale.com/cmd/tailscaled")
+	cmd := exec.Command("go", "list", "-json", "tailscale.com/cmd/scaletaild")
 	cmd.Env = append(os.Environ(), "GOOS="+goos, "GOARCH=amd64")
 	j, err := cmd.Output()
 	if err != nil {
@@ -43,9 +43,9 @@ func generate(goos string) {
 package integration
 
 import (
-	// And depend on a bunch of tailscaled innards, for Go's test caching.
+	// And depend on a bunch of scaletaild innards, for Go's test caching.
 	// Otherwise cmd/go never sees that we depend on these packages'
-	// transitive deps when we run "go install tailscaled" in a child
+	// transitive deps when we run "go install scaletaild" in a child
 	// process and can cache a prior success when a dependency changes.
 `)
 	for _, dep := range x.Imports {
@@ -57,7 +57,7 @@ import (
 	}
 	fmt.Fprintf(&out, ")\n")
 
-	filename := fmt.Sprintf("tailscaled_deps_test_%s.go", goos)
+	filename := fmt.Sprintf("scaletaild_deps_test_%s.go", goos)
 	err = os.WriteFile(filename, out.Bytes(), 0644)
 	if err != nil {
 		log.Fatal(err)

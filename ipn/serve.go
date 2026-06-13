@@ -34,7 +34,7 @@ func ServeConfigKey(profileID ProfileID) StateKey {
 // If the service is not in Tun mode, the service is configured by the L4 forwarding
 // (TCP ports) and/or the L7 forwarding (http handlers) information.
 type ServiceConfig struct {
-	// TCP are the list of TCP port numbers that tailscaled should handle for
+	// TCP are the list of TCP port numbers that scaletaild should handle for
 	// the Tailscale IP addresses. (not subnet routers, etc)
 	TCP map[uint16]*TCPPortHandler `json:",omitempty"`
 
@@ -49,7 +49,7 @@ type ServiceConfig struct {
 // ServeConfig is the JSON type stored in the StateStore for
 // StateKey "_serve/$PROFILE_ID" as returned by ServeConfigKey.
 type ServeConfig struct {
-	// TCP are the list of TCP port numbers that tailscaled should handle for
+	// TCP are the list of TCP port numbers that scaletaild should handle for
 	// the Tailscale IP addresses. (not subnet routers, etc)
 	TCP map[uint16]*TCPPortHandler `json:",omitempty"`
 
@@ -127,26 +127,26 @@ type WebServerConfig struct {
 // TCPPortHandler describes what to do when handling a TCP
 // connection.
 type TCPPortHandler struct {
-	// HTTPS, if true, means that tailscaled should handle this connection as an
+	// HTTPS, if true, means that scaletaild should handle this connection as an
 	// HTTPS request as configured by ServeConfig.Web.
 	//
 	// It is mutually exclusive with TCPForward.
 	HTTPS bool `json:",omitempty"`
 
-	// HTTP, if true, means that tailscaled should handle this connection as an
+	// HTTP, if true, means that scaletaild should handle this connection as an
 	// HTTP request as configured by ServeConfig.Web.
 	//
 	// It is mutually exclusive with TCPForward.
 	HTTP bool `json:",omitempty"`
 
 	// TCPForward is the IP:port to forward TCP connections to.
-	// Whether or not TLS is terminated by tailscaled depends on
+	// Whether or not TLS is terminated by scaletaild depends on
 	// TerminateTLS.
 	//
 	// It is mutually exclusive with HTTPS.
 	TCPForward string `json:",omitempty"`
 
-	// TerminateTLS, if non-empty, means that tailscaled should terminate the
+	// TerminateTLS, if non-empty, means that scaletaild should terminate the
 	// TLS connections before forwarding them to TCPForward, permitting only the
 	// SNI name with this value. It is only used if TCPForward is non-empty.
 	// (the HTTPS mode uses ServeConfig.Web)

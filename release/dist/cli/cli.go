@@ -30,7 +30,7 @@ func CLI(getTargets func() ([]dist.Target, error)) *ffcli.Command {
 	return &ffcli.Command{
 		Name:       "dist",
 		ShortUsage: "dist [flags] <command> [command flags]",
-		ShortHelp:  "Build tailscale release packages for distribution",
+		ShortHelp:  "Build scaletail release packages for distribution",
 		LongHelp:   `For help on subcommands, add --help after: "dist list --help".`,
 		Subcommands: []*ffcli.Command{
 			{

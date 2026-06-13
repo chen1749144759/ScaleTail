@@ -22,7 +22,7 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/cmd/tailscaled/childproc"
+	"tailscale.com/cmd/scaletaild/childproc"
 	"tailscale.com/types/logger"
 	"tailscale.com/util/winutil"
 	"tailscale.com/util/winutil/conpty"

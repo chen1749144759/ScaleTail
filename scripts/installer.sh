@@ -307,7 +307,7 @@ main() {
 				echo "Please enable Tailscale by running the following commands as root:"
 				echo
 				echo "ujust enable-tailscale"
-				echo "tailscale up"
+				echo "scaletail up"
 				exit 1
 				;;
 			void)
@@ -429,7 +429,7 @@ main() {
 			;;
 		alpine)
 			# All versions supported, no version checking needed.
-			# TODO: is that true? When was tailscale packaged?
+			# TODO: is that true? When was scaletail packaged?
 			;;
 		void)
 			# Rolling release, no version checking needed.
@@ -557,11 +557,11 @@ main() {
 			if [ -n "$TAILSCALE_VERSION" ]; then
 				$SUDO apt-get install -y "tailscale=$TAILSCALE_VERSION" tailscale-archive-keyring
 			else
-				$SUDO apt-get install -y tailscale tailscale-archive-keyring
+				$SUDO apt-get install -y scaletail tailscale-archive-keyring
 			fi
 			if [ "$APT_SYSTEMCTL_START" = "true" ]; then
-				$SUDO systemctl enable --now tailscaled
-				$SUDO systemctl start tailscaled
+				$SUDO systemctl enable --now scaletaild
+				$SUDO systemctl start scaletaild
 			fi
 			set +x
 		;;
@@ -572,9 +572,9 @@ main() {
 			if [ -n "$TAILSCALE_VERSION" ]; then
 				$SUDO yum install "tailscale-$TAILSCALE_VERSION" -y
 			else
-				$SUDO yum install tailscale -y
+				$SUDO yum install scaletail -y
 			fi
-			$SUDO systemctl enable --now tailscaled
+			$SUDO systemctl enable --now scaletaild
 			set +x
 		;;
 		dnf)
@@ -618,7 +618,7 @@ main() {
 			else
 				$SUDO dnf install -y tailscale
 			fi
-			$SUDO systemctl enable --now tailscaled
+			$SUDO systemctl enable --now scaletaild
 			set +x
 		;;
 		tdnf)
@@ -629,7 +629,7 @@ main() {
 			else
 				$SUDO tdnf install -y tailscale
 			fi
-			$SUDO systemctl enable --now tailscaled
+			$SUDO systemctl enable --now scaletaild
 			set +x
 		;;
 		zypper)
@@ -642,7 +642,7 @@ main() {
 			else
 				$SUDO zypper --non-interactive install tailscale
 			fi
-			$SUDO systemctl enable --now tailscaled
+			$SUDO systemctl enable --now scaletaild
 			set +x
 			;;
 		pacman)
@@ -651,9 +651,9 @@ main() {
 				echo "Warning: Arch Linux maintains their own Tailscale package. Version pinning may not work as expected, as the target version may no longer be available."
 				$SUDO pacman -S "tailscale=$TAILSCALE_VERSION" --noconfirm
 			else
-				$SUDO pacman -S tailscale --noconfirm
+				$SUDO pacman -S scaletail --noconfirm
 			fi
-			$SUDO systemctl enable --now tailscaled
+			$SUDO systemctl enable --now scaletaild
 			set +x
 			;;
 		pkg)
@@ -664,8 +664,8 @@ main() {
 			else
 				$SUDO pkg install --yes tailscale
 			fi
-			$SUDO service tailscaled enable
-			$SUDO service tailscaled start
+			$SUDO service scaletaild enable
+			$SUDO service scaletaild start
 			set +x
 			;;
 		apk)
@@ -674,7 +674,7 @@ main() {
 				if type setup-apkrepos >/dev/null; then
 					$SUDO setup-apkrepos -c -1
 				else
-					echo "installing tailscale requires the community repo to be enabled in /etc/apk/repositories"
+					echo "installing scaletail requires the community repo to be enabled in /etc/apk/repositories"
 					exit 1
 				fi
 			fi
@@ -685,7 +685,7 @@ main() {
 				$SUDO apk add tailscale
 			fi
 			$SUDO rc-update add tailscale
-			$SUDO rc-service tailscale start
+			$SUDO rc-service scaletail start
 			set +x
 			;;
 		xbps)
@@ -694,7 +694,7 @@ main() {
 				echo "Warning: Void Linux maintains their own Tailscale package. Version pinning may not work as expected, as the target version may no longer be available."
 				$SUDO xbps-install "tailscale-$TAILSCALE_VERSION" -y
 			else
-				$SUDO xbps-install tailscale -y
+				$SUDO xbps-install scaletail -y
 			fi
 			set +x
 			;;
@@ -722,9 +722,9 @@ main() {
 	echo "Installation complete! Log in to start using Tailscale by running:"
 	echo
 	if [ -z "$SUDO" ]; then
-		echo "tailscale up"
+		echo "scaletail up"
 	else
-		echo "$SUDO tailscale up"
+		echo "$SUDO scaletail up"
 	fi
 }
 

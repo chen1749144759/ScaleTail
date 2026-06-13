@@ -19,8 +19,8 @@ updatedeps: ## Update depaware deps
 	# depaware (via x/tools/go/packages) shells back to "go", so make sure the "go"
 	# it finds in its $$PATH is the right one.
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --vendor --internal \
-		tailscale.com/cmd/tailscaled \
-		tailscale.com/cmd/tailscale \
+		tailscale.com/cmd/scaletaild \
+		tailscale.com/cmd/scaletail \
 		tailscale.com/cmd/derper \
 		tailscale.com/cmd/k8s-operator \
 		tailscale.com/cmd/stund \
@@ -28,16 +28,16 @@ updatedeps: ## Update depaware deps
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --goos=linux,darwin,windows,android,ios --vendor --internal \
 		tailscale.com/tsnet
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --file=depaware-minbox.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min --add=cli)" --vendor --internal \
-		tailscale.com/cmd/tailscaled
+		tailscale.com/cmd/scaletaild
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --file=depaware-min.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min)" --vendor --internal \
-		tailscale.com/cmd/tailscaled
+		tailscale.com/cmd/scaletaild
 
 depaware: ## Run depaware checks
 	# depaware (via x/tools/go/packages) shells back to "go", so make sure the "go"
 	# it finds in its $$PATH is the right one.
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --vendor --internal \
-		tailscale.com/cmd/tailscaled \
-		tailscale.com/cmd/tailscale \
+		tailscale.com/cmd/scaletaild \
+		tailscale.com/cmd/scaletail \
 		tailscale.com/cmd/derper \
 		tailscale.com/cmd/k8s-operator \
 		tailscale.com/cmd/stund \
@@ -45,27 +45,27 @@ depaware: ## Run depaware checks
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --goos=linux,darwin,windows,android,ios --vendor --internal \
 		tailscale.com/tsnet
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --file=depaware-minbox.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min --add=cli)" --vendor --internal \
-		tailscale.com/cmd/tailscaled
+		tailscale.com/cmd/scaletaild
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --file=depaware-min.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min)" --vendor --internal \
-		tailscale.com/cmd/tailscaled
+		tailscale.com/cmd/scaletaild
 
 buildwindows: ## Build tailscale CLI for windows/amd64
-	GOOS=windows GOARCH=amd64 ./tool/go install tailscale.com/cmd/tailscale tailscale.com/cmd/tailscaled
+	GOOS=windows GOARCH=amd64 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
 
 build386: ## Build tailscale CLI for linux/386
-	GOOS=linux GOARCH=386 ./tool/go install tailscale.com/cmd/tailscale tailscale.com/cmd/tailscaled
+	GOOS=linux GOARCH=386 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
 
 buildlinuxarm: ## Build tailscale CLI for linux/arm
-	GOOS=linux GOARCH=arm ./tool/go install tailscale.com/cmd/tailscale tailscale.com/cmd/tailscaled
+	GOOS=linux GOARCH=arm ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
 
 buildwasm: ## Build tailscale CLI for js/wasm
-	GOOS=js GOARCH=wasm ./tool/go install ./cmd/tsconnect/wasm ./cmd/tailscale/cli
+	GOOS=js GOARCH=wasm ./tool/go install ./cmd/tsconnect/wasm ./cmd/scaletail/cli
 
 buildplan9:
-	GOOS=plan9 GOARCH=amd64 ./tool/go install ./cmd/tailscale ./cmd/tailscaled
+	GOOS=plan9 GOARCH=amd64 ./tool/go install ./cmd/scaletail ./cmd/scaletaild
 
 buildlinuxloong64: ## Build tailscale CLI for linux/loong64
-	GOOS=linux GOARCH=loong64 ./tool/go install tailscale.com/cmd/tailscale tailscale.com/cmd/tailscaled
+	GOOS=linux GOARCH=loong64 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
 
 buildmultiarchimage: ## Build (and optionally push) multiarch docker image
 	./build_docker.sh
@@ -136,7 +136,7 @@ publishdevproxy: check-image-repo ## Build and publish k8s-proxy image to locati
 .PHONY: sshintegrationtest
 sshintegrationtest: ## Run the SSH integration tests in various Docker containers
 	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go test -tags integrationtest -c ./ssh/tailssh -o ssh/tailssh/testcontainers/tailssh.test && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go build -o ssh/tailssh/testcontainers/tailscaled ./cmd/tailscaled && \
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./tool/go build -o ssh/tailssh/testcontainers/scaletaild ./cmd/scaletaild && \
 	echo "Testing on ubuntu:focal, ubuntu:jammy, ubuntu:noble, alpine:latest (in parallel)" && \
 	docker build --build-arg="BASE=ubuntu:focal" -t ssh-ubuntu-focal ssh/tailssh/testcontainers & \
 	docker build --build-arg="BASE=ubuntu:jammy" -t ssh-ubuntu-jammy ssh/tailssh/testcontainers & \

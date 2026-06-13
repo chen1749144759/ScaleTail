@@ -191,7 +191,7 @@
         <text id="ReconnectAfterDelay" valueName="ReconnectAfter" required="true" />
       </elements>
     </policy>
-    <policy name="AllowTailscaledRestart" class="Machine" displayName="$(string.AllowTailscaledRestart)" explainText="$(string.AllowTailscaledRestart_Help)" key="Software\Policies\Tailscale" valueName="AllowTailscaledRestart">
+    <policy name="AllowScaleTaildRestart" class="Machine" displayName="$(string.AllowScaleTaildRestart)" explainText="$(string.AllowScaleTaildRestart_Help)" key="Software\Policies\Tailscale" valueName="AllowScaleTaildRestart">
       <parentCategory ref="Settings_Category" />
       <supportedOn ref="SINCE_V1_90" />
       <enabledValue>

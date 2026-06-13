@@ -55,8 +55,8 @@ import (
 )
 
 var (
-	verboseTailscaled = flag.Bool("verbose-tailscaled", false, "verbose tailscaled logging")
-	verboseTailscale  = flag.Bool("verbose-tailscale", false, "verbose tailscale CLI logging")
+	verboseScaleTaild = flag.Bool("verbose-scaletaild", false, "verbose scaletaild logging")
+	verboseTailscale  = flag.Bool("verbose-tailscale", false, "verbose scaletail CLI logging")
 )
 
 // MainError is an error that's set if an error conditions happens outside of a
@@ -64,16 +64,16 @@ var (
 // as a last ditch place to report errors.
 var MainError syncs.AtomicValue[error]
 
-// Binaries contains the paths to the tailscale and tailscaled binaries.
+// Binaries contains the paths to the scaletail and scaletaild binaries.
 type Binaries struct {
 	Dir        string
 	Tailscale  BinaryInfo
-	Tailscaled BinaryInfo
+	ScaleTaild BinaryInfo
 }
 
-// BinaryInfo describes a tailscale or tailscaled binary.
+// BinaryInfo describes a scaletail or scaletaild binary.
 type BinaryInfo struct {
-	// Path is the absolute path to the tailscale or tailscaled binary.
+	// Path is the absolute path to the scaletail or scaletaild binary.
 	// This path may become invalid after the owning test's TempDir is
 	// cleaned up; use FD (or Contents on Windows) to access the binary
 	// contents.
@@ -140,7 +140,7 @@ func (b BinaryInfo) CopyTo(dir string) (BinaryInfo, error) {
 }
 
 // GetBinaries create a temp directory using tb and builds (or copies previously
-// built) cmd/tailscale and cmd/tailscaled binaries into that directory.
+// built) cmd/scaletail and cmd/scaletaild binaries into that directory.
 //
 // It fails tb if the build or binary copies fail.
 func GetBinaries(tb testing.TB) *Binaries {
@@ -156,16 +156,16 @@ func GetBinaries(tb testing.TB) *Binaries {
 	}
 	ts, err := binariesCache.Tailscale.CopyTo(dir)
 	if err != nil {
-		tb.Fatalf("copying tailscale binary: %v", err)
+		tb.Fatalf("copying scaletail binary: %v", err)
 	}
-	tsd, err := binariesCache.Tailscaled.CopyTo(dir)
+	tsd, err := binariesCache.ScaleTaild.CopyTo(dir)
 	if err != nil {
-		tb.Fatalf("copying tailscaled binary: %v", err)
+		tb.Fatalf("copying scaletaild binary: %v", err)
 	}
 	return &Binaries{
 		Dir:        dir,
 		Tailscale:  ts,
-		Tailscaled: tsd,
+		ScaleTaild: tsd,
 	}
 }
 
@@ -175,7 +175,7 @@ var (
 	binariesCache *Binaries
 )
 
-// buildTestBinaries builds tailscale and tailscaled.
+// buildTestBinaries builds scaletail and scaletaild.
 // On success, it initializes [binariesCache].
 func buildTestBinaries(dir string) error {
 	getBinaryInfo := func(name string) (BinaryInfo, error) {
@@ -204,7 +204,7 @@ func buildTestBinaries(dir string) error {
 		}
 		return bi, nil
 	}
-	err := build(dir, "tailscale.com/cmd/tailscaled", "tailscale.com/cmd/tailscale")
+	err := build(dir, "tailscale.com/cmd/scaletaild", "tailscale.com/cmd/scaletail")
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func buildTestBinaries(dir string) error {
 	if err != nil {
 		return err
 	}
-	b.Tailscaled, err = getBinaryInfo("tailscaled")
+	b.ScaleTaild, err = getBinaryInfo("scaletaild")
 	if err != nil {
 		return err
 	}
@@ -549,7 +549,7 @@ func NewTestEnv(t testing.TB, opts ...TestEnvOpt) *TestEnv {
 	e := &TestEnv{
 		t:                 t,
 		cli:               binaries.Tailscale.Path,
-		daemon:            binaries.Tailscaled.Path,
+		daemon:            binaries.ScaleTaild.Path,
 		LogCatcher:        logc,
 		LogCatcherServer:  httptest.NewServer(logc),
 		Control:           control,
@@ -575,18 +575,18 @@ func NewTestEnv(t testing.TB, opts ...TestEnvOpt) *TestEnv {
 	return e
 }
 
-// TestNode is a machine with a tailscale & tailscaled.
+// TestNode is a machine with a scaletail & scaletaild.
 // Currently, the test is simplistic and user==node==machine.
 // That may grow complexity later to test more.
 type TestNode struct {
 	env              *TestEnv
-	tailscaledParser *nodeOutputParser
+	scaletaildParser *nodeOutputParser
 
 	dir          string // temp dir for sock & state
 	configFile   string // or empty for none
 	sockFile     string
 	stateFile    string
-	upFlagGOOS   string // if non-empty, sets TS_DEBUG_UP_FLAG_GOOS for cmd/tailscale CLI
+	upFlagGOOS   string // if non-empty, sets TS_DEBUG_UP_FLAG_GOOS for cmd/scaletail CLI
 	encryptState bool
 	allowUpdates bool
 
@@ -609,7 +609,7 @@ func NewTestNode(t *testing.T, env *TestEnv) *TestNode {
 		env:       env,
 		dir:       dir,
 		sockFile:  sockFile,
-		stateFile: filepath.Join(dir, "tailscaled.state"), // matches what cmd/tailscaled uses
+		stateFile: filepath.Join(dir, "scaletaild.state"), // matches what cmd/scaletaild uses
 	}
 
 	// Look for a data race or panic.
@@ -666,7 +666,7 @@ func (n *TestNode) diskPrefs() *ipn.Prefs {
 	return p.AsStruct()
 }
 
-// AwaitResponding waits for n's tailscaled to be up enough to be
+// AwaitResponding waits for n's scaletaild to be up enough to be
 // responding, but doesn't wait for any particular state.
 func (n *TestNode) AwaitResponding() {
 	t := n.env.t
@@ -687,7 +687,7 @@ func (n *TestNode) AwaitResponding() {
 	}
 }
 
-// addLogLineHook registers a hook f to be called on each tailscaled
+// addLogLineHook registers a hook f to be called on each scaletaild
 // log line output.
 func (n *TestNode) addLogLineHook(f func([]byte)) {
 	n.mu.Lock()
@@ -728,7 +728,7 @@ func (n *TestNode) AwaitSocksAddr(ch <-chan string) string {
 	}
 }
 
-// nodeOutputParser parses stderr of tailscaled processes, calling the
+// nodeOutputParser parses stderr of scaletaild processes, calling the
 // per-line callbacks previously registered via
 // testNode.addLogLineHook.
 type nodeOutputParser struct {
@@ -778,19 +778,19 @@ func (d *Daemon) MustCleanShutdown(t testing.TB) {
 	d.Process.Signal(os.Interrupt)
 	ps, err := d.Process.Wait()
 	if err != nil {
-		t.Fatalf("tailscaled Wait: %v", err)
+		t.Fatalf("scaletaild Wait: %v", err)
 	}
 	if ps.ExitCode() != 0 {
-		t.Errorf("tailscaled ExitCode = %d; want 0", ps.ExitCode())
+		t.Errorf("scaletaild ExitCode = %d; want 0", ps.ExitCode())
 	}
 }
 
-// awaitTailscaledRunnable tries to run `tailscaled --version` until it
+// awaitScaleTaildRunnable tries to run `scaletaild --version` until it
 // works. This is an unsatisfying workaround for ETXTBSY we were seeing
 // on GitHub Actions that aren't understood. It's not clear what's holding
-// a writable fd to tailscaled after `go install` completes.
+// a writable fd to scaletaild after `go install` completes.
 // See https://github.com/tailscale/tailscale/issues/15868.
-func (n *TestNode) awaitTailscaledRunnable() error {
+func (n *TestNode) awaitScaleTaildRunnable() error {
 	t := n.env.t
 	t.Helper()
 	if err := tstest.WaitFor(10*time.Second, func() error {
@@ -798,15 +798,15 @@ func (n *TestNode) awaitTailscaledRunnable() error {
 		if err == nil {
 			return nil
 		}
-		t.Logf("error running tailscaled --version: %v, %s", err, out)
+		t.Logf("error running scaletaild --version: %v, %s", err, out)
 		return err
 	}); err != nil {
-		return fmt.Errorf("gave up trying to run tailscaled: %v", err)
+		return fmt.Errorf("gave up trying to run scaletaild: %v", err)
 	}
 	return nil
 }
 
-// StartDaemon starts the node's tailscaled, failing if it fails to start.
+// StartDaemon starts the node's scaletaild, failing if it fails to start.
 // StartDaemon ensures that the process will exit when the test completes.
 func (n *TestNode) StartDaemon() *Daemon {
 	return n.StartDaemonAsIPNGOOS(runtime.GOOS)
@@ -815,8 +815,8 @@ func (n *TestNode) StartDaemon() *Daemon {
 func (n *TestNode) StartDaemonAsIPNGOOS(ipnGOOS string) *Daemon {
 	t := n.env.t
 
-	if err := n.awaitTailscaledRunnable(); err != nil {
-		t.Fatalf("awaitTailscaledRunnable: %v", err)
+	if err := n.awaitScaleTaildRunnable(); err != nil {
+		t.Fatalf("awaitScaleTaildRunnable: %v", err)
 	}
 
 	cmd := exec.Command(n.env.daemon)
@@ -826,7 +826,7 @@ func (n *TestNode) StartDaemonAsIPNGOOS(ipnGOOS string) *Daemon {
 		"--socks5-server=localhost:0",
 		"--debug=localhost:0",
 	)
-	if *verboseTailscaled {
+	if *verboseScaleTaild {
 		cmd.Args = append(cmd.Args, "-verbose=2")
 	}
 	if !n.env.tunMode {
@@ -868,9 +868,9 @@ func (n *TestNode) StartDaemonAsIPNGOOS(ipnGOOS string) *Daemon {
 	if version.IsRace() {
 		cmd.Env = append(cmd.Env, "GORACE=halt_on_error=1")
 	}
-	n.tailscaledParser = &nodeOutputParser{n: n}
-	cmd.Stderr = n.tailscaledParser
-	if *verboseTailscaled {
+	n.scaletaildParser = &nodeOutputParser{n: n}
+	cmd.Stderr = n.scaletaildParser
+	if *verboseScaleTaild {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = io.MultiWriter(cmd.Stderr, os.Stderr)
 	}
@@ -884,7 +884,7 @@ func (n *TestNode) StartDaemonAsIPNGOOS(ipnGOOS string) *Daemon {
 		cmd.Env = append(cmd.Env, "TS_PARENT_DEATH_FD=3")
 	}
 	if err := cmd.Start(); err != nil {
-		t.Fatalf("starting tailscaled: %v", err)
+		t.Fatalf("starting scaletaild: %v", err)
 	}
 	t.Cleanup(func() { cmd.Process.Kill() })
 	return &Daemon{
@@ -903,8 +903,8 @@ func (n *TestNode) MustUp(extraArgs ...string) {
 	args = append(args, extraArgs...)
 	cmd := n.Tailscale(args...)
 	t.Logf("Running %v ...", cmd)
-	cmd.Stdout = nil // in case --verbose-tailscale was set
-	cmd.Stderr = nil // in case --verbose-tailscale was set
+	cmd.Stdout = nil // in case --verbose-scaletail was set
+	cmd.Stderr = nil // in case --verbose-scaletail was set
 	if b, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("up: %v, %v", string(b), err)
 	}
@@ -933,7 +933,7 @@ func (n *TestNode) Ping(otherNode *TestNode) error {
 	return n.Tailscale("ping", "--timeout=1s", ip).Run()
 }
 
-// AwaitListening waits for the tailscaled to be serving local clients
+// AwaitListening waits for the scaletaild to be serving local clients
 // over its localhost IPC mechanism. (Unix socket, etc)
 func (n *TestNode) AwaitListening() {
 	t := n.env.t
@@ -954,8 +954,8 @@ func (n *TestNode) AwaitIPs() []netip.Addr {
 	var addrs []netip.Addr
 	if err := tstest.WaitFor(20*time.Second, func() error {
 		cmd := n.Tailscale("ip")
-		cmd.Stdout = nil // in case --verbose-tailscale was set
-		cmd.Stderr = nil // in case --verbose-tailscale was set
+		cmd.Stdout = nil // in case --verbose-scaletail was set
+		cmd.Stderr = nil // in case --verbose-scaletail was set
 		out, err := cmd.Output()
 		if err != nil {
 			return err
@@ -1046,7 +1046,7 @@ func (n *TestNode) TailscaleForOutput(arg ...string) *exec.Cmd {
 	return cmd
 }
 
-// Tailscale returns a command that runs the tailscale CLI with the provided arguments.
+// Tailscale returns a command that runs the scaletail CLI with the provided arguments.
 // It does not start the process.
 func (n *TestNode) Tailscale(arg ...string) *exec.Cmd {
 	cmd := exec.Command(n.env.cli)
@@ -1069,15 +1069,15 @@ func (n *TestNode) Tailscale(arg ...string) *exec.Cmd {
 
 func (n *TestNode) Status() (*ipnstate.Status, error) {
 	cmd := n.Tailscale("status", "--json")
-	cmd.Stdout = nil // in case --verbose-tailscale was set
-	cmd.Stderr = nil // in case --verbose-tailscale was set
+	cmd.Stdout = nil // in case --verbose-scaletail was set
+	cmd.Stderr = nil // in case --verbose-scaletail was set
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("running tailscale status: %v, %s", err, out)
+		return nil, fmt.Errorf("running scaletail status: %v, %s", err, out)
 	}
 	st := new(ipnstate.Status)
 	if err := json.Unmarshal(out, st); err != nil {
-		return nil, fmt.Errorf("decoding tailscale status JSON: %w\njson:\n%s", err, out)
+		return nil, fmt.Errorf("decoding scaletail status JSON: %w\njson:\n%s", err, out)
 	}
 	return st, nil
 }
@@ -1100,7 +1100,7 @@ func (n *TestNode) PublicKey() string {
 	cmd := n.Tailscale("status", "--json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		tb.Fatalf("running `tailscale status`: %v, %s", err, out)
+		tb.Fatalf("running `scaletail status`: %v, %s", err, out)
 	}
 
 	type Self struct{ PublicKey string }
@@ -1108,7 +1108,7 @@ func (n *TestNode) PublicKey() string {
 
 	var st StatusOutput
 	if err := json.Unmarshal(out, &st); err != nil {
-		tb.Fatalf("decoding `tailscale status` JSON: %v\njson:\n%s", err, out)
+		tb.Fatalf("decoding `scaletail status` JSON: %v\njson:\n%s", err, out)
 	}
 	return st.Self.PublicKey
 }
@@ -1121,19 +1121,19 @@ func (n *TestNode) NLPublicKey() string {
 	cmd := n.Tailscale("lock", "status", "--json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		tb.Fatalf("running `tailscale lock status`: %v, %s", err, out)
+		tb.Fatalf("running `scaletail lock status`: %v, %s", err, out)
 	}
 	st := struct {
 		PublicKey string `json:"PublicKey"`
 	}{}
 	if err := json.Unmarshal(out, &st); err != nil {
-		tb.Fatalf("decoding `tailscale lock status` JSON: %v\njson:\n%s", err, out)
+		tb.Fatalf("decoding `scaletail lock status` JSON: %v\njson:\n%s", err, out)
 	}
 	return st.PublicKey
 }
 
 // trafficTrap is an HTTP proxy handler to note whether any
-// HTTP traffic tries to leave localhost from tailscaled. We don't
+// HTTP traffic tries to leave localhost from scaletaild. We don't
 // expect any, so any request triggers a failure.
 type trafficTrap struct {
 	atomicErr syncs.AtomicValue[error]

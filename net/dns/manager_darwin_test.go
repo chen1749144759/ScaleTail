@@ -151,7 +151,7 @@ func TestRemoveResolverFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Write a non-tailscale file that should be left alone.
+	// Write a non-scaletail file that should be left alone.
 	unmanaged := filepath.Join(c.resolverDir, "other.conf")
 	if err := os.WriteFile(unmanaged, []byte("# not ours\nnameserver 8.8.8.8\n"), 0644); err != nil {
 		t.Fatal(err)

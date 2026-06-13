@@ -255,7 +255,7 @@ func (logo tsLogo) render() *bytes.Buffer {
 }
 
 // renderWithBorder returns a PNG image of the logo with the specified border width.
-// One border unit is equal to the radius of a tailscale logo dot.
+// One border unit is equal to the radius of a scaletail logo dot.
 func (logo tsLogo) renderWithBorder(borderUnits int) *bytes.Buffer {
 	const radius = 25
 	dim := radius * (8 + borderUnits*2)

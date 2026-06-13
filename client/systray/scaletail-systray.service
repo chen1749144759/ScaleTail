@@ -1,0 +1,13 @@
+[Unit]
+Description=ScaleTail System Tray
+Documentation=https://github.com/chen1749144759/ScaleTail
+Requires=dbus.service
+After=dbus.service
+PartOf=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/scaletail systray
+
+[Install]
+WantedBy=default.target

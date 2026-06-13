@@ -94,8 +94,8 @@ const (
 	NotifyPeerChanges NotifyWatchOpt = 1 << 12
 )
 
-// Notify is a communication from a backend (e.g. tailscaled) to a frontend
-// (cmd/tailscale, iOS, macOS, Win Tasktray).
+// Notify is a communication from a backend (e.g. scaletaild) to a frontend
+// (cmd/scaletail, iOS, macOS, Win Tasktray).
 // In any given notification, any or all of these may be nil, meaning
 // that they have not changed.
 // They are JSON-encoded on the wire, despite the lack of struct tags.
@@ -285,7 +285,7 @@ type OutgoingFile struct {
 type StateKey string
 
 // DebuggableComponents is a list of components whose debugging can be turned on
-// and off individually using the tailscale debug command.
+// and off individually using the scaletail debug command.
 var DebuggableComponents = []string{
 	"magicsock",
 	"sockstats",

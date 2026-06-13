@@ -301,7 +301,7 @@ func run(logger *zap.SugaredLogger) error {
 		}
 
 		if cfg.Parsed.HealthCheckEnabled.EqualBool(true) {
-			ipV4, _ := ts.TailscaleIPs()
+			ipV4, _ := ts.ScaleTailIPs()
 			hz := healthz.RegisterHealthHandlers(mux, ipV4.String(), logger.Infof)
 			group.Go(func() error {
 				err := hz.MonitorHealth(ctx, lc)

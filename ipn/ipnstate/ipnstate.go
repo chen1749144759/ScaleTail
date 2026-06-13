@@ -45,7 +45,7 @@ type Status struct {
 	HaveNodeKey bool `json:",omitempty"`
 
 	AuthURL      string       // current URL provided by control to authorize client
-	TailscaleIPs []netip.Addr // Tailscale IP(s) assigned to this node
+	ScaleTailIPs []netip.Addr `json:"ScaleTailIPs"` // ScaleTail IP(s) assigned to this node
 	Self         *PeerStatus
 
 	// ExitNodeStatus describes the current exit node.
@@ -99,7 +99,7 @@ type TKAPeer struct {
 	Name             string // DNS
 	ID               tailcfg.NodeID
 	StableID         tailcfg.StableNodeID
-	TailscaleIPs     []netip.Addr // Tailscale IP(s) assigned to this node
+	ScaleTailIPs     []netip.Addr `json:"ScaleTailIPs"` // ScaleTail IP(s) assigned to this node
 	NodeKey          key.NodePublic
 	NodeKeySignature tka.NodeKeySignature
 }
@@ -184,8 +184,8 @@ type ExitNodeStatus struct {
 	// Online is whether the exit node is alive.
 	Online bool
 
-	// TailscaleIPs are the exit node's IP addresses assigned to the node.
-	TailscaleIPs []netip.Prefix
+	// ScaleTailIPs are the exit node's IP addresses assigned to the node.
+	ScaleTailIPs []netip.Prefix `json:"ScaleTailIPs"`
 }
 
 func (s *Status) Peers() []key.NodePublic {
@@ -236,8 +236,8 @@ type PeerStatus struct {
 	// if it's different than UserID. Otherwise it's zero.
 	AltSharerUserID tailcfg.UserID `json:",omitempty"`
 
-	// TailscaleIPs are the IP addresses assigned to the node.
-	TailscaleIPs []netip.Addr
+	// ScaleTailIPs are the IP addresses assigned to the node.
+	ScaleTailIPs []netip.Addr `json:"ScaleTailIPs"`
 	// AllowedIPs are IP addresses allowed to route to this node.
 	AllowedIPs *views.Slice[netip.Prefix] `json:",omitempty"`
 
@@ -247,7 +247,7 @@ type PeerStatus struct {
 
 	// PrimaryRoutes are the routes this node is currently the primary
 	// subnet router for, as determined by the control plane. It does
-	// not include the IPs in TailscaleIPs.
+	// not include the IPs in ScaleTailIPs.
 	PrimaryRoutes *views.Slice[netip.Prefix] `json:",omitempty"`
 
 	// Endpoints:
@@ -302,7 +302,7 @@ type PeerStatus struct {
 
 	// ShareeNode indicates this node exists in the netmap because
 	// it's owned by a shared-to user and that node might connect
-	// to us. These nodes should be hidden by "tailscale status"
+	// to us. These nodes should be hidden by "scaletail status"
 	// etc by default.
 	ShareeNode bool `json:",omitempty"`
 
@@ -414,7 +414,7 @@ func (sb *StatusBuilder) AddTailscaleIP(ip netip.Addr) {
 		return
 	}
 
-	sb.st.TailscaleIPs = append(sb.st.TailscaleIPs, ip)
+	sb.st.ScaleTailIPs = append(sb.st.ScaleTailIPs, ip)
 }
 
 // AddPeer adds a peer node to the status.
@@ -461,8 +461,8 @@ func (sb *StatusBuilder) AddPeer(peer key.NodePublic, st *PeerStatus) {
 	if v := st.AltSharerUserID; v != 0 {
 		e.AltSharerUserID = v
 	}
-	if v := st.TailscaleIPs; v != nil {
-		e.TailscaleIPs = v
+	if v := st.ScaleTailIPs; v != nil {
+		e.ScaleTailIPs = v
 	}
 	if v := st.PrimaryRoutes; v != nil && !v.IsNil() {
 		e.PrimaryRoutes = v
@@ -580,8 +580,8 @@ table tbody tr:nth-child(even) td { background-color: #f5f5f5; }
 	//f("<p><b>logid:</b> %s</p>\n", logid)
 	//f("<p><b>opts:</b> <code>%s</code></p>\n", html.EscapeString(fmt.Sprintf("%+v", opts)))
 
-	ips := make([]string, 0, len(st.TailscaleIPs))
-	for _, ip := range st.TailscaleIPs {
+	ips := make([]string, 0, len(st.ScaleTailIPs))
+	for _, ip := range st.ScaleTailIPs {
 		ips = append(ips, ip.String())
 	}
 	f("<p>Tailscale IP: %s", strings.Join(ips, ", "))
@@ -630,8 +630,8 @@ table tbody tr:nth-child(even) td { background-color: #f5f5f5; }
 		}
 
 		var tailAddr string
-		if len(ps.TailscaleIPs) > 0 {
-			tailAddr = ps.TailscaleIPs[0].String()
+		if len(ps.ScaleTailIPs) > 0 {
+			tailAddr = ps.ScaleTailIPs[0].String()
 		}
 		f("<tr><td>%s</td><td class=acenter>%s</td>"+
 			"<td><b>%s</b>%s<div class=\"tailaddr\">%s</div></td><td class=\"acenter owner\">%s</td><td class=\"aright\">%v</td><td class=\"aright\">%v</td><td class=\"aright\">%v</td>",
@@ -689,7 +689,7 @@ func osEmoji(os string) string {
 	return "👽"
 }
 
-// PingResult contains response information for the "tailscale ping" subcommand,
+// PingResult contains response information for the "scaletail ping" subcommand,
 // saying how Tailscale can reach a Tailscale IP or subnet-routed IP.
 // See tailcfg.PingResponse for a related response that is sent back to control
 // for remote diagnostic pings.
@@ -771,15 +771,15 @@ func (a *PeerStatus) compare(b *PeerStatus) int {
 			return v
 		}
 	}
-	if len(a.TailscaleIPs) > 0 && len(b.TailscaleIPs) > 0 {
-		if v := a.TailscaleIPs[0].Compare(b.TailscaleIPs[0]); v != 0 {
+	if len(a.ScaleTailIPs) > 0 && len(b.ScaleTailIPs) > 0 {
+		if v := a.ScaleTailIPs[0].Compare(b.ScaleTailIPs[0]); v != 0 {
 			return v
 		}
 	}
 	return a.PublicKey.Compare(b.PublicKey)
 }
 
-// DebugDERPRegionReport is the result of a "tailscale debug derp" command,
+// DebugDERPRegionReport is the result of a "scaletail debug derp" command,
 // to let people debug a custom DERP setup.
 type DebugDERPRegionReport struct {
 	Info     []string

@@ -1,0 +1,12 @@
+[Unit]
+Description=Wait for ScaleTail to be online
+After=scaletaild.service
+Requires=scaletaild.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/scaletail wait
+RemainAfterExit=yes
+
+[Install]
+WantedBy=scaletail-online.target

@@ -85,7 +85,7 @@ func TestContainerBoot(t *testing.T) {
 		WantKubeSecret map[string]string
 
 		// Update the kube secret with these keys/values at the beginning of the
-		// phase (simulates our fake tailscaled doing it).
+		// phase (simulates our fake scaletaild doing it).
 		UpdateKubeSecret map[string]string
 
 		// Update files with these paths/contents at the beginning of the phase
@@ -131,8 +131,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 						// No metrics or health by default.
 						EndpointStatuses: map[string]int{
@@ -155,8 +155,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -174,8 +174,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -193,8 +193,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -212,8 +212,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=1.2.3.0/24,10.20.30.0/24",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=1.2.3.0/24,10.20.30.0/24",
 						},
 					},
 					{
@@ -235,8 +235,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=",
 						},
 					},
 					{
@@ -259,8 +259,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=1.2.3.0/24,10.20.30.0/24",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=1.2.3.0/24,10.20.30.0/24",
 						},
 					},
 					{
@@ -283,8 +283,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=::/64,1::/64",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=::/64,1::/64",
 						},
 					},
 					{
@@ -307,8 +307,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=::/64,1.2.3.0/24",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key --advertise-routes=::/64,1.2.3.0/24",
 						},
 					},
 					{
@@ -331,8 +331,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -351,8 +351,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantFiles: map[string]string{
 							"proc/sys/net/ipv4/ip_forward":          "1",
@@ -376,8 +376,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantFiles: map[string]string{
 							"proc/sys/net/ipv4/ip_forward":          "1",
@@ -422,7 +422,7 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
 						},
 					},
 					{
@@ -430,13 +430,13 @@ func TestContainerBoot(t *testing.T) {
 							State: new(ipn.NeedsLogin),
 						},
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
 						Notify: runningNotify,
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock set --accept-dns=false",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock set --accept-dns=false",
 						},
 					},
 				},
@@ -453,7 +453,7 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
 						},
 					},
 					{
@@ -461,13 +461,13 @@ func TestContainerBoot(t *testing.T) {
 							State: new(ipn.NeedsLogin),
 						},
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=true --authkey=tskey-key",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=true --authkey=tskey-key",
 						},
 					},
 					{
 						Notify: runningNotify,
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock set --accept-dns=true",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock set --accept-dns=true",
 						},
 					},
 				},
@@ -486,8 +486,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -523,8 +523,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{},
 					},
@@ -547,8 +547,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{},
 					},
@@ -573,7 +573,7 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -585,7 +585,7 @@ func TestContainerBoot(t *testing.T) {
 							State: new(ipn.NeedsLogin),
 						},
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -595,7 +595,7 @@ func TestContainerBoot(t *testing.T) {
 					{
 						Notify: runningNotify,
 						WantCmds: []string{
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock set --accept-dns=false",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock set --accept-dns=false",
 						},
 						WantKubeSecret: map[string]string{
 							"device_fqdn":       "test-node.test.ts.net.",
@@ -619,8 +619,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -673,8 +673,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking --socks5-server=localhost:1080 --outbound-http-proxy-listen=localhost:8080",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking --socks5-server=localhost:1080 --outbound-http-proxy-listen=localhost:8080",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 					},
 					{
@@ -691,8 +691,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=true",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=true",
 						},
 					},
 					{
@@ -705,13 +705,13 @@ func TestContainerBoot(t *testing.T) {
 			return testCase{
 				Env: map[string]string{
 					"TS_EXTRA_ARGS":            "--widget=rotated",
-					"TS_TAILSCALED_EXTRA_ARGS": "--experiments=widgets",
+					"TS_SCALETAILD_EXTRA_ARGS": "--experiments=widgets",
 				},
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking --experiments=widgets",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --widget=rotated",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking --experiments=widgets",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --widget=rotated",
 						},
 					}, {
 						Notify: runningNotify,
@@ -727,8 +727,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --accept-routes",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --accept-routes",
 						},
 					}, {
 						Notify: runningNotify,
@@ -744,8 +744,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=true",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=true",
 						},
 					}, {
 						Notify: runningNotify,
@@ -762,8 +762,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 					}, {
 						Notify: runningNotify,
@@ -779,8 +779,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --hostname=my-server",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --hostname=my-server",
 						},
 					}, {
 						Notify: runningNotify,
@@ -788,15 +788,15 @@ func TestContainerBoot(t *testing.T) {
 				},
 			}
 		},
-		"experimental_tailscaled_config_path": func(env *testEnv) testCase {
+		"experimental_scaletaild_config_path": func(env *testEnv) testCase {
 			return testCase{
 				Env: map[string]string{
-					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/tailscaled/"),
+					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/scaletaild/"),
 				},
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking --config=/etc/tailscaled/cap-95.hujson",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking --config=/etc/scaletaild/cap-95.hujson",
 						},
 					}, {
 						Notify: runningNotify,
@@ -808,17 +808,17 @@ func TestContainerBoot(t *testing.T) {
 			newAuthKey := "new-reissued-auth-key"
 			return testCase{
 				Env: map[string]string{
-					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/tailscaled/"),
+					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/scaletaild/"),
 					"KUBERNETES_SERVICE_HOST":              env.kube.Host,
 					"KUBERNETES_SERVICE_PORT_HTTPS":        env.kube.Port,
 				},
 				Phases: []phase{
 					{
 						UpdateFiles: map[string]string{
-							"etc/tailscaled/..data": "",
+							"etc/scaletaild/..data": "",
 						},
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking --config=/etc/tailscaled/cap-95.hujson",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking --config=/etc/scaletaild/cap-95.hujson",
 						},
 						WantKubeSecret: map[string]string{
 							kubetypes.KeyCapVer: capver,
@@ -834,8 +834,8 @@ func TestContainerBoot(t *testing.T) {
 						WantLog: "watching for config changes via fsnotify",
 					}, {
 						UpdateFiles: map[string]string{
-							"etc/tailscaled/cap-95.hujson": fmt.Sprintf(`{"Version":"alpha0","AuthKey":"%s"}`, newAuthKey),
-							"etc/tailscaled/..data":        "updated",
+							"etc/scaletaild/cap-95.hujson": fmt.Sprintf(`{"Version":"alpha0","AuthKey":"%s"}`, newAuthKey),
+							"etc/scaletaild/..data":        "updated",
 						},
 						WantKubeSecret: map[string]string{
 							kubetypes.KeyCapVer: capver,
@@ -850,17 +850,17 @@ func TestContainerBoot(t *testing.T) {
 			newAuthKey := "new-reissued-auth-key"
 			return testCase{
 				Env: map[string]string{
-					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/tailscaled/"),
+					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/scaletaild/"),
 					"KUBERNETES_SERVICE_HOST":              env.kube.Host,
 					"KUBERNETES_SERVICE_PORT_HTTPS":        env.kube.Port,
 				},
 				Phases: []phase{
 					{
 						UpdateFiles: map[string]string{
-							"etc/tailscaled/..data": "",
+							"etc/scaletaild/..data": "",
 						},
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking --config=/etc/tailscaled/cap-95.hujson",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking --config=/etc/scaletaild/cap-95.hujson",
 						},
 						WantKubeSecret: map[string]string{
 							kubetypes.KeyCapVer: capver,
@@ -880,8 +880,8 @@ func TestContainerBoot(t *testing.T) {
 						WantLog: "watching for config changes via fsnotify",
 					}, {
 						UpdateFiles: map[string]string{
-							"etc/tailscaled/cap-95.hujson": fmt.Sprintf(`{"Version":"alpha0","AuthKey":"%s"}`, newAuthKey),
-							"etc/tailscaled/..data":        "updated",
+							"etc/scaletaild/cap-95.hujson": fmt.Sprintf(`{"Version":"alpha0","AuthKey":"%s"}`, newAuthKey),
+							"etc/scaletaild/..data":        "updated",
 						},
 						WantKubeSecret: map[string]string{
 							kubetypes.KeyCapVer: capver,
@@ -895,7 +895,7 @@ func TestContainerBoot(t *testing.T) {
 		"clears_reissue_authkey_on_change": func(env *testEnv) testCase {
 			return testCase{
 				Env: map[string]string{
-					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/tailscaled/"),
+					"TS_EXPERIMENTAL_VERSIONED_CONFIG_DIR": filepath.Join(env.d, "etc/scaletaild/"),
 					"KUBERNETES_SERVICE_HOST":              env.kube.Host,
 					"KUBERNETES_SERVICE_PORT_HTTPS":        env.kube.Port,
 				},
@@ -906,7 +906,7 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking --config=/etc/tailscaled/cap-95.hujson",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking --config=/etc/scaletaild/cap-95.hujson",
 						},
 						WantKubeSecret: map[string]string{
 							kubetypes.KeyCapVer: capver,
@@ -934,8 +934,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 						EndpointStatuses: map[string]int{
 							metricsURL(env.localAddrPort): 200,
@@ -956,8 +956,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 						EndpointStatuses: map[string]int{
 							metricsURL(env.localAddrPort): -1,
@@ -983,8 +983,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 						EndpointStatuses: map[string]int{
 							metricsURL(env.localAddrPort): 200,
@@ -1010,8 +1010,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false",
 						},
 						EndpointStatuses: map[string]int{
 							metricsURL(env.localAddrPort): 200,
@@ -1030,14 +1030,14 @@ func TestContainerBoot(t *testing.T) {
 		"serve_config_no_kube": func(env *testEnv) testCase {
 			return testCase{
 				Env: map[string]string{
-					"TS_SERVE_CONFIG": filepath.Join(env.d, "etc/tailscaled/serve-config.json"),
+					"TS_SERVE_CONFIG": filepath.Join(env.d, "etc/scaletaild/serve-config.json"),
 					"TS_AUTHKEY":      "tskey-key",
 				},
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -1051,7 +1051,7 @@ func TestContainerBoot(t *testing.T) {
 				Env: map[string]string{
 					"KUBERNETES_SERVICE_HOST":       env.kube.Host,
 					"KUBERNETES_SERVICE_PORT_HTTPS": env.kube.Port,
-					"TS_SERVE_CONFIG":               filepath.Join(env.d, "etc/tailscaled/serve-config.json"),
+					"TS_SERVE_CONFIG":               filepath.Join(env.d, "etc/scaletaild/serve-config.json"),
 				},
 				KubeSecret: map[string]string{
 					"authkey": "tskey-key",
@@ -1059,8 +1059,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -1086,7 +1086,7 @@ func TestContainerBoot(t *testing.T) {
 				Env: map[string]string{
 					"KUBERNETES_SERVICE_HOST":       env.kube.Host,
 					"KUBERNETES_SERVICE_PORT_HTTPS": env.kube.Port,
-					"TS_EGRESS_PROXIES_CONFIG_PATH": filepath.Join(env.d, "etc/tailscaled"),
+					"TS_EGRESS_PROXIES_CONFIG_PATH": filepath.Join(env.d, "etc/scaletaild"),
 					"TS_LOCAL_ADDR_PORT":            fmt.Sprintf("[::]:%d", env.localAddrPort),
 				},
 				KubeSecret: map[string]string{
@@ -1095,8 +1095,8 @@ func TestContainerBoot(t *testing.T) {
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -1147,7 +1147,7 @@ func TestContainerBoot(t *testing.T) {
 		"egress_svcs_config_no_kube": func(env *testEnv) testCase {
 			return testCase{
 				Env: map[string]string{
-					"TS_EGRESS_PROXIES_CONFIG_PATH": filepath.Join(env.d, "etc/tailscaled"),
+					"TS_EGRESS_PROXIES_CONFIG_PATH": filepath.Join(env.d, "etc/scaletaild"),
 					"TS_AUTHKEY":                    "tskey-key",
 				},
 				Phases: []phase{
@@ -1161,14 +1161,14 @@ func TestContainerBoot(t *testing.T) {
 		"serve_config_with_service_auto_advertisement": func(env *testEnv) testCase {
 			return testCase{
 				Env: map[string]string{
-					"TS_SERVE_CONFIG": filepath.Join(env.d, "etc/tailscaled/serve-config-with-services.json"),
+					"TS_SERVE_CONFIG": filepath.Join(env.d, "etc/scaletaild/serve-config-with-services.json"),
 					"TS_AUTHKEY":      "tskey-key",
 				},
 				Phases: []phase{
 					{
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=mem: --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 					},
 					{
@@ -1191,8 +1191,8 @@ func TestContainerBoot(t *testing.T) {
 					{
 						// Normal startup.
 						WantCmds: []string{
-							"/usr/bin/tailscaled --socket=/tmp/tailscaled.sock --state=kube:tailscale --statedir=/tmp --tun=userspace-networking",
-							"/usr/bin/tailscale --socket=/tmp/tailscaled.sock up --accept-dns=false --authkey=tskey-key",
+							"/usr/bin/scaletaild --socket=/tmp/scaletaild.sock --state=kube:scaletail --statedir=/tmp --tun=userspace-networking",
+							"/usr/bin/scaletail --socket=/tmp/scaletaild.sock up --accept-dns=false --authkey=tskey-key",
 						},
 						WantKubeSecret: map[string]string{
 							"authkey":           "tskey-key",
@@ -1201,7 +1201,7 @@ func TestContainerBoot(t *testing.T) {
 					},
 					{
 						// SIGTERM before state is finished writing, should wait for
-						// consistent state before propagating SIGTERM to tailscaled.
+						// consistent state before propagating SIGTERM to scaletaild.
 						Signal: new(unix.SIGTERM),
 						UpdateKubeSecret: map[string]string{
 							"_machinekey":  "foo",
@@ -1216,10 +1216,10 @@ func TestContainerBoot(t *testing.T) {
 							"profile-baff":      "foo",
 							kubetypes.KeyCapVer: capver,
 						},
-						WantLog: "Waiting for tailscaled to finish writing state to Secret \"tailscale\"",
+						WantLog: "Waiting for scaletaild to finish writing state to Secret \"tailscale\"",
 					},
 					{
-						// tailscaled has finished writing state, should propagate SIGTERM.
+						// scaletaild has finished writing state, should propagate SIGTERM.
 						UpdateKubeSecret: map[string]string{
 							"_current-profile": "foo",
 						},
@@ -1444,7 +1444,7 @@ func waitLogLine(t *testing.T, timeout time.Duration, b *lockingBuffer, want str
 
 // waitArgs waits until the contents of path matches wantArgs, a set
 // of command lines recorded by test_tailscale.sh and
-// test_tailscaled.sh.
+// test_scaletaild.sh.
 //
 // All occurrences of removeStr are removed from the file prior to
 // comparison. This is used to remove the varying temporary root
@@ -1479,16 +1479,16 @@ func waitArgs(t *testing.T, timeout time.Duration, removeStr, path, wantArgs str
 	t.Fatalf("waiting for args file %q to have expected output, got:\n%s\n\nWant: %s", path, got, wantArgs)
 }
 
-//go:embed test_tailscaled.sh
-var fakeTailscaled []byte
+//go:embed test_scaletaild.sh
+var fakeScaleTaild []byte
 
 //go:embed test_tailscale.sh
 var fakeTailscale []byte
 
-// localAPI is a minimal fake tailscaled LocalAPI server that presents
+// localAPI is a minimal fake scaletaild LocalAPI server that presents
 // just enough functionality for containerboot to function
 // correctly. In practice this means it only supports querying
-// tailscaled status, and panics on all other uses to make it very
+// scaletaild status, and panics on all other uses to make it very
 // obvious that something unexpected happened.
 type localAPI struct {
 	FSRoot string
@@ -1503,7 +1503,7 @@ type localAPI struct {
 }
 
 func (lc *localAPI) Start() error {
-	path := filepath.Join(lc.FSRoot, "tmp/tailscaled.sock.fake")
+	path := filepath.Join(lc.FSRoot, "tmp/scaletaild.sock.fake")
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return err
 	}
@@ -1868,7 +1868,7 @@ type testEnv struct {
 	lapi            *localAPI   // Local TS API server.
 	d               string      // Temp dir for the specific test.
 	argFile         string      // File with commands test_tailscale{,d}.sh were invoked with.
-	runningSockPath string      // Path to the running tailscaled socket.
+	runningSockPath string      // Path to the running scaletaild socket.
 	localAddrPort   int         // Port for the containerboot HTTP server.
 	healthAddrPort  int         // Port for the (deprecated) containerboot health server.
 }
@@ -1886,7 +1886,7 @@ func newTestEnv(t *testing.T) testEnv {
 	kube.Start(t)
 	t.Cleanup(kube.Close)
 
-	tailscaledConf := &ipn.ConfigVAlpha{AuthKey: new(configFileAuthKey), Version: "alpha0"}
+	scaletaildConf := &ipn.ConfigVAlpha{AuthKey: new(configFileAuthKey), Version: "alpha0"}
 	serveConf := ipn.ServeConfig{TCP: map[uint16]*ipn.TCPPortHandler{80: {HTTP: true}}}
 	serveConfWithServices := ipn.ServeConfig{
 		TCP: map[uint16]*ipn.TCPPortHandler{80: {HTTP: true}},
@@ -1904,7 +1904,7 @@ func newTestEnv(t *testing.T) testEnv {
 		"dev/net",
 		"proc/sys/net/ipv4",
 		"proc/sys/net/ipv6/conf/all",
-		"etc/tailscaled",
+		"etc/scaletaild",
 	}
 	for _, path := range dirs {
 		if err := os.MkdirAll(filepath.Join(d, path), 0700); err != nil {
@@ -1912,18 +1912,18 @@ func newTestEnv(t *testing.T) testEnv {
 		}
 	}
 	files := map[string][]byte{
-		"usr/bin/tailscaled":                             fakeTailscaled,
+		"usr/bin/scaletaild":                             fakeScaleTaild,
 		"usr/bin/tailscale":                              fakeTailscale,
 		"usr/bin/iptables":                               fakeTailscale,
 		"usr/bin/ip6tables":                              fakeTailscale,
 		"dev/net/tun":                                    []byte(""),
 		"proc/sys/net/ipv4/ip_forward":                   []byte("0"),
 		"proc/sys/net/ipv6/conf/all/forwarding":          []byte("0"),
-		"etc/tailscaled/cap-95.hujson":                   mustJSON(t, tailscaledConf),
-		"etc/tailscaled/serve-config.json":               mustJSON(t, serveConf),
-		"etc/tailscaled/serve-config-with-services.json": mustJSON(t, serveConfWithServices),
-		filepath.Join("etc/tailscaled/", egressservices.KeyEgressServices): mustJSON(t, egressCfg),
-		filepath.Join("etc/tailscaled/", egressservices.KeyHEPPings):       []byte("4"),
+		"etc/scaletaild/cap-95.hujson":                   mustJSON(t, scaletaildConf),
+		"etc/scaletaild/serve-config.json":               mustJSON(t, serveConf),
+		"etc/scaletaild/serve-config-with-services.json": mustJSON(t, serveConfWithServices),
+		filepath.Join("etc/scaletaild/", egressservices.KeyEgressServices): mustJSON(t, egressCfg),
+		filepath.Join("etc/scaletaild/", egressservices.KeyHEPPings):       []byte("4"),
 	}
 	for path, content := range files {
 		// Making everything executable is a little weird, but the
@@ -1935,7 +1935,7 @@ func newTestEnv(t *testing.T) testEnv {
 	}
 
 	argFile := filepath.Join(d, "args")
-	runningSockPath := filepath.Join(d, "tmp/tailscaled.sock")
+	runningSockPath := filepath.Join(d, "tmp/scaletaild.sock")
 	var localAddrPort, healthAddrPort int
 	for _, p := range []*int{&localAddrPort, &healthAddrPort} {
 		ln, err := net.Listen("tcp", ":0")

@@ -24,7 +24,7 @@ func applyPebbleResources(ctx context.Context, cl client.Client) error {
 		return fmt.Errorf("failed to apply pebble Service: %w", err)
 	}
 	if err := cl.Patch(ctx, tailscaleNamespace(), client.Apply, owner); err != nil {
-		return fmt.Errorf("failed to apply tailscale Namespace: %w", err)
+		return fmt.Errorf("failed to apply scaletail Namespace: %w", err)
 	}
 	if err := cl.Patch(ctx, pebbleExternalNameService(), client.Apply, owner); err != nil {
 		return fmt.Errorf("failed to apply pebble ExternalName Service: %w", err)
@@ -150,7 +150,7 @@ func tailscaleNamespace() *corev1.Namespace {
 	}
 }
 
-// pebbleExternalNameService ensures the operator in the tailscale namespace
+// pebbleExternalNameService ensures the operator in the scaletail namespace
 // can reach pebble on a DNS name (pebble) that matches its TLS cert.
 func pebbleExternalNameService() *corev1.Service {
 	return &corev1.Service{

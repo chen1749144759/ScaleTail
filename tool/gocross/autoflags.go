@@ -128,7 +128,7 @@ func autoflagsForTest(argv []string, env *Environment, goroot, nativeGOOS, nativ
 		tags = append(tags, "omitidna", "omitpemdecrypt")
 		if env.IsSet("XCODE_VERSION_ACTUAL") {
 			// If we're building via Xcode, we must be making the extension
-			// version (as opposed to tailscaled on Mac).
+			// version (as opposed to scaletaild on Mac).
 			tags = append(tags, "ts_macext")
 
 			var xcodeFlags []string

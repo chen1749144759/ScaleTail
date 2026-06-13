@@ -104,7 +104,7 @@ func (m *windowsManager) openInterfaceKey(pfx winutil.RegistryPathPrefix) (regis
 	if closing {
 		// Do not wait for the interface key to appear if the manager is being closed.
 		// If it's being closed due to the removal of the wintun adapter,
-		// the key would already be gone by now and will not reappear until tailscaled is restarted.
+		// the key would already be gone by now and will not reappear until scaletaild is restarted.
 		key, err = registry.OpenKey(registry.LOCAL_MACHINE, string(path), registry.SET_VALUE)
 	} else {
 		key, err = winutil.OpenKeyWait(registry.LOCAL_MACHINE, path, registry.SET_VALUE)

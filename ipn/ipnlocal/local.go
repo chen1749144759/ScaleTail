@@ -131,7 +131,7 @@ type SSHServer interface {
 	// and closed if they'd no longer be accepted.
 	OnPolicyChange()
 
-	// Shutdown is called when tailscaled is shutting down.
+	// Shutdown is called when scaletaild is shutting down.
 	Shutdown()
 }
 
@@ -507,9 +507,9 @@ func NewLocalBackend(logf logger.Logf, logID logid.PublicID, sys *tsd.System, lo
 
 	m := metrics{
 		advertisedRoutes: sys.UserMetricsRegistry().NewGauge(
-			"tailscaled_advertised_routes", "Number of advertised network routes (e.g. by a subnet router)"),
+			"scaletaild_advertised_routes", "Number of advertised network routes (e.g. by a subnet router)"),
 		approvedRoutes: sys.UserMetricsRegistry().NewGauge(
-			"tailscaled_approved_routes", "Number of approved network routes (e.g. by a subnet router)"),
+			"scaletaild_approved_routes", "Number of approved network routes (e.g. by a subnet router)"),
 	}
 
 	b := &LocalBackend{
@@ -1374,7 +1374,7 @@ func (b *LocalBackend) UpdateStatus(sb *ipnstate.StatusBuilder) {
 						s.ExitNodeStatus = &ipnstate.ExitNodeStatus{
 							ID:           prefs.ExitNodeID(),
 							Online:       exitPeer.Online().Get(),
-							TailscaleIPs: exitPeer.Addresses().AsSlice(),
+							ScaleTailIPs: exitPeer.Addresses().AsSlice(),
 						}
 					}
 				}
@@ -1417,7 +1417,7 @@ func (b *LocalBackend) UpdateStatus(sb *ipnstate.StatusBuilder) {
 				}
 			}
 			for _, addr := range tailscaleIPs {
-				ss.TailscaleIPs = append(ss.TailscaleIPs, addr)
+				ss.ScaleTailIPs = append(ss.ScaleTailIPs, addr)
 			}
 
 		} else {
@@ -1458,7 +1458,7 @@ func (b *LocalBackend) populatePeerStatusLocked(sb *ipnstate.StatusBuilder) {
 			InNetworkMap:    true,
 			UserID:          p.User(),
 			AltSharerUserID: p.Sharer(),
-			TailscaleIPs:    tailscaleIPs,
+			ScaleTailIPs:    tailscaleIPs,
 			HostName:        p.Hostinfo().Hostname(),
 			DNSName:         p.Name(),
 			OS:              p.Hostinfo().OS(),
@@ -1553,8 +1553,8 @@ var debugWhoIs = envknob.RegisterBool("TS_DEBUG_WHOIS")
 // If the IP address is a Tailscale IP, the provided port may be 0.
 //
 // The 'proto' is used when looking up the IP:port in our proxy mapper; it
-// tracks which local IP:ports correspond to connections proxied by tailscaled,
-// and since tailscaled proxies both TCP and UDP, the 'proto' is needed to look
+// tracks which local IP:ports correspond to connections proxied by scaletaild,
+// and since scaletaild proxies both TCP and UDP, the 'proto' is needed to look
 // up the correct IP:port based on the connection's protocol. If not provided,
 // the lookup will be done for TCP and then UDP, in that order.
 //
@@ -1753,7 +1753,7 @@ func (b *LocalBackend) setControlClientStatusLocked(c controlclient.Client, st c
 	if prefs.ControlURL == "" {
 		// Once we get a message from the control plane, set
 		// our ControlURL pref explicitly. This causes a
-		// future "tailscale up" to start checking for
+		// future "scaletail up" to start checking for
 		// implicit setting reverts, which it doesn't do when
 		// ControlURL is blank.
 		prefs.ControlURL = prefs.ControlURLOrDefault(b.polc)
@@ -1855,7 +1855,7 @@ func (b *LocalBackend) setControlClientStatusLocked(c controlclient.Client, st c
 	// Now complete the lock-free parts of what we started while locked.
 	if st.NetMap != nil {
 		if envknob.NoLogsNoSupport() && st.NetMap.HasCap(tailcfg.CapabilityDataPlaneAuditLogs) {
-			msg := "tailnet requires logging to be enabled. Remove --no-logs-no-support from tailscaled command line."
+			msg := "tailnet requires logging to be enabled. Remove --no-logs-no-support from scaletaild command line."
 			b.health.SetLocalLogConfigHealth(errors.New(msg))
 			// Get the current prefs again, since we unlocked above.
 			prefs := b.pm.CurrentPrefs().AsStruct()
@@ -3378,7 +3378,7 @@ func (b *LocalBackend) WatchNotificationsAs(ctx context.Context, actor ipnauth.A
 	// wasteful. As a step towards making it efficient, they now set this
 	// NotifyWatchEngineUpdates bit to ask for us to send it to them only on
 	// change. That's not yet (as of 2022-11-26) plumbed everywhere in
-	// tailscaled yet, so just do the polling here. This ends up causing all IPN
+	// scaletaild yet, so just do the polling here. This ends up causing all IPN
 	// bus watchers to get the notification every 2 seconds instead of just the
 	// GUI client's bus watcher, but in practice there's only 1 total connection
 	// anyway. And if we're polling, at least the client isn't making a new HTTP
@@ -3613,7 +3613,7 @@ func (b *LocalBackend) sendToLocked(n ipn.Notify, recipient notificationTarget) 
 
 // setAuthURLLocked sets the authURL and triggers [LocalBackend.popBrowserAuthNow] if the URL has changed.
 // This method is called when a new authURL is received from the control plane, meaning that either a user
-// has started a new interactive login (e.g., by running `tailscale login` or clicking Login in the GUI),
+// has started a new interactive login (e.g., by running `scaletail login` or clicking Login in the GUI),
 // or the control plane was unable to authenticate this node non-interactively (e.g., due to key expiration).
 // A non-nil b.authActor indicates that an interactive login is in progress and was initiated by the specified actor.
 //
@@ -4324,7 +4324,7 @@ func (b *LocalBackend) isConfigLocked_Locked() bool {
 
 func (b *LocalBackend) checkPrefsLocked(p *ipn.Prefs) error {
 	if b.isConfigLocked_Locked() {
-		return errors.New("can't reconfigure tailscaled when using a config file; config file is locked")
+		return errors.New("can't reconfigure scaletaild when using a config file; config file is locked")
 	}
 	var errs []error
 	if p.Hostname == "badhostname.tailscale." {
@@ -4529,7 +4529,7 @@ func (b *LocalBackend) MaybeClearAppConnector(mp *ipn.MaskedPrefs) error {
 }
 
 // EditPrefs applies the changes in mp to the current prefs,
-// acting as the tailscaled itself rather than a specific user.
+// acting as the scaletaild itself rather than a specific user.
 func (b *LocalBackend) EditPrefs(mp *ipn.MaskedPrefs) (ipn.PrefsView, error) {
 	return b.EditPrefsAs(mp, ipnauth.Self)
 }
@@ -4919,7 +4919,7 @@ func (b *LocalBackend) setPrefsLocked(newp *ipn.Prefs) ipn.PrefsView {
 	} else if prefs.WantRunning() {
 		// Reset the always-on override if WantRunning is true in the new prefs,
 		// such as when the user toggles the Connected switch in the GUI
-		// or runs `tailscale up`.
+		// or runs `scaletail up`.
 		b.resetAlwaysOnOverrideLocked()
 	}
 
@@ -5527,7 +5527,7 @@ func (b *LocalBackend) TailscaleVarRoot() string {
 		return paths.AppSharedDir.Load()
 	case "linux":
 		if distro.Get() == distro.Gokrazy {
-			return "/perm/tailscaled"
+			return "/perm/scaletaild"
 		}
 	}
 	return ""
@@ -5694,7 +5694,7 @@ func (b *LocalBackend) initPeerAPIListenerLocked() {
 				}
 				// Sandboxed macOS specifically requires the interface index to be non-zero.
 				if version.IsSandboxedMacOS() && tsIfIndex == 0 {
-					b.logf("[v1] peerapi listen(%q) error: interface index is 0 on darwin; try restarting tailscaled", a.Addr())
+					b.logf("[v1] peerapi listen(%q) error: interface index is 0 on darwin; try restarting scaletaild", a.Addr())
 					continue
 				}
 				b.logf("[unexpected] peerapi listen(%q) error: %v", a.Addr(), err)
@@ -6093,7 +6093,7 @@ func (b *LocalBackend) enterStateLocked(newState ipn.State) {
 		}
 
 		if newState == ipn.Stopped && authURL == "" {
-			feature.SystemdStatus("Stopped; run 'tailscale up' to log in")
+			feature.SystemdStatus("Stopped; run 'scaletail up' to log in")
 		}
 	case ipn.Starting, ipn.NeedsMachineAuth:
 		b.authReconfigLocked()
@@ -6291,12 +6291,12 @@ func (b *LocalBackend) resetAuthURLLocked() {
 func (b *LocalBackend) ShouldRunSSH() bool { return b.sshAtomicBool.Load() && envknob.CanSSHD() }
 
 // ShouldRunWebClient reports whether the web client is being run
-// within this tailscaled instance. ShouldRunWebClient is safe to
+// within this scaletaild instance. ShouldRunWebClient is safe to
 // call regardless of whether b.mu is held or not.
 func (b *LocalBackend) ShouldRunWebClient() bool { return b.webClientAtomicBool.Load() }
 
 // ShouldExposeRemoteWebClient reports whether the web client should
-// accept connections via [tailscale IP]:5252 in addition to the default
+// accept connections via [scaletail IP]:5252 in addition to the default
 // behaviour of accepting local connections over 100.100.100.100.
 //
 // This function checks both the web client user pref via
@@ -6738,7 +6738,7 @@ func (b *LocalBackend) setDebugLogsByCapabilityLocked(nm *netmap.NetworkMap) {
 }
 
 // setTCPPortsInterceptedFromNetmapAndPrefsLocked calls setTCPPortsIntercepted with
-// the ports that tailscaled should handle as a function of b.netMap and b.prefs.
+// the ports that scaletaild should handle as a function of b.netMap and b.prefs.
 //
 // b.mu must be held.
 func (b *LocalBackend) setTCPPortsInterceptedFromNetmapAndPrefsLocked(prefs ipn.PrefsView) {
@@ -6966,7 +6966,7 @@ func (b *LocalBackend) SetUDPGROForwarding() error {
 	}
 	netmonSys, ok := b.sys.NetMon.GetOK()
 	if !ok {
-		return errors.New("[unexpected] unable to retrieve tailscale netmon configuration")
+		return errors.New("[unexpected] unable to retrieve scaletail netmon configuration")
 	}
 	state := netmonSys.InterfaceState()
 	if state == nil {
@@ -7283,7 +7283,7 @@ var warnSyncDisabled = health.Register(&health.Warnable{
 	Code:     "sync-disabled",
 	Title:    "Tailscale Sync is Disabled",
 	Severity: health.SeverityHigh,
-	Text:     health.StaticMessage("Tailscale control plane syncing is disabled; run `tailscale set --sync` to restore"),
+	Text:     health.StaticMessage("Tailscale control plane syncing is disabled; run `scaletail set --sync` to restore"),
 })
 
 var warnSSHSELinuxWarnable = health.Register(&health.Warnable{
@@ -7419,13 +7419,13 @@ func (b *LocalBackend) SetDevStateStore(key, value string) error {
 
 // ShouldInterceptTCPPort reports whether the given TCP port number to a
 // Tailscale IP (not a subnet router, service IP, etc) should be intercepted by
-// Tailscaled and handled in-process.
+// ScaleTaild and handled in-process.
 func (b *LocalBackend) ShouldInterceptTCPPort(port uint16) bool {
 	return b.shouldInterceptTCPPortAtomic.Load()(port)
 }
 
 // ShouldInterceptVIPServiceTCPPort reports whether the given TCP port number
-// to a VIP service should be intercepted by Tailscaled and handled in-process.
+// to a VIP service should be intercepted by ScaleTaild and handled in-process.
 func (b *LocalBackend) ShouldInterceptVIPServiceTCPPort(ap netip.AddrPort) bool {
 	if !buildfeatures.HasServe {
 		return false
@@ -7799,7 +7799,7 @@ func allowedAutoRoute(ipp netip.Prefix) bool {
 			return false
 		}
 	}
-	// TODO(raggi): exclude tailscale service IPs and so on as well.
+	// TODO(raggi): exclude scaletail service IPs and so on as well.
 	return true
 }
 
@@ -8337,7 +8337,7 @@ func (b *LocalBackend) stateEncrypted() opt.Bool {
 			sp, _ := b.polc.GetBoolean(pkey.EncryptState, true)
 			return opt.NewBool(sp)
 		default:
-			// Probably self-compiled tailscaled, we don't use the Keychain
+			// Probably self-compiled scaletaild, we don't use the Keychain
 			// there.
 			return opt.NewBool(false)
 		}

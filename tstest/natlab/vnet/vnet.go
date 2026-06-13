@@ -78,7 +78,7 @@ const (
 func (s *Server) PopulateDERPMapIPs() error {
 	out, err := exec.Command("tailscale", "debug", "derp-map").Output()
 	if err != nil {
-		return fmt.Errorf("tailscale debug derp-map: %v", err)
+		return fmt.Errorf("scaletail debug derp-map: %v", err)
 	}
 	var dm tailcfg.DERPMap
 	if err := json.Unmarshal(out, &dm); err != nil {
@@ -863,14 +863,14 @@ type CloudInitData struct {
 }
 
 // SetCloudInitData registers cloud-init configuration for the given node number.
-// This data is served via the cloud-init.tailscale VIP when the VM boots.
+// This data is served via the cloud-init.scaletail VIP when the VM boots.
 func (s *Server) SetCloudInitData(nodeNum int, data *CloudInitData) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	mak.Set(&s.cloudInitData, nodeNum, data)
 }
 
-// RegisterFile registers a file to be served by the files.tailscale VIP.
+// RegisterFile registers a file to be served by the files.scaletail VIP.
 // The path is the URL path (e.g., "tta" is served at http://files.tailscale/tta).
 func (s *Server) RegisterFile(path string, data []byte) {
 	s.mu.Lock()

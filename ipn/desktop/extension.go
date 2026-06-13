@@ -159,7 +159,7 @@ func (e *desktopSessionsExt) getBackgroundProfile(profiles ipnext.ProfileStore) 
 		}
 	}
 
-	// If the current profile is empty and not owned by anyone (e.g., tailscaled just started),
+	// If the current profile is empty and not owned by anyone (e.g., scaletaild just started),
 	// or if the current profile's owner has no foreground session, switch to the default profile
 	// of the first user with a foreground session, if any.
 	for _, uid := range foregroundUIDs {

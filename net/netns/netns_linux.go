@@ -104,7 +104,7 @@ func controlC(network, address string, c syscall.RawConn) error {
 		return fmt.Errorf("RawConn.Control on %T: %w", c, err)
 	}
 	if sockErr != nil && ignoreErrors() {
-		// TODO(bradfitz): maybe log once? probably too spammy for e.g. CLI tools like tailscale netcheck.
+		// TODO(bradfitz): maybe log once? probably too spammy for e.g. CLI tools like scaletail netcheck.
 		return nil
 	}
 	return sockErr

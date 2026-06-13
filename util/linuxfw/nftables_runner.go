@@ -258,7 +258,7 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 // packet. This is fine because 1) nftables run ALL chains with the same hook
 // type unless a rule in one of them drops the packet and 2) this chain does not
 // have functionality to drop the packet- so in practice a matching clamp rule
-// will always be followed by the custom tailscale filtering rules in the other
+// will always be followed by the custom scaletail filtering rules in the other
 // chains attached to the filter hook (FORWARD, ts-forward).
 // We do not want to place the clamping rule into FORWARD/ts-forward chains
 // because wgengine populates those chains with rules that contain accept
@@ -491,7 +491,7 @@ type NetfilterRunner interface {
 	DelLoopbackRule(addr netip.Addr) error
 
 	// AddHooks adds rules to conventional chains like "FORWARD", "INPUT" and
-	// "POSTROUTING" to jump from those chains to tailscale chains.
+	// "POSTROUTING" to jump from those chains to scaletail chains.
 	AddHooks() error
 
 	// DelHooks deletes rules added by AddHooks.
@@ -924,7 +924,7 @@ func (n *nftablesRunner) AddChains() error {
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, "INPUT", nftables.ChainTypeFilter, nftables.ChainHookInput, nftables.ChainPriorityFilter, &polAccept}); err != nil {
 			return fmt.Errorf("create input chain: %w", err)
 		}
-		// Adding the tailscale chains that contain our rules.
+		// Adding the scaletail chains that contain our rules.
 		if err = createChainIfNotExist(n.conn, chainInfo{filter, chainNameForward, chainTypeRegular, nil, nil, nil}); err != nil {
 			return fmt.Errorf("create forward chain: %w", err)
 		}
@@ -945,7 +945,7 @@ func (n *nftablesRunner) AddChains() error {
 		if err = createChainIfNotExist(n.conn, chainInfo{nat, "POSTROUTING", nftables.ChainTypeNAT, nftables.ChainHookPostrouting, nftables.ChainPriorityNATSource, &polAccept}); err != nil {
 			return fmt.Errorf("create postrouting chain: %w", err)
 		}
-		// Adding the tailscale chain that contains our rules.
+		// Adding the scaletail chain that contains our rules.
 		if err = createChainIfNotExist(n.conn, chainInfo{nat, chainNamePostrouting, chainTypeRegular, nil, nil, nil}); err != nil {
 			return fmt.Errorf("create postrouting chain: %w", err)
 		}
@@ -1071,7 +1071,7 @@ func addHookRule(conn *nftables.Conn, table *nftables.Table, fromChain *nftables
 }
 
 // AddHooks is adding rules to conventional chains like "FORWARD", "INPUT" and "POSTROUTING"
-// in tables and jump from those chains to tailscale chains.
+// in tables and jump from those chains to scaletail chains.
 func (n *nftablesRunner) AddHooks() error {
 	conn := n.conn
 
@@ -1125,7 +1125,7 @@ func delHookRule(conn *nftables.Conn, table *nftables.Table, fromChain *nftables
 	return nil
 }
 
-// DelHooks is deleting the rules added to conventional chains to jump to tailscale chains.
+// DelHooks is deleting the rules added to conventional chains to jump to scaletail chains.
 func (n *nftablesRunner) DelHooks(logf logger.Logf) error {
 	conn := n.conn
 

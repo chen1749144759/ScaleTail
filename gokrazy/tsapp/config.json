@@ -12,8 +12,8 @@
     "Packages": [
         "github.com/gokrazy/serial-busybox",
         "github.com/gokrazy/breakglass",
-        "tailscale.com/cmd/tailscale",
-        "tailscale.com/cmd/tailscaled"
+        "tailscale.com/cmd/scaletail",
+        "tailscale.com/cmd/scaletaild"
     ],
     "PackageConfig": {
         "github.com/gokrazy/breakglass": {
@@ -21,7 +21,7 @@
                 "-authorized_keys=ec2"
             ]
         },
-        "tailscale.com/cmd/tailscale": {
+        "tailscale.com/cmd/scaletail": {
             "ExtraFilePaths": {
                 "/usr": "usr-dir"
             }

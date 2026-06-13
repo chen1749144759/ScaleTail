@@ -638,7 +638,7 @@ func (c *Direct) doLogin(ctx context.Context, opt loginOpt) (mustRegen bool, new
 		if expired {
 			c.logf("Old key expired -> regen=true")
 			if f, ok := feature.HookSystemdStatus.GetOk(); ok {
-				f("key expired; run 'tailscale up' to authenticate")
+				f("key expired; run 'scaletail up' to authenticate")
 			}
 			regen = true
 		}

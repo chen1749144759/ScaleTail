@@ -290,7 +290,7 @@ func (s *Server) checkConnIdentityLocked(ci ipnauth.Actor) error {
 // the server is in use by a different user.
 //
 // This is primarily used for the Windows GUI, to block until one user's done
-// controlling the tailscaled process.
+// controlling the scaletaild process.
 func (s *Server) blockWhileIdentityInUse(ctx context.Context, actor ipnauth.Actor) error {
 	inUse := func() bool {
 		s.mu.Lock()
@@ -325,7 +325,7 @@ func (s *Server) blockWhileIdentityInUse(ctx context.Context, actor ipnauth.Acto
 // the Tailscale local daemon API. The operatorUID is only used on
 // Unix-like platforms and specifies the ID of a local user
 // (in the os/user.User.Uid string form) who is allowed
-// to operate tailscaled without being root or using sudo.
+// to operate scaletaild without being root or using sudo.
 //
 // Sandboxed macos clients must directly supply, or be able to read,
 // an explicit token. Permission is inferred by validating that
@@ -548,7 +548,7 @@ func (s *Server) Run(ctx context.Context, ln net.Listener) error {
 }
 
 // ServeHTMLStatus serves an HTML status page at http://localhost:41112/ for
-// Windows and via $DEBUG_LISTENER/debug/ipn when tailscaled's --debug flag
+// Windows and via $DEBUG_LISTENER/debug/ipn when scaletaild's --debug flag
 // is used to run a debug server.
 func (s *Server) ServeHTMLStatus(w http.ResponseWriter, r *http.Request) {
 	if !buildfeatures.HasDebug {

@@ -21,7 +21,7 @@ func (src *TKAPeer) Clone() *TKAPeer {
 	}
 	dst := new(TKAPeer)
 	*dst = *src
-	dst.TailscaleIPs = append(src.TailscaleIPs[:0:0], src.TailscaleIPs...)
+	dst.ScaleTailIPs = append(src.ScaleTailIPs[:0:0], src.ScaleTailIPs...)
 	dst.NodeKeySignature = *src.NodeKeySignature.Clone()
 	return dst
 }
@@ -31,7 +31,7 @@ var _TKAPeerCloneNeedsRegeneration = TKAPeer(struct {
 	Name             string
 	ID               tailcfg.NodeID
 	StableID         tailcfg.StableNodeID
-	TailscaleIPs     []netip.Addr
+	ScaleTailIPs     []netip.Addr
 	NodeKey          key.NodePublic
 	NodeKeySignature tka.NodeKeySignature
 }{})

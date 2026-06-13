@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// This file contains the code for the incubator process.  Tailscaled
+// This file contains the code for the incubator process.  ScaleTaild
 // launches the incubator as the same user as it was launched as.  The
 // incubator then registers a new session with the OS, sets its UID
 // and groups to the specified `--uid`, `--gid` and `--groups`, and
@@ -39,7 +39,7 @@ import (
 	"github.com/u-root/u-root/pkg/termios"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/sys/unix"
-	"tailscale.com/cmd/tailscaled/childproc"
+	"tailscale.com/cmd/scaletaild/childproc"
 	"tailscale.com/hostinfo"
 	"tailscale.com/tailcfg"
 	"tailscale.com/types/logger"
@@ -107,9 +107,9 @@ func tryExecInDir(ctx context.Context, dir string) error {
 }
 
 // newIncubatorCommand returns a new exec.Cmd configured with
-// `tailscaled be-child ssh` as the entrypoint.
+// `scaletaild be-child ssh` as the entrypoint.
 //
-// If ss.srv.tailscaledPath is empty, this method is almost equivalent to
+// If ss.srv.scaletaildPath is empty, this method is almost equivalent to
 // exec.CommandContext. It will refuse to run in SFTP-mode. It will simulate the
 // behavior of SSHD when by falling back to the root directory if it cannot run
 // a command in the user’s home directory.
@@ -132,11 +132,11 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 		panic(fmt.Sprintf("unexpected subsystem: %v", ss.Subsystem()))
 	}
 
-	if ss.conn.srv.tailscaledPath == "" {
+	if ss.conn.srv.scaletaildPath == "" {
 		if isSFTP {
-			// SFTP relies on the embedded Go-based SFTP server in tailscaled,
-			// so without tailscaled, we can't serve SFTP.
-			return nil, errors.New("no tailscaled found on path, can't serve SFTP")
+			// SFTP relies on the embedded Go-based SFTP server in scaletaild,
+			// so without scaletaild, we can't serve SFTP.
+			return nil, errors.New("no scaletaild found on path, can't serve SFTP")
 		}
 
 		loginShell := ss.conn.localUser.LoginShell()
@@ -144,7 +144,7 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 		logf("directly running %s %q", loginShell, args)
 		cmd = exec.CommandContext(ss.ctx, loginShell, args...)
 
-		// While running directly instead of using `tailscaled be-child`,
+		// While running directly instead of using `scaletaild be-child`,
 		// do what sshd does by running inside the home directory,
 		// falling back to the root directory it doesn't have permissions.
 		// This can happen if the system has networked home directories,
@@ -215,12 +215,12 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 	switch {
 	case isSFTP:
 		// Note that we include both the `--sftp` flag and a command to launch
-		// tailscaled as `be-child sftp`. If login or su is available, and
+		// scaletaild as `be-child sftp`. If login or su is available, and
 		// we're not running with tailcfg.NodeAttrSSHBehaviorV1, this will
 		// result in serving SFTP within a login shell, with full PAM
 		// integration. Otherwise, we'll serve SFTP in the incubator process
 		// with no PAM integration.
-		incubatorArgs = append(incubatorArgs, "--sftp", fmt.Sprintf("--cmd=%s be-child sftp", ss.conn.srv.tailscaledPath))
+		incubatorArgs = append(incubatorArgs, "--sftp", fmt.Sprintf("--cmd=%s be-child sftp", ss.conn.srv.scaletaildPath))
 	case isShell:
 		incubatorArgs = append(incubatorArgs, "--shell")
 	default:
@@ -243,7 +243,7 @@ func (ss *sshSession) newIncubatorCommand(logf logger.Logf) (cmd *exec.Cmd, err 
 		}
 	}
 
-	cmd = exec.CommandContext(ss.ctx, ss.conn.srv.tailscaledPath, incubatorArgs...)
+	cmd = exec.CommandContext(ss.ctx, ss.conn.srv.scaletaildPath, incubatorArgs...)
 	// The incubator will chdir into the home directory after it drops privileges.
 	cmd.Dir = "/"
 	return cmd, nil
@@ -334,7 +334,7 @@ func (ia incubatorArgs) forwardedEnviron() (env, allowedExtraKeys []string, err 
 	// TODO(bradfitz,percy): why is this listed specially? If the parent wanted to included
 	// it, couldn't it have just passed it to the incubator in encodedEnv?
 	// If it didn't, no reason for us to pass it to "su -w ..." if it's not in our env
-	// anyway? (Surely we don't want to inherit the tailscaled parent SSH_AUTH_SOCK, if any)
+	// anyway? (Surely we don't want to inherit the scaletaild parent SSH_AUTH_SOCK, if any)
 	allowedExtraKeys = []string{"SSH_AUTH_SOCK"}
 
 	if ia.encodedEnv != "" {
@@ -362,12 +362,12 @@ func (ia incubatorArgs) forwardedEnviron() (env, allowedExtraKeys []string, err 
 	return environ, allowedExtraKeys, nil
 }
 
-// beIncubator is the entrypoint to the `tailscaled be-child ssh` subcommand.
+// beIncubator is the entrypoint to the `scaletaild be-child ssh` subcommand.
 // It is responsible for informing the system of a new login session for the
 // user. This is sometimes necessary for mounting home directories and
 // decrypting file systems.
 //
-// Tailscaled launches the incubator as the same user as it was launched as.
+// ScaleTaild launches the incubator as the same user as it was launched as.
 func beIncubator(args []string) error {
 	// To defend against issues like https://golang.org/issue/1435,
 	// defensively lock our current goroutine's thread to the current
@@ -390,7 +390,7 @@ func beIncubator(args []string) error {
 	dlogf := logger.Discard
 	if debugIncubator {
 		// We don't own stdout or stderr, so the only place we can log is syslog.
-		if sl, err := syslog.New(syslog.LOG_INFO|syslog.LOG_DAEMON, "tailscaled-ssh"); err == nil {
+		if sl, err := syslog.New(syslog.LOG_INFO|syslog.LOG_DAEMON, "scaletaild-ssh"); err == nil {
 			dlogf = log.New(sl, "", 0).Printf
 		}
 	} else if ia.debugTest {

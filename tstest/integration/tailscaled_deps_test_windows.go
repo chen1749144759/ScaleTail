@@ -6,9 +6,9 @@
 package integration
 
 import (
-	// And depend on a bunch of tailscaled innards, for Go's test caching.
+	// And depend on a bunch of scaletaild innards, for Go's test caching.
 	// Otherwise cmd/go never sees that we depend on these packages'
-	// transitive deps when we run "go install tailscaled" in a child
+	// transitive deps when we run "go install scaletaild" in a child
 	// process and can cache a prior success when a dependency changes.
 	_ "github.com/dblohm7/wingoes/com"
 	_ "github.com/tailscale/wireguard-go/tun"
@@ -19,8 +19,8 @@ import (
 	_ "golang.zx2c4.com/wintun"
 	_ "golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
 	_ "tailscale.com/client/local"
-	_ "tailscale.com/cmd/tailscaled/childproc"
-	_ "tailscale.com/cmd/tailscaled/tailscaledhooks"
+	_ "tailscale.com/cmd/scaletaild/childproc"
+	_ "tailscale.com/cmd/scaletaild/scaletaildhooks"
 	_ "tailscale.com/control/controlclient"
 	_ "tailscale.com/derp/derphttp"
 	_ "tailscale.com/drive/driveimpl"

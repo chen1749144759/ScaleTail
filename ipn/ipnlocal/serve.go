@@ -77,9 +77,9 @@ const (
 // current etag of a resource.
 var ErrETagMismatch = errors.New("etag mismatch")
 
-// ErrProxyToTailscaledSocket is returned when attempting to proxy
-// to the tailscaled socket itself, which would create a loop.
-var ErrProxyToTailscaledSocket = errors.New("cannot proxy to tailscaled socket")
+// ErrProxyToScaleTaildSocket is returned when attempting to proxy
+// to the scaletaild socket itself, which would create a loop.
+var ErrProxyToScaleTaildSocket = errors.New("cannot proxy to scaletaild socket")
 
 var serveHTTPContextKey ctxkey.Key[*serveHTTPContext]
 
@@ -102,12 +102,12 @@ type funnelFlow struct {
 }
 
 // localListener is the state of host-level net.Listen for a specific (Tailscale IP, port)
-// combination. If there are two TailscaleIPs (v4 and v6) and three ports being served,
+// combination. If there are two ScaleTailIPs (v4 and v6) and three ports being served,
 // then there will be six of these active and looping in their Run method.
 //
 // This is not used in userspace-networking mode.
 //
-// localListener is used by tailscale serve (TCP only), the built-in web client and Taildrive.
+// localListener is used by scaletail serve (TCP only), the built-in web client and Taildrive.
 // Most serve traffic and peer traffic for the web client are intercepted by netstack.
 // This listener exists purely for connections from the machine itself, as that goes via the kernel,
 // so we need to be in the kernel's listening/routing tables.
@@ -177,7 +177,7 @@ func (s *localListener) Run() {
 			// On macOS, this sets the lc.Control hook to
 			// setsockopt the interface index to bind to. This is
 			// required by the network sandbox which will not automatically
-			// bind to the tailscale interface to prevent routing loops.
+			// bind to the scaletail interface to prevent routing loops.
 			// Explicit binding allows us to bypass that restriction.
 			if err := initListenConfig(&lc, ip, ifIndex); err != nil {
 				s.logf("localListener failed to init listen config %v, backing off: %v", s.ap, err)
@@ -244,7 +244,7 @@ func (s *localListener) shouldWarnAboutListenError(err error) bool {
 
 // handleListenersAccept accepts connections for the Listener. It calls the
 // handler in a new goroutine for each accepted connection. This is used to
-// handle local "tailscale serve" and web client traffic originating from the
+// handle local "scaletail serve" and web client traffic originating from the
 // machine itself.
 func (s *localListener) handleListenersAccept(ln net.Listener) error {
 	for {
@@ -330,7 +330,7 @@ func (b *LocalBackend) setServeConfigLocked(config *ipn.ServeConfig, etag string
 		return errors.New("Unable to turn on Funnel while shields-up is enabled")
 	}
 	if b.isConfigLocked_Locked() {
-		return errors.New("can't reconfigure tailscaled when using a config file; config file is locked")
+		return errors.New("can't reconfigure scaletaild when using a config file; config file is locked")
 	}
 
 	nm := b.NetMapNoPeers()
@@ -840,8 +840,8 @@ func (b *LocalBackend) proxyHandlerForBackend(backend string) (http.Handler, err
 		if socketPath == "" {
 			return nil, fmt.Errorf("empty unix socket path")
 		}
-		if b.isTailscaledSocket(socketPath) {
-			return nil, ErrProxyToTailscaledSocket
+		if b.isScaleTaildSocket(socketPath) {
+			return nil, ErrProxyToScaleTaildSocket
 		}
 		u, _ := url.Parse("http://localhost")
 		return &reverseProxy{
@@ -868,16 +868,16 @@ func (b *LocalBackend) proxyHandlerForBackend(backend string) (http.Handler, err
 	return p, nil
 }
 
-// isTailscaledSocket reports whether socketPath refers to the same file
-// as the tailscaled socket. It uses os.SameFile to handle symlinks,
+// isScaleTaildSocket reports whether socketPath refers to the same file
+// as the scaletaild socket. It uses os.SameFile to handle symlinks,
 // bind mounts, and other path variations.
-func (b *LocalBackend) isTailscaledSocket(socketPath string) bool {
-	tailscaledSocket := b.sys.SocketPath
-	if tailscaledSocket == "" {
+func (b *LocalBackend) isScaleTaildSocket(socketPath string) bool {
+	scaletaildSocket := b.sys.SocketPath
+	if scaletaildSocket == "" {
 		return false
 	}
 	fi1, err1 := os.Stat(socketPath)
-	fi2, err2 := os.Stat(tailscaledSocket)
+	fi2, err2 := os.Stat(scaletaildSocket)
 	if err1 != nil || err2 != nil {
 		return false
 	}

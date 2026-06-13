@@ -48,9 +48,9 @@ type TailscaleRejectedHeader struct {
 	// MaybeBroken is whether the rejection is non-terminal (the
 	// client should not fail immediately). This is sent by a
 	// target when it's not sure whether it's totally broken, but
-	// it might be. For example, the target tailscaled might think
+	// it might be. For example, the target scaletaild might think
 	// its host firewall or IP forwarding aren't configured
-	// properly, but tailscaled might be wrong (not having enough
+	// properly, but scaletaild might be wrong (not having enough
 	// visibility into what the OS is doing). When true, the
 	// message is simply an FYI as a potential reason to use for
 	// later when the pendopen connection tracking timer expires.

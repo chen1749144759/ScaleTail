@@ -1,4 +1,4 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package distsign implements signature and validation of arbitrary
@@ -237,7 +237,7 @@ func (c *Client) Download(ctx context.Context, srcPath, dstPath string) error {
 	if !VerifyAny(sigPub, msg, sig) {
 		// Best-effort clean up of downloaded package.
 		os.Remove(dstPathUnverified)
-		return fmt.Errorf("signature %q for file %q does not validate with the current release signing key; either you are under attack, or attempting to download an old version of Tailscale which was signed with an older signing key", sigURL, srcURL)
+		return fmt.Errorf("signature %q for file %q does not validate with the current release signing key; either you are under attack, or attempting to download an old version of ScaleTail which was signed with an older signing key", sigURL, srcURL)
 	}
 	c.logf("Signature OK")
 
@@ -283,7 +283,7 @@ func (c *Client) ValidateLocalBinary(srcURLPath, localFilePath string) error {
 
 	msg := binary.LittleEndian.AppendUint64(hash, uint64(hashLen))
 	if !VerifyAny(sigPub, msg, sig) {
-		return fmt.Errorf("signature %q for file %q does not validate with the current release signing key; either you are under attack, or attempting to download an old version of Tailscale which was signed with an older signing key", sigURL, localFilePath)
+		return fmt.Errorf("signature %q for file %q does not validate with the current release signing key; either you are under attack, or attempting to download an old version of ScaleTail which was signed with an older signing key", sigURL, localFilePath)
 	}
 	c.logf("Signature OK")
 
@@ -305,7 +305,7 @@ func (c *Client) signingKeys() ([]ed25519.PublicKey, error) {
 		return nil, err
 	}
 	if !VerifyAny(c.roots, raw, sig) {
-		return nil, fmt.Errorf("signature %q for key %q does not validate with any known root key; either you are under attack, or running a very old version of Tailscale with outdated root keys", sigURL, keyURL)
+		return nil, fmt.Errorf("signature %q for key %q does not validate with any known root key; either you are under attack, or running a very old version of ScaleTail with outdated root keys", sigURL, keyURL)
 	}
 
 	keys, err := ParseSigningKeyBundle(raw)

@@ -157,13 +157,13 @@ func main() {
 		})
 
 		go func() {
-			// wait for tailscale to start before trying to fetch cert names
+			// wait for scaletail to start before trying to fetch cert names
 			for range 60 {
 				st, err := localClient.Status(context.Background())
 				if err != nil {
-					log.Printf("error retrieving tailscale status; retrying: %v", err)
+					log.Printf("error retrieving scaletail status; retrying: %v", err)
 				} else {
-					log.Printf("tailscale status: %v", st.BackendState)
+					log.Printf("scaletail status: %v", st.BackendState)
 					if st.BackendState == "Running" {
 						break
 					}

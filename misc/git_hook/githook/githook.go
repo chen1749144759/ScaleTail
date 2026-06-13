@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Package githook contains the shared implementation of Tailscale's git
-// hooks. The tailscale/tailscale and tailscale/corp repositories each have
+// hooks. The tailscale/scaletail and tailscale/corp repositories each have
 // a thin main package that dispatches to this one, calling individual
 // hook functions with per-repo arguments as needed.
 package githook

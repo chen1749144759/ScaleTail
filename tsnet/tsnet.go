@@ -3,12 +3,12 @@
 
 // Package tsnet embeds a Tailscale node directly into a Go program,
 // allowing it to join a tailnet and accept or dial connections without
-// running a separate tailscaled daemon or requiring any system-level
+// running a separate scaletaild daemon or requiring any system-level
 // configuration.
 //
 // # Overview
 //
-// Normally, Tailscale runs as a background system service (tailscaled)
+// Normally, Tailscale runs as a background system service (scaletaild)
 // that manages a virtual network interface for the whole machine. tsnet
 // takes a different approach: it runs a fully self-contained Tailscale
 // node inside your process using a userspace TCP/IP stack (gVisor).
@@ -206,12 +206,12 @@ type Server struct {
 
 	// Store specifies the state store to use.
 	//
-	// If nil, a new FileStore is initialized at `Dir/tailscaled.state`.
+	// If nil, a new FileStore is initialized at `Dir/scaletaild.state`.
 	// See tailscale.com/ipn/store for supported stores.
 	//
 	// Logs will automatically be uploaded to log.tailscale.com,
 	// where the configuration file for logging will be saved at
-	// `Dir/tailscaled.log.conf`.
+	// `Dir/scaletaild.log.conf`.
 	Store ipn.StateStore
 
 	// Hostname is the hostname to present to the control server.
@@ -457,7 +457,7 @@ func (s *Server) Loopback() (addr string, proxyCred, localAPICred string, err er
 		socksLn, httpLn := proxymux.SplitSOCKSAndHTTP(ln)
 
 		// TODO: add HTTP proxy support. Probably requires factoring
-		// out the CONNECT code from tailscaled/proxy.go that uses
+		// out the CONNECT code from scaletaild/proxy.go that uses
 		// httputil.ReverseProxy and adding auth support.
 		go func() {
 			lah := localapi.NewHandler(localapi.HandlerConfig{
@@ -546,7 +546,7 @@ func (s *Server) Up(ctx context.Context) (*ipnstate.Status, error) {
 				if err != nil {
 					return nil, fmt.Errorf("tsnet.Up: %w", err)
 				}
-				if len(status.TailscaleIPs) == 0 {
+				if len(status.ScaleTailIPs) == 0 {
 					return nil, errors.New("tsnet.Up: running, but no ip")
 				}
 
@@ -675,10 +675,10 @@ func (s *Server) CertDomains() []string {
 	return slices.Clone(nm.DNS.CertDomains)
 }
 
-// TailscaleIPs returns IPv4 and IPv6 addresses for this node. If the node
+// ScaleTailIPs returns IPv4 and IPv6 addresses for this node. If the node
 // has not yet joined a tailnet or is otherwise unaware of its own IP addresses,
 // the returned ip4, ip6 will be !netip.IsValid().
-func (s *Server) TailscaleIPs() (ip4, ip6 netip.Addr) {
+func (s *Server) ScaleTailIPs() (ip4, ip6 netip.Addr) {
 	nm := s.lb.NetMapNoPeers()
 	if nm == nil {
 		return
@@ -881,7 +881,7 @@ func (s *Server) start() (reterr error) {
 		// Note: don't just return ns.DialContextTCP or we'll return
 		// *gonet.TCPConn(nil) instead of a nil interface which trips up
 		// callers.
-		v4, v6 := s.TailscaleIPs()
+		v4, v6 := s.ScaleTailIPs()
 		src := bools.IfElse(dst.Addr().Is6(), v6, v4)
 		tcpConn, err := ns.DialContextTCPWithBind(ctx, src, dst)
 		if err != nil {
@@ -893,7 +893,7 @@ func (s *Server) start() (reterr error) {
 		// Note: don't just return ns.DialContextUDP or we'll return
 		// *gonet.UDPConn(nil) instead of a nil interface which trips up
 		// callers.
-		v4, v6 := s.TailscaleIPs()
+		v4, v6 := s.ScaleTailIPs()
 		src := bools.IfElse(dst.Addr().Is6(), v6, v4)
 		udpConn, err := ns.DialContextUDPWithBind(ctx, src, dst)
 		if err != nil {
@@ -903,7 +903,7 @@ func (s *Server) start() (reterr error) {
 	}
 
 	if s.Store == nil {
-		stateFile := filepath.Join(s.rootPath, "tailscaled.state")
+		stateFile := filepath.Join(s.rootPath, "scaletaild.state")
 		s.logf("tsnet running state path %s", stateFile)
 		s.Store, err = store.New(tsLogf, stateFile)
 		if err != nil {
@@ -969,7 +969,7 @@ func (s *Server) start() (reterr error) {
 
 	// Create an in-process listener.
 	// nettest.Listen provides a in-memory pipe based implementation for net.Conn.
-	lal := memnet.Listen("local-tailscaled.sock:80")
+	lal := memnet.Listen("local-scaletaild.sock:80")
 	s.localAPIListener = lal
 	s.localClient = &local.Client{Dial: lal.Dial}
 	s.localAPIServer = &http.Server{Handler: lah}
@@ -1032,7 +1032,7 @@ func (s *Server) startLogger(closePool *closeOnErrorPool, health *health.Tracker
 	if testenv.InTest() {
 		return nil
 	}
-	cfgPath := filepath.Join(s.rootPath, "tailscaled.log.conf")
+	cfgPath := filepath.Join(s.rootPath, "scaletaild.log.conf")
 	lpc, err := logpolicy.ConfigFromFile(cfgPath)
 	switch {
 	case os.IsNotExist(err):
@@ -1048,7 +1048,7 @@ func (s *Server) startLogger(closePool *closeOnErrorPool, health *health.Tracker
 	}
 	s.logid = lpc.PublicID
 
-	s.logbuffer, err = filch.New(filepath.Join(s.rootPath, "tailscaled"), filch.Options{ReplaceStderr: false})
+	s.logbuffer, err = filch.New(filepath.Join(s.rootPath, "scaletaild"), filch.Options{ReplaceStderr: false})
 	if err != nil {
 		return fmt.Errorf("error creating filch: %w", err)
 	}
@@ -1182,7 +1182,7 @@ func (s *Server) listenerForDstAddr(netBase string, dst netip.AddrPort, funnel b
 
 	// Search for a listener without an IP if the destination was
 	// one of the native IPs of the node.
-	if ip4, ip6 := s.TailscaleIPs(); dst.Addr() == ip4 || dst.Addr() == ip6 {
+	if ip4, ip6 := s.ScaleTailIPs(); dst.Addr() == ip4 || dst.Addr() == ip6 {
 		for _, net := range [2]string{
 			networkForFamily(netBase, dst.Addr().Is6()),
 			netBase,
@@ -1197,7 +1197,7 @@ func (s *Server) listenerForDstAddr(netBase string, dst netip.AddrPort, funnel b
 }
 
 func (s *Server) getTCPHandlerForFunnelFlow(src netip.AddrPort, dstPort uint16) (handler func(net.Conn)) {
-	ipv4, ipv6 := s.TailscaleIPs()
+	ipv4, ipv6 := s.ScaleTailIPs()
 	var dst netip.AddrPort
 	if src.Addr().Is4() {
 		if !ipv4.IsValid() {

@@ -82,8 +82,8 @@ func authorizeServeConfigForGOOSAndUserContext(goos string, configIn *ipn.ServeC
 	default:
 		return nil
 	}
-	// Only check for local admin on tailscaled-on-mac (based on "sudo"
-	// permissions). On sandboxed variants (MacSys and AppStore), tailscaled
+	// Only check for local admin on scaletaild-on-mac (based on "sudo"
+	// permissions). On sandboxed variants (MacSys and AppStore), scaletaild
 	// cannot serve files outside of the sandbox and this check is not
 	// relevant.
 	if goos == "darwin" && version.IsSandboxedMacOS() {

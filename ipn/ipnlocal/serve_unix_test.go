@@ -185,7 +185,7 @@ func TestReverseProxyConfigurationUnix(t *testing.T) {
 	}
 }
 
-func TestServeBlocksTailscaledSocket(t *testing.T) {
+func TestServeBlocksScaleTaildSocket(t *testing.T) {
 	// Use /tmp to avoid macOS socket path length limits
 	tmpDir, err := os.MkdirTemp("/tmp", "ts-test-*")
 	if err != nil {
@@ -193,33 +193,33 @@ func TestServeBlocksTailscaledSocket(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	tailscaledSocket := filepath.Join(tmpDir, "ts.sock")
+	scaletaildSocket := filepath.Join(tmpDir, "ts.sock")
 
 	// Create actual socket file
-	listener, err := net.Listen("unix", tailscaledSocket)
+	listener, err := net.Listen("unix", scaletaildSocket)
 	if err != nil {
-		t.Fatalf("failed to create tailscaled socket: %v", err)
+		t.Fatalf("failed to create scaletaild socket: %v", err)
 	}
 	defer listener.Close()
 
 	b := newTestBackend(t)
-	b.sys.SocketPath = tailscaledSocket
+	b.sys.SocketPath = scaletaildSocket
 
-	// Direct path to tailscaled socket should be blocked
-	_, err = b.proxyHandlerForBackend("unix:" + tailscaledSocket)
-	if !errors.Is(err, ErrProxyToTailscaledSocket) {
-		t.Errorf("direct path: got err=%v, want ErrProxyToTailscaledSocket", err)
+	// Direct path to scaletaild socket should be blocked
+	_, err = b.proxyHandlerForBackend("unix:" + scaletaildSocket)
+	if !errors.Is(err, ErrProxyToScaleTaildSocket) {
+		t.Errorf("direct path: got err=%v, want ErrProxyToScaleTaildSocket", err)
 	}
 
-	// Symlink to tailscaled socket should be blocked
+	// Symlink to scaletaild socket should be blocked
 	symlinkPath := filepath.Join(tmpDir, "link")
-	if err := os.Symlink(tailscaledSocket, symlinkPath); err != nil {
+	if err := os.Symlink(scaletaildSocket, symlinkPath); err != nil {
 		t.Fatalf("failed to create symlink: %v", err)
 	}
 
 	_, err = b.proxyHandlerForBackend("unix:" + symlinkPath)
-	if !errors.Is(err, ErrProxyToTailscaledSocket) {
-		t.Errorf("symlink: got err=%v, want ErrProxyToTailscaledSocket", err)
+	if !errors.Is(err, ErrProxyToScaleTaildSocket) {
+		t.Errorf("symlink: got err=%v, want ErrProxyToScaleTaildSocket", err)
 	}
 
 	// Different socket should work

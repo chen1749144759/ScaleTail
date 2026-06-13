@@ -764,7 +764,7 @@ func TestAnnotationIntoLB(t *testing.T) {
 	expectEqual(t, fc, want)
 
 	// Remove Tailscale's annotation, and at the same time convert the service
-	// into a tailscale LoadBalancer.
+	// into a scaletail LoadBalancer.
 	mustUpdate(t, fc, "default", "test", func(s *corev1.Service) {
 		delete(s.ObjectMeta.Annotations, "tailscale.com/expose")
 		s.Spec.Type = corev1.ServiceTypeLoadBalancer
@@ -900,7 +900,7 @@ func TestLBIntoAnnotation(t *testing.T) {
 	expectEqual(t, fc, want)
 
 	// Turn the service back into a ClusterIP service, but also add the
-	// tailscale annotation.
+	// scaletail annotation.
 	mustUpdate(t, fc, "default", "test", func(s *corev1.Service) {
 		s.ObjectMeta.Annotations = map[string]string{
 			"tailscale.com/expose": "true",
@@ -1319,7 +1319,7 @@ func TestProxyClassForService(t *testing.T) {
 		clock:  clock,
 	}
 
-	// 1. A new tailscale LoadBalancer Service is created without any
+	// 1. A new scaletail LoadBalancer Service is created without any
 	// ProxyClass. Resources get created for it as usual.
 	mustCreate(t, fc, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1594,7 +1594,7 @@ func Test_serviceHandlerForIngress(t *testing.T) {
 	fc := fake.NewFakeClient()
 	zl := zap.Must(zap.NewDevelopment())
 
-	// 1. An event on a headless Service for a tailscale Ingress results in
+	// 1. An event on a headless Service for a scaletail Ingress results in
 	// the Ingress being reconciled.
 	mustCreate(t, fc, &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1650,7 +1650,7 @@ func Test_serviceHandlerForIngress(t *testing.T) {
 	}
 
 	// 3. An event on a Service that is one of the non-default backends for
-	// a tailscale Ingress results in the Ingress being reconciled.
+	// a scaletail Ingress results in the Ingress being reconciled.
 	mustCreate(t, fc, &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ing-3",
@@ -1679,7 +1679,7 @@ func Test_serviceHandlerForIngress(t *testing.T) {
 	}
 
 	// 4. An event on a Service that is a backend for an Ingress that is not
-	// tailscale Ingress does not result in an Ingress reconcile.
+	// scaletail Ingress does not result in an Ingress reconcile.
 	mustCreate(t, fc, &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ing-4",

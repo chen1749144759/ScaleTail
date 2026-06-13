@@ -239,7 +239,7 @@ func (v PrefsView) RouteAll() bool { return v.ж.RouteAll }
 //
 // The preferred way to express the chosen node is ExitNodeID, but
 // in some cases it's not possible to use that ID (e.g. in the
-// linux CLI, before tailscaled has a netmap). For those
+// linux CLI, before scaletaild has a netmap). For those
 // situations, we allow specifying the exit node by IP, and
 // ipnlocal.LocalBackend will translate the IP into an ID when the
 // node is found in the netmap.
@@ -252,15 +252,15 @@ func (v PrefsView) ExitNodeID() tailcfg.StableNodeID { return v.ж.ExitNodeID }
 func (v PrefsView) ExitNodeIP() netip.Addr           { return v.ж.ExitNodeIP }
 
 // AutoExitNode is an optional expression that specifies whether and how
-// tailscaled should pick an exit node automatically.
+// scaletaild should pick an exit node automatically.
 //
-// If specified, tailscaled will use an exit node based on the expression,
+// If specified, scaletaild will use an exit node based on the expression,
 // and will re-evaluate the selection periodically as network conditions,
 // available exit nodes, or policy settings change. A blackhole route will
 // be installed to prevent traffic from escaping to the local network until
 // an exit node is selected. It takes precedence over ExitNodeID and ExitNodeIP.
 //
-// If empty, tailscaled will not automatically select an exit node.
+// If empty, scaletaild will not automatically select an exit node.
 //
 // If the specified expression is invalid or unsupported by the client,
 // it falls back to the behavior of [AnyExitNode].
@@ -400,7 +400,7 @@ func (v PrefsView) NoStatefulFiltering() opt.Bool { return v.ж.NoStatefulFilter
 func (v PrefsView) NetfilterMode() preftype.NetfilterMode { return v.ж.NetfilterMode }
 
 // OperatorUser is the local machine user name who is allowed to
-// operate tailscaled without being root or using sudo.
+// operate scaletaild without being root or using sudo.
 func (v PrefsView) OperatorUser() string { return v.ж.OperatorUser }
 
 // ProfileName is the desired name of the profile. If empty, then the user's
@@ -577,7 +577,7 @@ func (v *ServeConfigView) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// TCP are the list of TCP port numbers that tailscaled should handle for
+// TCP are the list of TCP port numbers that scaletaild should handle for
 // the Tailscale IP addresses. (not subnet routers, etc)
 func (v ServeConfigView) TCP() views.MapFn[uint16, *TCPPortHandler, TCPPortHandlerView] {
 	return views.MapFnOf(v.ж.TCP, func(t *TCPPortHandler) TCPPortHandlerView {
@@ -702,7 +702,7 @@ func (v *ServiceConfigView) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// TCP are the list of TCP port numbers that tailscaled should handle for
+// TCP are the list of TCP port numbers that scaletaild should handle for
 // the Tailscale IP addresses. (not subnet routers, etc)
 func (v ServiceConfigView) TCP() views.MapFn[uint16, *TCPPortHandler, TCPPortHandlerView] {
 	return views.MapFnOf(v.ж.TCP, func(t *TCPPortHandler) TCPPortHandlerView {
@@ -795,26 +795,26 @@ func (v *TCPPortHandlerView) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// HTTPS, if true, means that tailscaled should handle this connection as an
+// HTTPS, if true, means that scaletaild should handle this connection as an
 // HTTPS request as configured by ServeConfig.Web.
 //
 // It is mutually exclusive with TCPForward.
 func (v TCPPortHandlerView) HTTPS() bool { return v.ж.HTTPS }
 
-// HTTP, if true, means that tailscaled should handle this connection as an
+// HTTP, if true, means that scaletaild should handle this connection as an
 // HTTP request as configured by ServeConfig.Web.
 //
 // It is mutually exclusive with TCPForward.
 func (v TCPPortHandlerView) HTTP() bool { return v.ж.HTTP }
 
 // TCPForward is the IP:port to forward TCP connections to.
-// Whether or not TLS is terminated by tailscaled depends on
+// Whether or not TLS is terminated by scaletaild depends on
 // TerminateTLS.
 //
 // It is mutually exclusive with HTTPS.
 func (v TCPPortHandlerView) TCPForward() string { return v.ж.TCPForward }
 
-// TerminateTLS, if non-empty, means that tailscaled should terminate the
+// TerminateTLS, if non-empty, means that scaletaild should terminate the
 // TLS connections before forwarding them to TCPForward, permitting only the
 // SNI name with this value. It is only used if TCPForward is non-empty.
 // (the HTTPS mode uses ServeConfig.Web)

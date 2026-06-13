@@ -79,8 +79,8 @@ type awsStore struct {
 //
 // Note that we store the entire store in a single parameter
 // key, therefore if the state is above 8kb, it can cause
-// Tailscaled to only only store new state in-memory and
-// restarting Tailscaled can fail until you delete your state
+// ScaleTaild to only only store new state in-memory and
+// restarting ScaleTaild can fail until you delete your state
 // from the AWS Parameter Store.
 //
 // If you want to specify an optional KMS key,

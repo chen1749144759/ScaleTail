@@ -1,6 +1,6 @@
 OmitEmptyShouldBeOmitZero	tailscale.com/client/web.authResponse.ViewerIdentity
 OmitEmptyShouldBeOmitZero	tailscale.com/cmd/k8s-operator.OwnerRef.Resource
-OmitEmptyShouldBeOmitZero	tailscale.com/cmd/tailscale/cli.apiResponse.Error
+OmitEmptyShouldBeOmitZero	tailscale.com/cmd/scaletail/cli.apiResponse.Error
 OmitEmptyShouldBeOmitZero	tailscale.com/health.UnhealthyState.PrimaryAction
 OmitEmptyShouldBeOmitZero	tailscale.com/internal/client/tailscale.VIPService.Name
 OmitEmptyShouldBeOmitZero	tailscale.com/ipn.ConfigVAlpha.AcceptDNS

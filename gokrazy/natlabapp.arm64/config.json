@@ -9,12 +9,12 @@
     ],
     "Packages": [
         "github.com/gokrazy/serial-busybox",
-        "tailscale.com/cmd/tailscale",
-        "tailscale.com/cmd/tailscaled",
+        "tailscale.com/cmd/scaletail",
+        "tailscale.com/cmd/scaletaild",
         "tailscale.com/cmd/tta"
     ],
     "PackageConfig": {
-        "tailscale.com/cmd/tailscale": {
+        "tailscale.com/cmd/scaletail": {
             "ExtraFilePaths": {
                 "/usr": "usr-dir"
             }

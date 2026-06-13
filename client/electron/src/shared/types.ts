@@ -12,7 +12,7 @@ export interface PeerStatus {
   PublicKey?: string;
   HostName?: string;
   DNSName?: string;
-  TailscaleIPs?: string[];
+  ScaleTailIPs?: string[];
   Online?: boolean;
   ExitNodeOption?: boolean;
   CurAddr?: string;
@@ -30,7 +30,7 @@ export interface Status {
   CurrentTailnet?: {
     Name?: string;
   };
-  TailscaleIPs?: string[];
+  ScaleTailIPs?: string[];
   ExitNodeStatus?: {
     ID?: string;
     Online?: boolean;

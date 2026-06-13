@@ -54,7 +54,7 @@ import (
 var (
 	runVMTests     = flag.Bool("run-vm-tests", false, "run tests that require VMs with KVM")
 	verboseVMDebug = flag.Bool("verbose-vm-debug", false, "enable verbose debug logging for VM tests")
-	testVersion    = flag.String("test-version", "", `if non-empty, download tailscale & tailscaled at the given release version (e.g. "1.97.255", "unstable", or "stable") instead of building from the source tree`)
+	testVersion    = flag.String("test-version", "", `if non-empty, download scaletail & scaletaild at the given release version (e.g. "1.97.255", "unstable", or "stable") instead of building from the source tree`)
 )
 
 // Env is a test environment that manages virtual networks and QEMU VMs.
@@ -71,7 +71,7 @@ type Env struct {
 	binDir        string // directory for compiled binaries
 
 	// testVersion is the resolved Tailscale release version to use (empty if
-	// building from source). When non-empty, tailscale and tailscaled binaries
+	// building from source). When non-empty, scaletail and scaletaild binaries
 	// are downloaded from pkgs.tailscale.com instead of compiled from the tree.
 	testVersion string
 
@@ -384,7 +384,7 @@ type Node struct {
 
 // AddNode creates a new VM node. The name is used for identification and as the
 // webserver greeting. Options can be *vnet.Network (for network attachment),
-// NodeOption values, or vnet node options (like vnet.TailscaledEnv).
+// NodeOption values, or vnet node options (like vnet.ScaleTaildEnv).
 func (e *Env) AddNode(name string, opts ...any) *Node {
 	n := &Node{
 		name:        name,
@@ -415,7 +415,7 @@ func (e *Env) AddNode(name string, opts ...any) *Node {
 		case nodeOptWebServer:
 			n.webServerPort = int(o)
 		default:
-			// Pass through to vnet (TailscaledEnv, NodeOption, MAC, etc.)
+			// Pass through to vnet (ScaleTaildEnv, NodeOption, MAC, etc.)
 			vnetOpts = append(vnetOpts, o)
 		}
 	}
@@ -448,7 +448,7 @@ type nodeOptWebServer int
 // OS returns a NodeOption that sets the node's operating system image.
 func OS(img OSImage) nodeOptOS { return nodeOptOS(img) }
 
-// DontJoinTailnet returns a NodeOption that prevents the node from running tailscale up.
+// DontJoinTailnet returns a NodeOption that prevents the node from running scaletail up.
 func DontJoinTailnet() nodeOptNoTailscale { return nodeOptNoTailscale{} }
 
 // NoAgent returns a NodeOption that skips TTA agent setup. The node will not
@@ -577,7 +577,7 @@ func (e *Env) Start() {
 				tsStep := e.Step("Tailscale up: " + n.name)
 				tsStep.Begin()
 				if err := e.tailscaleUp(ctx, n); err != nil {
-					return fmt.Errorf("[%s] tailscale up: %w", n.name, err)
+					return fmt.Errorf("[%s] scaletail up: %w", n.name, err)
 				}
 				st2, err := n.agent.Status(ctx)
 				if err != nil {
@@ -611,9 +611,9 @@ func (e *Env) Start() {
 					}
 				}
 
-				ips := fmt.Sprintf("%v", st2.Self.TailscaleIPs)
+				ips := fmt.Sprintf("%v", st2.Self.ScaleTailIPs)
 				e.setNodeTailscale(n.name, "Running "+ips)
-				t.Logf("[%s] up with %v", n.name, st2.Self.TailscaleIPs)
+				t.Logf("[%s] up with %v", n.name, st2.Self.ScaleTailIPs)
 				tsStep.End(nil)
 			}
 
@@ -634,7 +634,7 @@ func (e *Env) Start() {
 	}
 }
 
-// tailscaleUp runs "tailscale up" on the node via TTA.
+// tailscaleUp runs "scaletail up" on the node via TTA.
 func (e *Env) tailscaleUp(ctx context.Context, n *Node) error {
 	url := "http://unused/up?accept-routes=true"
 	if n.advertiseRoutes != "" {
@@ -658,7 +658,7 @@ func (e *Env) tailscaleUp(ctx context.Context, n *Node) error {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return fmt.Errorf("tailscale up: %s: %s", res.Status, body)
+		return fmt.Errorf("scaletail up: %s: %s", res.Status, body)
 	}
 	return nil
 }
@@ -699,10 +699,10 @@ func (e *Env) SetExitNode(client, exitNode *Node) {
 		if err != nil {
 			e.t.Fatalf("SetExitNode: status for %s: %v", exitNode.name, err)
 		}
-		if len(st.Self.TailscaleIPs) == 0 {
+		if len(st.Self.ScaleTailIPs) == 0 {
 			e.t.Fatalf("SetExitNode: %s has no Tailscale IPs", exitNode.name)
 		}
-		ip = st.Self.TailscaleIPs[0]
+		ip = st.Self.ScaleTailIPs[0]
 	}
 
 	if _, err := client.agent.EditPrefs(ctx, &ipn.MaskedPrefs{
@@ -813,7 +813,7 @@ func (e *Env) BringUpMullvadWGServer(n *Node, gw netip.Prefix, listenPort uint16
 	return key.NodePublicFromRaw32(mem.B(pubRaw))
 }
 
-// Status returns the tailscale status of the given node, fetched from its
+// Status returns the scaletail status of the given node, fetched from its
 // TTA agent. It fatals the test on error.
 func (e *Env) Status(n *Node) *ipnstate.Status {
 	e.t.Helper()
@@ -865,7 +865,7 @@ func (e *Env) ApproveRoutes(n *Node, routes ...string) {
 		prefixes = append(prefixes, p)
 	}
 
-	// Enable --accept-routes on all other tailscale nodes BEFORE setting the
+	// Enable --accept-routes on all other scaletail nodes BEFORE setting the
 	// routes on the control server. This way, when the map update arrives with
 	// the new peer routes, peers will immediately install them.
 	for _, other := range e.nodes {
@@ -938,10 +938,10 @@ func (e *Env) Ping(from, to *Node, ptype tailcfg.PingType, timeout time.Duration
 	if err != nil {
 		return fmt.Errorf("ping: can't get %s status: %w", to.name, err)
 	}
-	if len(toSt.Self.TailscaleIPs) == 0 {
+	if len(toSt.Self.ScaleTailIPs) == 0 {
 		return fmt.Errorf("ping: %s has no Tailscale IPs", to.name)
 	}
-	targetIP := toSt.Self.TailscaleIPs[0]
+	targetIP := toSt.Self.ScaleTailIPs[0]
 
 	var lastErr error
 	for {
@@ -984,7 +984,7 @@ func deadline(ctx context.Context) time.Time {
 }
 
 // PeerDiscoKey returns n's view of the given peer's disco key. It returns a
-// non-nil error if the LocalAPI request fails (e.g. tailscaled briefly
+// non-nil error if the LocalAPI request fails (e.g. scaletaild briefly
 // unavailable during a restart). It returns (zero, false, nil) if n is
 // reachable but has no record of the given peer in its current netmap.
 //
@@ -1019,9 +1019,9 @@ func (e *Env) PeerDiscoKey(n *Node, peer key.NodePublic) (key.DiscoPublic, bool,
 	return d, ok, nil
 }
 
-// RotateDiscoKey asks tailscaled on n to rotate its discovery (magicsock) key
+// RotateDiscoKey asks scaletaild on n to rotate its discovery (magicsock) key
 // in place via the LocalAPI debug action. The node key, control connection,
-// and other tailscaled state are unaffected. It fatals the test on error.
+// and other scaletaild state are unaffected. It fatals the test on error.
 func (e *Env) RotateDiscoKey(n *Node) {
 	e.t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -1031,35 +1031,35 @@ func (e *Env) RotateDiscoKey(n *Node) {
 	}
 }
 
-// RestartTailscaled signals tailscaled on n to die so that its supervisor
-// (gokrazy) restarts it. It then waits for tailscaled to come back to the
+// RestartScaleTaild signals scaletaild on n to die so that its supervisor
+// (gokrazy) restarts it. It then waits for scaletaild to come back to the
 // "Running" backend state. It fatals the test on error.
 //
-// Restarting tailscaled is currently only supported on gokrazy nodes.
-func (e *Env) RestartTailscaled(n *Node) {
+// Restarting scaletaild is currently only supported on gokrazy nodes.
+func (e *Env) RestartScaleTaild(n *Node) {
 	e.t.Helper()
 	if !n.os.IsGokrazy {
-		e.t.Fatalf("RestartTailscaled(%s): only supported on gokrazy nodes (have %q)", n.name, n.os.Name)
+		e.t.Fatalf("RestartScaleTaild(%s): only supported on gokrazy nodes (have %q)", n.name, n.os.Name)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "http://unused/restart-tailscaled", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://unused/restart-scaletaild", nil)
 	if err != nil {
-		e.t.Fatalf("RestartTailscaled(%s): %v", n.name, err)
+		e.t.Fatalf("RestartScaleTaild(%s): %v", n.name, err)
 	}
 	res, err := n.agent.HTTPClient.Do(req)
 	if err != nil {
-		e.t.Fatalf("RestartTailscaled(%s): %v", n.name, err)
+		e.t.Fatalf("RestartScaleTaild(%s): %v", n.name, err)
 	}
 	body, _ := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode != 200 {
-		e.t.Fatalf("RestartTailscaled(%s): %s: %s", n.name, res.Status, body)
+		e.t.Fatalf("RestartScaleTaild(%s): %s: %s", n.name, res.Status, body)
 	}
 	e.t.Logf("[%s] %s", n.name, strings.TrimSpace(string(body)))
 
-	// Wait for tailscaled to come back. Status calls will fail while the unix
+	// Wait for scaletaild to come back. Status calls will fail while the unix
 	// socket is gone, then return Starting/NeedsLogin briefly before settling
 	// on Running.
 	if err := tstest.WaitFor(45*time.Second, func() error {
@@ -1072,14 +1072,14 @@ func (e *Env) RestartTailscaled(n *Node) {
 		}
 		return nil
 	}); err != nil {
-		e.t.Fatalf("RestartTailscaled(%s): waiting for Running: %v", n.name, err)
+		e.t.Fatalf("RestartScaleTaild(%s): waiting for Running: %v", n.name, err)
 	}
 }
 
 // AddRoute adds a kernel static route on the given node, pointing prefix at
 // via. It uses TTA's /add-route handler, so it works on any node where TTA
 // is running (which is all of them — DontJoinTailnet only skips
-// `tailscale up`; the agent runs regardless). Currently Linux-only in TTA.
+// `scaletail up`; the agent runs regardless). Currently Linux-only in TTA.
 //
 // It fatals the test on error.
 func (e *Env) AddRoute(n *Node, prefix, via string) {
@@ -1121,7 +1121,7 @@ func (e *Env) SSHExec(n *Node, cmd string) (string, error) {
 	return string(out), err
 }
 
-// DumpStatus logs the tailscale status of a node, including its peers and their
+// DumpStatus logs the scaletail status of a node, including its peers and their
 // AllowedIPs. Useful for debugging routing issues.
 func (e *Env) DumpStatus(n *Node) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -1144,7 +1144,7 @@ func (e *Env) DumpStatus(n *Node) {
 			selfPrimary = append(selfPrimary, st.Self.PrimaryRoutes.At(i).String())
 		}
 	}
-	e.t.Logf("[%s] self: %v, backend=%s, AllowedIPs=%v, PrimaryRoutes=%v", n.name, st.Self.TailscaleIPs, st.BackendState, selfAllowed, selfPrimary)
+	e.t.Logf("[%s] self: %v, backend=%s, AllowedIPs=%v, PrimaryRoutes=%v", n.name, st.Self.ScaleTailIPs, st.BackendState, selfAllowed, selfPrimary)
 	for _, peer := range st.Peer {
 		var aips []string
 		if peer.AllowedIPs != nil {
@@ -1153,7 +1153,7 @@ func (e *Env) DumpStatus(n *Node) {
 			}
 		}
 		e.t.Logf("[%s] peer %s (%s): AllowedIPs=%v, Online=%v, Relay=%q, CurAddr=%q",
-			n.name, peer.HostName, peer.TailscaleIPs,
+			n.name, peer.HostName, peer.ScaleTailIPs,
 			aips, peer.Online, peer.Relay, peer.CurAddr)
 	}
 }
@@ -1374,7 +1374,7 @@ func (e *Env) ensureImage(ctx context.Context, os OSImage) error {
 func (e *Env) registerBinaries(goos, goarch string) {
 	e.initVnet()
 	dir := goos + "_" + goarch
-	for _, name := range []string{"tta", "tailscale", "tailscaled"} {
+	for _, name := range []string{"tta", "tailscale", "scaletaild"} {
 		data, err := os.ReadFile(filepath.Join(e.binDir, dir, name))
 		if err != nil {
 			e.t.Fatalf("reading compiled %s/%s: %v", dir, name, err)
@@ -1384,7 +1384,7 @@ func (e *Env) registerBinaries(goos, goarch string) {
 }
 
 // waitForAgentConn waits for a TTA agent to connect by issuing a simple
-// HTTP GET to the root endpoint, without requiring tailscaled.
+// HTTP GET to the root endpoint, without requiring scaletaild.
 func (e *Env) waitForAgentConn(ctx context.Context, n *Node) error {
 	for {
 		reqCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
@@ -1462,10 +1462,10 @@ func (e *Env) SendTaildropFile(from, to *Node, name string, content []byte) {
 	if err != nil {
 		e.t.Fatalf("SendTaildropFile: status for %s: %v", to.name, err)
 	}
-	if len(st.Self.TailscaleIPs) == 0 {
+	if len(st.Self.ScaleTailIPs) == 0 {
 		e.t.Fatalf("SendTaildropFile: %s has no Tailscale IPs", to.name)
 	}
-	target := st.Self.TailscaleIPs[0].String()
+	target := st.Self.ScaleTailIPs[0].String()
 
 	reqURL := fmt.Sprintf("http://unused/taildrop-send?to=%s&name=%s", target, name)
 	req, err := http.NewRequestWithContext(ctx, "POST", reqURL, bytes.NewReader(content))
@@ -1518,7 +1518,7 @@ var buildGokrazy sync.Once
 
 // ensureGokrazy builds the gokrazy base image (once per test process) and
 // locates the kernel. The build is fast (~4s) so we always rebuild to ensure
-// the baked-in binaries (tta, tailscale, tailscaled) match the current source.
+// the baked-in binaries (tta, tailscale, scaletaild) match the current source.
 func (e *Env) ensureGokrazy(ctx context.Context) error {
 	if e.gokrazyBase != "" {
 		return nil // already found
@@ -1554,11 +1554,11 @@ func (e *Env) ensureGokrazy(ctx context.Context) error {
 	return nil
 }
 
-// compileBinariesForOS prepares the tta, tailscale, and tailscaled binaries
+// compileBinariesForOS prepares the tta, tailscale, and scaletaild binaries
 // for the given GOOS/GOARCH and places them in e.binDir/<goos>_<goarch>/.
 //
 // tta is always built from the local source tree (the test agent must match
-// the test framework). When --test-version is set, tailscale and tailscaled
+// the test framework). When --test-version is set, scaletail and scaletaild
 // are taken from the downloaded release tarball instead of being compiled
 // from source.
 func (e *Env) compileBinariesForOS(ctx context.Context, goos, goarch string) error {
@@ -1581,8 +1581,8 @@ func (e *Env) compileBinariesForOS(ctx context.Context, goos, goarch string) err
 	buildBins := []binary{{"tta", "./cmd/tta"}}
 	if !useDownloaded {
 		buildBins = append(buildBins,
-			binary{"tailscale", "./cmd/tailscale"},
-			binary{"tailscaled", "./cmd/tailscaled"})
+			binary{"tailscale", "./cmd/scaletail"},
+			binary{"scaletaild", "./cmd/scaletaild"})
 	}
 
 	var eg errgroup.Group
@@ -1607,12 +1607,12 @@ func (e *Env) compileBinariesForOS(ctx context.Context, goos, goarch string) err
 			if err != nil {
 				return err
 			}
-			for _, name := range []string{"tailscale", "tailscaled"} {
+			for _, name := range []string{"tailscale", "scaletaild"} {
 				if err := copyFile(filepath.Join(srcDir, name), filepath.Join(outDir, name), 0755); err != nil {
 					return fmt.Errorf("staging %s/%s: %w", dir, name, err)
 				}
 			}
-			e.t.Logf("staged version %s tailscale & tailscaled for %s", e.testVersion, dir)
+			e.t.Logf("staged version %s scaletail & scaletaild for %s", e.testVersion, dir)
 			return nil
 		})
 	}

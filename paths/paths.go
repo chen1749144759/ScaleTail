@@ -19,34 +19,34 @@ import (
 // containing a directory we can read/write in.
 var AppSharedDir syncs.AtomicValue[string]
 
-// DefaultTailscaledSocket returns the path to the tailscaled Unix socket
+// DefaultScaleTaildSocket returns the path to the scaletaild Unix socket
 // or the empty string if there's no reasonable default.
-func DefaultTailscaledSocket() string {
+func DefaultScaleTaildSocket() string {
 	if runtime.GOOS == "windows" {
-		return `\\.\pipe\ProtectedPrefix\Administrators\ScaleTail\tailscaled`
+		return `\\.\pipe\ProtectedPrefix\Administrators\ScaleTail\scaletaild`
 	}
 	if runtime.GOOS == "darwin" {
-		return "/var/run/tailscaled.socket"
+		return "/var/run/scaletaild.socket"
 	}
 	if runtime.GOOS == "plan9" {
-		return "/srv/tailscaled.sock"
+		return "/srv/scaletaild.sock"
 	}
 	switch distro.Get() {
 	case distro.Synology:
 		if distro.DSMVersion() == 6 {
-			return "/var/packages/Tailscale/etc/tailscaled.sock"
+			return "/var/packages/ScaleTail/etc/scaletaild.sock"
 		}
 		// DSM 7 (and higher? or failure to detect.)
-		return "/var/packages/Tailscale/var/tailscaled.sock"
+		return "/var/packages/ScaleTail/var/scaletaild.sock"
 	case distro.Gokrazy:
-		return "/perm/tailscaled/tailscaled.sock"
+		return "/perm/scaletaild/scaletaild.sock"
 	case distro.QNAP:
-		return "/tmp/tailscale/tailscaled.sock"
+		return "/tmp/scaletail/scaletaild.sock"
 	}
 	if fi, err := os.Stat("/var/run"); err == nil && fi.IsDir() {
-		return "/var/run/tailscale/tailscaled.sock"
+		return "/var/run/scaletail/scaletaild.sock"
 	}
-	return "tailscaled.sock"
+	return "scaletaild.sock"
 }
 
 // Overridden in init by OS-specific files.
@@ -58,10 +58,10 @@ var (
 	ensureStateDirPerms = func(string) error { return nil }
 )
 
-// DefaultTailscaledStateFile returns the default path to the
-// tailscaled state file, or the empty string if there's no reasonable
+// DefaultScaleTaildStateFile returns the default path to the
+// scaletaild state file, or the empty string if there's no reasonable
 // default value.
-func DefaultTailscaledStateFile() string {
+func DefaultScaleTaildStateFile() string {
 	if f := stateFileFunc; f != nil {
 		return f()
 	}
@@ -71,24 +71,24 @@ func DefaultTailscaledStateFile() string {
 	return ""
 }
 
-// DefaultTailscaledStateDir returns the default state directory
-// to use for tailscaled, for use when the user provided neither
+// DefaultScaleTaildStateDir returns the default state directory
+// to use for scaletaild, for use when the user provided neither
 // a state directory or state file path to use.
 //
 // It returns the empty string if there's no reasonable default.
-func DefaultTailscaledStateDir() string {
+func DefaultScaleTaildStateDir() string {
 	if runtime.GOOS == "plan9" {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			log.Fatalf("failed to get home directory: %v", err)
 		}
-		return filepath.Join(home, "tailscale-state")
+		return filepath.Join(home, "scaletail-state")
 	}
-	return filepath.Dir(DefaultTailscaledStateFile())
+	return filepath.Dir(DefaultScaleTaildStateFile())
 }
 
 // MakeAutomaticStateDir reports whether the platform
-// automatically creates the state directory for tailscaled
+// automatically creates the state directory for scaletaild
 // when it's absent.
 func MakeAutomaticStateDir() bool {
 	switch runtime.GOOS {
@@ -110,23 +110,4 @@ func MkStateDir(dirPath string) error {
 		return err
 	}
 	return ensureStateDirPerms(dirPath)
-}
-
-// LegacyStateFilePath returns the legacy path to the state file when
-// it was stored under the current user's %LocalAppData%.
-//
-// It is only called on Windows.
-func LegacyStateFilePath() string {
-	if runtime.GOOS == "windows" {
-		return filepath.Join(os.Getenv("LocalAppData"), "Tailscale", "server-state.conf")
-	}
-	return ""
-}
-
-// LegacySystemStateFilePath returns the old Windows system service state file.
-func LegacySystemStateFilePath() string {
-	if runtime.GOOS == "windows" {
-		return filepath.Join(os.Getenv("ProgramData"), "Tailscale", "server-state.conf")
-	}
-	return ""
 }

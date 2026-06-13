@@ -83,7 +83,7 @@ The `tsidp` server supports several command-line flags:
 - `--verbose`: Enable verbose logging
 - `--port`: Port to listen on (default: 443)
 - `--local-port`: Allow requests from localhost
-- `--use-local-tailscaled`: Use local tailscaled instead of tsnet
+- `--use-local-scaletaild`: Use local scaletaild instead of tsnet
 - `--hostname`: tsnet hostname
 - `--dir`: tsnet state directory
 

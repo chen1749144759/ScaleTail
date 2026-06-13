@@ -53,7 +53,7 @@ import (
 
 var (
 	resolveNames = flag.Bool("resolve-names", false, "This is equivalent to specifying \"--resolve-addrs=name\".")
-	resolveAddrs = flag.String("resolve-addrs", "", "Resolve each tailscale IP address as a node ID, name, or user.\n"+
+	resolveAddrs = flag.String("resolve-addrs", "", "Resolve each scaletail IP address as a node ID, name, or user.\n"+
 		"If network flow logs do not support embedded node information,\n"+
 		"then --api-key and --tailnet-name must also be provided.\n"+
 		"Valid values include \"nodeId\", \"name\", or \"user\".")

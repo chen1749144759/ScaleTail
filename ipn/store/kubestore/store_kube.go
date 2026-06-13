@@ -38,7 +38,7 @@ const (
 	// state Secret and emit an Event.
 	timeout = 30 * time.Second
 
-	reasonTailscaleStateUpdated      = "TailscaledStateUpdated"
+	reasonTailscaleStateUpdated      = "ScaleTaildStateUpdated"
 	reasonTailscaleStateLoaded       = "TailscaleStateLoaded"
 	reasonTailscaleStateUpdateFailed = "TailscaleStateUpdateFailed"
 	reasonTailscaleStateLoadFailed   = "TailscaleStateLoadFailed"
@@ -59,7 +59,7 @@ type Store struct {
 
 	logf logger.Logf
 
-	// memory holds the latest tailscale state. Writes write state to a kube
+	// memory holds the latest scaletail state. Writes write state to a kube
 	// Secret and memory, Reads read from memory.
 	memory mem.Store
 }
@@ -265,11 +265,11 @@ func (s *Store) updateSecret(data map[string][]byte, secretName string) (err err
 	defer func() {
 		if err != nil {
 			if err := s.client.Event(ctx, eventTypeWarning, reasonTailscaleStateUpdateFailed, err.Error()); err != nil {
-				s.logf("kubestore: error creating tailscaled state update Event: %v", err)
+				s.logf("kubestore: error creating scaletaild state update Event: %v", err)
 			}
 		} else {
-			if err := s.client.Event(ctx, eventTypeNormal, reasonTailscaleStateUpdated, "Successfully updated tailscaled state Secret"); err != nil {
-				s.logf("kubestore: error creating tailscaled state Event: %v", err)
+			if err := s.client.Event(ctx, eventTypeNormal, reasonTailscaleStateUpdated, "Successfully updated scaletaild state Secret"); err != nil {
+				s.logf("kubestore: error creating scaletaild state Event: %v", err)
 			}
 		}
 		cancel()
@@ -353,7 +353,7 @@ func (s *Store) loadState() (err error) {
 		}
 		return err
 	}
-	if err := s.client.Event(ctx, eventTypeNormal, reasonTailscaleStateLoaded, "Successfully loaded tailscaled state from Secret"); err != nil {
+	if err := s.client.Event(ctx, eventTypeNormal, reasonTailscaleStateLoaded, "Successfully loaded scaletaild state from Secret"); err != nil {
 		s.logf("kubestore: error creating Event: %v", err)
 	}
 	data, err := s.maybeStripAttestationKeyFromProfile(secret.Data)

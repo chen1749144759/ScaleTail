@@ -37,7 +37,7 @@ function bracketIPv6Host(host: string) {
 /**
  * ServerConfigView replaces the original LoginView.
  * It lets users configure the control server URL without invoking
- * `tailscale up --login-server=...` from a shell.
+ * `scaletail up --login-server=...` from a shell.
  */
 export default function ServerConfigView({ data }: { data: NodeData }) {
   const api = useAPI()

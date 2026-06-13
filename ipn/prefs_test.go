@@ -965,7 +965,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 			name: "ip_is_self",
 			arg:  "1.2.3.4",
 			st: &ipnstate.Status{
-				TailscaleIPs: []netip.Addr{mustIP("1.2.3.4")},
+				ScaleTailIPs: []netip.Addr{mustIP("1.2.3.4")},
 			},
 			wantErr: "cannot use 1.2.3.4 as an exit node as it is a local IP address to this machine",
 		},
@@ -974,7 +974,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 			arg:  "1.2.3.4",
 			st: &ipnstate.Status{
 				BackendState: "Running",
-				TailscaleIPs: []netip.Addr{mustIP("1.2.3.4")},
+				ScaleTailIPs: []netip.Addr{mustIP("1.2.3.4")},
 			},
 			wantErr: "cannot use 1.2.3.4 as an exit node as it is a local IP address to this machine",
 		},
@@ -985,7 +985,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				BackendState: "Running",
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
-						TailscaleIPs: []netip.Addr{mustIP("1.2.3.4")},
+						ScaleTailIPs: []netip.Addr{mustIP("1.2.3.4")},
 					},
 				},
 			},
@@ -998,7 +998,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				BackendState: "Running",
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
-						TailscaleIPs:   []netip.Addr{mustIP("1.2.3.4")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.2.3.4")},
 						ExitNodeOption: true,
 					},
 				},
@@ -1019,7 +1019,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:        "skippy.foo.",
-						TailscaleIPs:   []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.0.0.2")},
 						ExitNodeOption: true,
 					},
 				},
@@ -1034,7 +1034,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:        "skippy.foo.",
-						TailscaleIPs:   []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.0.0.2")},
 						ExitNodeOption: true,
 					},
 				},
@@ -1049,7 +1049,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:        "skippy.foo.",
-						TailscaleIPs:   []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.0.0.2")},
 						ExitNodeOption: true,
 					},
 				},
@@ -1064,7 +1064,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:      "skippy.foo.",
-						TailscaleIPs: []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs: []netip.Addr{mustIP("1.0.0.2")},
 					},
 				},
 			},
@@ -1078,7 +1078,7 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:      "skippy.foo.",
-						TailscaleIPs: []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs: []netip.Addr{mustIP("1.0.0.2")},
 					},
 				},
 			},
@@ -1092,12 +1092,12 @@ func TestExitNodeIPOfArg(t *testing.T) {
 				Peer: map[key.NodePublic]*ipnstate.PeerStatus{
 					key.NewNode().Public(): {
 						DNSName:        "skippy.foo.",
-						TailscaleIPs:   []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.0.0.2")},
 						ExitNodeOption: true,
 					},
 					key.NewNode().Public(): {
 						DNSName:        "SKIPPY.foo.",
-						TailscaleIPs:   []netip.Addr{mustIP("1.0.0.2")},
+						ScaleTailIPs:   []netip.Addr{mustIP("1.0.0.2")},
 						ExitNodeOption: true,
 					},
 				},

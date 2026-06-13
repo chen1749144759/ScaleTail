@@ -109,8 +109,8 @@
         ldflags = ["-X tailscale.com/version.gitCommitStamp=${tailscaleRev}"];
         env.CGO_ENABLED = 0;
         subPackages = [
-          "cmd/tailscale"
-          "cmd/tailscaled"
+          "cmd/scaletail"
+          "cmd/scaletaild"
           "cmd/tsidp"
         ];
         doCheck = false;
@@ -119,10 +119,10 @@
         # environment and cause issues (specifically the unset PORT). At some
         # point, there should be a NixOS module that allows configuration of these
         # things, but for now, we hardcode the default of port 41641 (taken from
-        # ./cmd/tailscaled/tailscaled.defaults).
+        # ./cmd/scaletaild/scaletaild.defaults).
         postInstall =
           pkgs.lib.optionalString pkgs.stdenv.isLinux ''
-            wrapProgram $out/bin/tailscaled --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.iproute2 pkgs.iptables pkgs.getent pkgs.shadow]}
+            wrapProgram $out/bin/scaletaild --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.iproute2 pkgs.iptables pkgs.getent pkgs.shadow]}
             wrapProgram $out/bin/tailscale --suffix PATH : ${pkgs.lib.makeBinPath [pkgs.procps]}
 
             sed -i \
@@ -130,9 +130,9 @@
               -e "/^EnvironmentFile/d" \
               -e 's/''${PORT}/41641/' \
               -e 's/$FLAGS//' \
-              ./cmd/tailscaled/tailscaled.service
+              ./cmd/scaletaild/scaletaild.service
 
-            install -D -m0444 -t $out/lib/systemd/system ./cmd/tailscaled/tailscaled.service
+            install -D -m0444 -t $out/lib/systemd/system ./cmd/scaletaild/scaletaild.service
           ''
           + pkgs.lib.optionalString (pkgs.stdenv.buildPlatform.canExecute pkgs.stdenv.hostPlatform) ''
             installShellCompletion --cmd tailscale \

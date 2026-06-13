@@ -112,7 +112,7 @@ func (s State) cloneForUpdate(update *AUM) State {
 
 const disablementLength = 32
 
-var disablementSalt = []byte("tailscale network-lock disablement salt")
+var disablementSalt = []byte("scaletail network-lock disablement salt")
 
 // DisablementKDF computes a public value which can be stored in a
 // key authority, but cannot be reversed to find the input secret.
@@ -241,7 +241,7 @@ func (s State) applyVerifiedAUM(update AUM) (State, error) {
 
 	default:
 		// An AUM with an unknown message kind was received! That means
-		// that a future version of tailscaled added some feature we don't
+		// that a future version of scaletaild added some feature we don't
 		// understand.
 		//
 		// The future-compatibility contract for AUM message types is that

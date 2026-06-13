@@ -98,12 +98,12 @@ func versionCacheDir(version, arch string) string {
 
 // ensureVersionBinaries downloads (if needed) and extracts the tailscale
 // release tarball for the given concrete version+arch, returning the
-// directory containing tailscale and tailscaled.
+// directory containing scaletail and scaletaild.
 func ensureVersionBinaries(ctx context.Context, version, arch string, logf logger.Logf) (string, error) {
 	dir := versionCacheDir(version, arch)
-	tailscaled := filepath.Join(dir, "tailscaled")
-	tailscale := filepath.Join(dir, "tailscale")
-	if _, err1 := os.Stat(tailscaled); err1 == nil {
+	scaletaild := filepath.Join(dir, "scaletaild")
+	scaletail := filepath.Join(dir, "tailscale")
+	if _, err1 := os.Stat(scaletaild); err1 == nil {
 		if _, err2 := os.Stat(tailscale); err2 == nil {
 			return dir, nil
 		}
@@ -142,7 +142,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 
 	wantBase := map[string]bool{
 		"tailscale":  true,
-		"tailscaled": true,
+		"scaletaild": true,
 	}
 	got := map[string]bool{}
 	for {
@@ -170,7 +170,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 			return "", fmt.Errorf("tarball %s missing %s", url, b)
 		}
 	}
-	logf("extracted %s and %s to %s", "tailscale", "tailscaled", dir)
+	logf("extracted %s and %s to %s", "tailscale", "scaletaild", dir)
 	return dir, nil
 }
 

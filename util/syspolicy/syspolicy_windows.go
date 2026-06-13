@@ -67,7 +67,7 @@ func configureSyspolicy(tb testenv.TB) error {
 	if u.Uid == localSystemSID {
 		return nil
 	}
-	// If it's not a Local System's process (e.g., it's the GUI rather than the tailscaled service),
+	// If it's not a Local System's process (e.g., it's the GUI rather than the scaletaild service),
 	// we should create and use a policy store for the current user that reads
 	// policy settings from that user's registry hive (HKEY_CURRENT_USER).
 	userStore, err := source.NewUserPlatformPolicyStore(0)

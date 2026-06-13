@@ -221,7 +221,7 @@ func (s *sniproxy) advertiseRoutesFromConfig(ctx context.Context, c *appctype.Ap
 }
 
 func (s *sniproxy) mergeConfigFromFlags(out *appctype.AppConnectorConfig, ports, forwards string) {
-	ip4, ip6 := s.ts.TailscaleIPs()
+	ip4, ip6 := s.ts.ScaleTailIPs()
 
 	sniConfigFromFlags := appctype.SNIProxyConfig{
 		Addrs: []netip.Addr{ip4, ip6},

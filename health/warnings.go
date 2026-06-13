@@ -34,7 +34,7 @@ var updateAvailableWarnable = condRegister(func() *Warnable {
 			if version.IsMacAppStore() || version.IsAppleTV() || version.IsMacSys() || version.IsWindowsGUI() || runtime.GOOS == "android" {
 				return fmt.Sprintf("An update from version %s to %s is available.", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			} else {
-				return fmt.Sprintf("An update from version %s to %s is available. Run `tailscale update` or `tailscale set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("An update from version %s to %s is available. Run `scaletail update` or `scaletail set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			}
 		},
 	}
@@ -50,7 +50,7 @@ var securityUpdateAvailableWarnable = condRegister(func() *Warnable {
 			if version.IsMacAppStore() || version.IsAppleTV() || version.IsMacSys() || version.IsWindowsGUI() || runtime.GOOS == "android" {
 				return fmt.Sprintf("A security update from version %s to %s is available.", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			} else {
-				return fmt.Sprintf("A security update from version %s to %s is available. Run `tailscale update` or `tailscale set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
+				return fmt.Sprintf("A security update from version %s to %s is available. Run `scaletail update` or `scaletail set --auto-update` to update now.", args[ArgCurrentVersion], args[ArgAvailableVersion])
 			}
 		},
 	}

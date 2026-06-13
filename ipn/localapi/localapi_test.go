@@ -609,7 +609,7 @@ func TestServeDialSelf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest("POST", "http://local-tailscaled.sock/localapi/v0/dial", nil)
+			req := httptest.NewRequest("POST", "http://local-scaletaild.sock/localapi/v0/dial", nil)
 			req.Header.Set("Connection", "upgrade")
 			req.Header.Set("Upgrade", "ts-dial")
 			req.Header.Set("Dial-Host", tt.host)

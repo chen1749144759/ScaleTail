@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	tailscaledPortMax = 65535
-	tailscaledPortMin = 1024
+	scaletaildPortMax = 65535
+	scaletaildPortMin = 1024
 	testSvcName       = "test-node-port-range"
 
 	invalidSvcNodePort = 777777
@@ -199,5 +199,5 @@ func getPortsForProxyClasses(ctx context.Context, c client.Client) (map[string]t
 }
 
 func getRandomPort() uint16 {
-	return uint16(rand.IntN(tailscaledPortMax-tailscaledPortMin+1) + tailscaledPortMin)
+	return uint16(rand.IntN(scaletaildPortMax-scaletaildPortMin+1) + scaletaildPortMin)
 }

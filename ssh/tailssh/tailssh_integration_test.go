@@ -47,7 +47,7 @@ import (
 //
 // - OS is one of MacOS or Linux
 // - Test is being run as root (e.g. go test -tags integrationtest -c . && sudo ./tailssh.test -test.run TestIntegration)
-// - TAILSCALED_PATH environment variable points at tailscaled binary
+// - SCALETAILD_PATH environment variable points at scaletaild binary
 // - User "testuser" exists
 // - "testuser" is in groups "groupone" and "grouptwo"
 
@@ -339,7 +339,7 @@ func TestSSHAgentForwarding(t *testing.T) {
 	}
 	go gs.Serve(l)
 
-	// Run tailscale SSH server and connect to it
+	// Run scaletail SSH server and connect to it
 	username := "testuser"
 	tailscaleAddr := testServer(t, username, false, false)
 	tcl, err := ssh.Dial("tcp", tailscaleAddr, &ssh.ClientConfig{
@@ -751,7 +751,7 @@ func testServer(t *testing.T, username string, forceV1Behavior bool, allowSendEn
 	srv := &server{
 		lb:             &testBackend{localUser: username, forceV1Behavior: forceV1Behavior, allowSendEnv: allowSendEnv},
 		logf:           log.Printf,
-		tailscaledPath: os.Getenv("TAILSCALED_PATH"),
+		scaletaildPath: os.Getenv("SCALETAILD_PATH"),
 		timeNow:        time.Now,
 	}
 
@@ -792,7 +792,7 @@ func testServerWithOpts(t *testing.T, opts testServerOpts) string {
 			allowRemotePortForwarding: opts.allowRemotePortForwarding,
 		},
 		logf:           log.Printf,
-		tailscaledPath: os.Getenv("TAILSCALED_PATH"),
+		scaletaildPath: os.Getenv("SCALETAILD_PATH"),
 		timeNow:        time.Now,
 	}
 
