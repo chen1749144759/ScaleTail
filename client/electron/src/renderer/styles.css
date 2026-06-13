@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
-  --window: rgba(246, 249, 253, 0.76);
-  --panel: rgba(255, 255, 255, 0.66);
-  --panel-strong: rgba(255, 255, 255, 0.82);
+  --window: rgba(246, 249, 253, 0.92);
+  --panel: rgba(255, 255, 255, 0.86);
+  --panel-strong: rgba(255, 255, 255, 0.94);
   --text: #172033;
   --muted: #667085;
   --line: rgba(128, 145, 170, 0.34);
@@ -60,7 +60,7 @@ button {
   border-radius: var(--radius-window);
   background: var(--window);
   box-shadow: none;
-  backdrop-filter: blur(26px) saturate(135%);
+  backdrop-filter: blur(20px) saturate(120%);
   clip-path: inset(0 round var(--radius-window));
   isolation: isolate;
 }

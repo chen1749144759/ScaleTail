@@ -21,7 +21,7 @@ const onlineCount = computed(() => peers.value.filter((peer) => peer.Online).len
 onMounted(() => {
   void refresh();
   timer = window.setInterval(() => void refresh(false), 5000);
-  offDaemon = window.tailscale.onDaemonEvent(() => void refresh(false));
+  offDaemon = window.scaletail.onDaemonEvent(() => void refresh(false));
 });
 
 onUnmounted(() => {
@@ -38,15 +38,15 @@ async function refresh(showSpinner = true) {
   error.value = "";
   try {
     const [nextStatus, nextService] = await Promise.all([
-      window.tailscale.getStatus(true),
-      window.tailscale.getServiceStatus(),
+      window.scaletail.getStatus(true),
+      window.scaletail.getServiceStatus(),
     ]);
     status.value = nextStatus;
     service.value = nextService;
   } catch (err) {
     error.value = messageOf(err);
     try {
-      service.value = await window.tailscale.getServiceStatus();
+      service.value = await window.scaletail.getServiceStatus();
     } catch {
       service.value = null;
     }
@@ -59,7 +59,7 @@ async function startService() {
   loading.value = true;
   error.value = "";
   try {
-    service.value = await window.tailscale.startService();
+    service.value = await window.scaletail.startService();
     await refresh(false);
   } catch (err) {
     error.value = messageOf(err);

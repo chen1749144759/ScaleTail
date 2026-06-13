@@ -3,7 +3,7 @@ import path from "node:path";
 import { app } from "electron";
 import { ConnectRequest, NetcheckReport, Prefs, Status } from "../shared/types";
 
-const helperName = process.platform === "win32" ? "tailscale-localapi.exe" : "tailscale-localapi";
+const helperName = process.platform === "win32" ? "scaletail-localapi.exe" : "scaletail-localapi";
 
 export class LocalAPIError extends Error {
   constructor(message: string, public statusCode?: number) {

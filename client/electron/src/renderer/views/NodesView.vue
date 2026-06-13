@@ -32,7 +32,7 @@ const exitNodeOptions = computed(() =>
 onMounted(() => {
   void refresh();
   timer = window.setInterval(() => void refresh(false), 5000);
-  offDaemon = window.tailscale.onDaemonEvent(() => void refresh(false));
+  offDaemon = window.scaletail.onDaemonEvent(() => void refresh(false));
 });
 
 onUnmounted(() => {
@@ -49,8 +49,8 @@ async function refresh(showSpinner = true) {
   error.value = "";
   try {
     const [nextStatus, nextPrefs] = await Promise.all([
-      window.tailscale.getStatus(true),
-      window.tailscale.getPrefs(),
+      window.scaletail.getStatus(true),
+      window.scaletail.getPrefs(),
     ]);
     status.value = nextStatus;
     prefs.value = nextPrefs;
@@ -72,7 +72,7 @@ async function applyExitNode() {
   error.value = "";
   message.value = "";
   try {
-    await window.tailscale.setExitNode(exitNodeID.value);
+    await window.scaletail.setExitNode(exitNodeID.value);
     exitNodeTouched.value = false;
     message.value = "出口节点已更新。";
     await refresh(false);
@@ -88,7 +88,7 @@ async function applyAdvertiseRoutes() {
   error.value = "";
   message.value = "";
   try {
-    await window.tailscale.setAdvertiseRoutes(parseRoutes(advertiseRoutes.value));
+    await window.scaletail.setAdvertiseRoutes(parseRoutes(advertiseRoutes.value));
     routesTouched.value = false;
     message.value = "宣告路由已更新。";
     await refresh(false);
@@ -104,7 +104,7 @@ async function runNetcheck() {
   error.value = "";
   message.value = "";
   try {
-    netcheck.value = await window.tailscale.runNetcheck();
+    netcheck.value = await window.scaletail.runNetcheck();
   } catch (err) {
     error.value = messageOf(err);
   } finally {

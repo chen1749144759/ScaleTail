@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { ConnectRequest, TailscaleAPI } from "../shared/types";
+import { ConnectRequest, ScaleTailAPI } from "../shared/types";
 
-const api: TailscaleAPI = {
+const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
   getPrefs: () => ipcRenderer.invoke("api:getPrefs"),
   connect: (req: ConnectRequest) => ipcRenderer.invoke("api:connect", req),
@@ -28,4 +28,4 @@ const api: TailscaleAPI = {
   },
 };
 
-contextBridge.exposeInMainWorld("tailscale", api);
+contextBridge.exposeInMainWorld("scaletail", api);

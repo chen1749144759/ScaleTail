@@ -1,8 +1,8 @@
-import type { TailscaleAPI } from "../shared/types";
+import type { ScaleTailAPI } from "../shared/types";
 
 declare global {
   interface Window {
-    tailscale: TailscaleAPI;
+    scaletail: ScaleTailAPI;
   }
 }
 

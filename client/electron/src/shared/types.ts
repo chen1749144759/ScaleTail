@@ -98,7 +98,7 @@ export interface NetcheckReport {
   [key: string]: unknown;
 }
 
-export interface TailscaleAPI {
+export interface ScaleTailAPI {
   getStatus(peers?: boolean): Promise<Status>;
   getPrefs(): Promise<Prefs>;
   connect(req: ConnectRequest): Promise<ConnectResponse>;

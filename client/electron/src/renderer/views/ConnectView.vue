@@ -33,7 +33,7 @@ const controlURL = computed(() => {
 });
 const commandLine = computed(() => {
   const args = [
-    "tailscale",
+    "scaletail",
     "up",
     `--login-server=${quoteArg(controlURL.value)}`,
     `--accept-routes=${acceptRoutes.value ? "true" : "false"}`,
@@ -56,8 +56,8 @@ async function load() {
   error.value = "";
   try {
     const [nextStatus, nextPrefs] = await Promise.all([
-      window.tailscale.getStatus(false),
-      window.tailscale.getPrefs(),
+      window.scaletail.getStatus(false),
+      window.scaletail.getPrefs(),
     ]);
     status.value = nextStatus;
     prefs.value = nextPrefs;
@@ -87,7 +87,7 @@ async function connect() {
   message.value = "正在提交连接请求...";
   error.value = "";
   try {
-    const res = await window.tailscale.connect({
+    const res = await window.scaletail.connect({
       serverIP: serverIP.value,
       serverPort: serverPort.value,
       useHTTPS: useHTTPS.value,
@@ -110,7 +110,7 @@ async function disconnectCurrent() {
   error.value = "";
   message.value = "正在临时断开连接...";
   try {
-    const res = await window.tailscale.disconnect();
+    const res = await window.scaletail.disconnect();
     message.value = res.message;
     await load();
   } catch (err) {
@@ -126,7 +126,7 @@ async function reconnectCurrent() {
   error.value = "";
   message.value = "正在恢复连接...";
   try {
-    const res = await window.tailscale.reconnect();
+    const res = await window.scaletail.reconnect();
     message.value = res.message;
     await load();
   } catch (err) {
@@ -147,7 +147,7 @@ async function logoutCurrent() {
   error.value = "";
   message.value = "正在退出当前网络...";
   try {
-    await window.tailscale.logout();
+    await window.scaletail.logout();
     authKey.value = "";
     message.value = "已退出当前网络，现在可以修改服务端配置。";
     await load();
@@ -214,7 +214,7 @@ function messageOf(err: unknown) {
       <div class="section-head">
         <div>
           <h2>服务端连接</h2>
-          <p>填写 Headscale/Tailscale 控制服务器地址，连接会通过本地服务完成。</p>
+          <p>填写 Headscale/ScaleTail 控制服务器地址，连接会通过本地服务完成。</p>
         </div>
         <StatusPill :state="backendState" />
       </div>

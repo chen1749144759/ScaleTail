@@ -37,8 +37,8 @@ let timer: number | undefined;
 
 onMounted(() => {
   window.addEventListener("hashchange", syncFromHash);
-  offNavigate = window.tailscale.onNavigate((next) => setRoute(next));
-  offDaemon = window.tailscale.onDaemonEvent(() => void refreshStatus());
+  offNavigate = window.scaletail.onNavigate((next) => setRoute(next));
+  offDaemon = window.scaletail.onDaemonEvent(() => void refreshStatus());
   timer = window.setInterval(() => void refreshStatus(), 5000);
   void refreshStatus();
 });
@@ -66,14 +66,14 @@ function syncFromHash() {
 
 async function refreshStatus() {
   try {
-    status.value = await window.tailscale.getStatus(false);
+    status.value = await window.scaletail.getStatus(false);
   } catch {
     status.value = null;
   }
 }
 
 function closeWindow() {
-  void window.tailscale.closeWindow();
+  void window.scaletail.closeWindow();
 }
 
 function routeFromHash(): Route {

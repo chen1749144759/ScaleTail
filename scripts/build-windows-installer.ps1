@@ -1,6 +1,6 @@
 param(
   [string]$OutDir = "dist\windows-amd64",
-  [string]$InstallerScript = "installer\tailscale-dev.iss",
+  [string]$InstallerScript = "installer\scaletail.iss",
   [string]$ElectronDir = "client\electron",
   [string]$DependencyRoot = "D:\workspace-qoder\deps",
   [switch]$SkipElectron,
@@ -24,6 +24,10 @@ New-Item -ItemType Directory -Force -Path $outDirAbs | Out-Null
   Remove-Item -LiteralPath `
   (Join-Path $outDirAbs "ScaleTail.exe"), `
   (Join-Path $outDirAbs "Tailscale.exe"), `
+  (Join-Path $outDirAbs "scaletaild.exe"), `
+  (Join-Path $outDirAbs "scaletail-localapi.exe"), `
+  (Join-Path $outDirAbs "tailscaled.exe"), `
+  (Join-Path $outDirAbs "tailscale-localapi.exe"), `
   (Join-Path $outDirAbs "tailscale-cli.exe"), `
   (Join-Path $outDirAbs "tailscale.exe"), `
   (Join-Path $outDirAbs "tailscale-systray.exe") `
@@ -32,10 +36,10 @@ New-Item -ItemType Directory -Force -Path $outDirAbs | Out-Null
 $oldCgo = $env:CGO_ENABLED
 $env:CGO_ENABLED = "0"
 try {
-  Write-Host "Building tailscaled.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "tailscaled.exe") ./cmd/tailscaled
-  Write-Host "Building tailscale-localapi.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "tailscale-localapi.exe") ./cmd/tailscale-localapi
+  Write-Host "Building scaletaild.exe"
+  go build -trimpath -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/tailscaled
+  Write-Host "Building scaletail-localapi.exe"
+  go build -trimpath -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/tailscale-localapi
 } finally {
   $env:CGO_ENABLED = $oldCgo
 }
@@ -103,8 +107,8 @@ if (-not $SkipElectron) {
   } elseif (Test-Path -LiteralPath $appIcon) {
     Write-Warning "rcedit.exe not found; shortcut, tray, window, and installer icons will still use app.ico."
   }
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "tailscaled.exe") -Destination (Join-Path $electronOut "tailscaled.exe") -Force
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "tailscale-localapi.exe") -Destination (Join-Path $electronOut "tailscale-localapi.exe") -Force
+  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletaild.exe") -Destination (Join-Path $electronOut "scaletaild.exe") -Force
+  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail-localapi.exe") -Destination (Join-Path $electronOut "scaletail-localapi.exe") -Force
   Copy-Item -LiteralPath (Join-Path $outDirAbs "wintun.dll") -Destination (Join-Path $electronOut "wintun.dll") -Force
 }
 

@@ -287,7 +287,7 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
       ? "连接仍需要认证。请确认预认证密钥属于当前服务端、未过期且未被一次性使用；也可以不填 key 改用浏览器认证。"
       : "已打开认证页面，请在浏览器中完成登录。";
   } else if (nextState === "Starting") {
-    message = "连接请求已提交，tailscaled 正在与服务端建立连接。";
+    message = "连接请求已提交，ScaleTail 服务正在与服务端建立连接。";
   }
 
   return {
@@ -327,7 +327,7 @@ async function reconnect(): Promise<{ ok: boolean; message: string }> {
   if (nextState === "NeedsLogin" || nextStatus.AuthURL) {
     throw new Error("恢复连接需要重新认证。请退出当前网络后，使用有效预认证密钥重新连接。");
   }
-  return { ok: true, message: "已提交恢复连接请求，tailscaled 正在与服务端建立连接。" };
+  return { ok: true, message: "已提交恢复连接请求，ScaleTail 服务正在与服务端建立连接。" };
 }
 
 async function setWantRunning(wantRunning: boolean): Promise<void> {
@@ -376,7 +376,7 @@ async function ensureDaemonReady(peers: boolean): Promise<Status> {
       });
       return await getStatus(peers);
     } catch (serviceError) {
-      throw new Error(`无法连接 tailscaled，本地服务未运行或 LocalAPI 不可用: ${formatError(serviceError || firstError)}`);
+      throw new Error(`无法连接 ScaleTail 服务，本地服务未运行或 LocalAPI 不可用: ${formatError(serviceError || firstError)}`);
     }
   }
 }
