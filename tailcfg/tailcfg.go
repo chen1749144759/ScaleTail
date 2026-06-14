@@ -867,7 +867,7 @@ type Hostinfo struct {
 	DistroCodeName string   `json:",omitzero"` // "jammy", "bullseye", ...
 
 	// App is used to disambiguate Tailscale clients that run using tsnet.
-	App string `json:",omitzero"` // "k8s-operator", "golinks", ...
+	App string `json:",omitzero"` // wrapper application identifier, if any
 
 	Desktop         opt.Bool `json:",omitzero"` // if a desktop was detected on Linux
 	Package         string   `json:",omitzero"` // Tailscale package to disambiguate ("choco", "appstore", etc; "" for unknown)

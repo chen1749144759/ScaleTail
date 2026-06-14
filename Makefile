@@ -1,6 +1,4 @@
 IMAGE_REPO ?= tailscale/tailscale
-SYNO_ARCH ?= "x86_64"
-SYNO_DSM ?= "7"
 TAGS ?= "latest"
 
 PLATFORM ?= "flyio" ## flyio==linux/amd64. Set to "" to build all platforms.
@@ -22,7 +20,6 @@ updatedeps: ## Update depaware deps
 		scaletail.com/cmd/scaletaild \
 		scaletail.com/cmd/scaletail \
 		scaletail.com/cmd/derper \
-		scaletail.com/cmd/k8s-operator \
 		scaletail.com/cmd/stund \
 		scaletail.com/cmd/tsidp
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --goos=linux,darwin,windows,android,ios --vendor --internal \
@@ -39,7 +36,6 @@ depaware: ## Run depaware checks
 		scaletail.com/cmd/scaletaild \
 		scaletail.com/cmd/scaletail \
 		scaletail.com/cmd/derper \
-		scaletail.com/cmd/k8s-operator \
 		scaletail.com/cmd/stund \
 		scaletail.com/cmd/tsidp
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --goos=linux,darwin,windows,android,ios --vendor --internal \
@@ -75,32 +71,6 @@ check: staticcheck vet depaware buildwindows build386 buildlinuxarm buildwasm ##
 staticcheck: ## Run staticcheck.io checks
 	./tool/go run honnef.co/go/tools/cmd/staticcheck -- $$(./tool/go run ./tool/listpkgs --ignore-3p  ./...)
 
-kube-generate-all: kube-generate-deepcopy ## Refresh generated files for Tailscale Kubernetes Operator
-	./tool/go generate ./cmd/k8s-operator
-
-# Tailscale operator watches Connector custom resources in a Kubernetes cluster
-# and caches them locally. Caching is done implicitly by controller-runtime
-# library (the middleware used by Tailscale operator to create kube control
-# loops). When a Connector resource is GET/LIST-ed from within our control loop,
-# the request goes through the cache. To ensure that cache contents don't get
-# modified by control loops, controller-runtime deep copies the requested
-# object. In order for this to work, Connector must implement deep copy
-# functionality so we autogenerate it here.
-# https://github.com/kubernetes-sigs/controller-runtime/blob/v0.16.3/pkg/cache/internal/cache_reader.go#L86-L89
-kube-generate-deepcopy: ## Refresh generated deepcopy functionality for Tailscale kube API types
-	./scripts/kube-deepcopy.sh
-
-spk: ## Build synology package for ${SYNO_ARCH} architecture and ${SYNO_DSM} DSM version
-	./tool/go run ./cmd/dist build synology/dsm${SYNO_DSM}/${SYNO_ARCH}
-
-spkall: ## Build synology packages for all architectures and DSM versions
-	./tool/go run ./cmd/dist build synology
-
-pushspk: spk ## Push and install synology package on ${SYNO_HOST} host
-	echo "Pushing SPK to root@${SYNO_HOST} (env var SYNO_HOST) ..."
-	scp tailscale.spk root@${SYNO_HOST}:
-	ssh root@${SYNO_HOST} /usr/syno/bin/synopkg install tailscale.spk
-
 .PHONY: check-image-repo
 check-image-repo:
 	@if [ -z "$(REPO)" ]; then \
@@ -108,10 +78,7 @@ check-image-repo:
 		exit 1; \
 	fi
 	@for repo in tailscale/tailscale ghcr.io/tailscale/tailscale \
-		tailscale/k8s-operator ghcr.io/tailscale/k8s-operator \
-		tailscale/k8s-nameserver ghcr.io/tailscale/k8s-nameserver \
-		tailscale/tsidp ghcr.io/tailscale/tsidp \
-		tailscale/k8s-proxy ghcr.io/tailscale/k8s-proxy; do \
+		tailscale/tsidp ghcr.io/tailscale/tsidp; do \
 		if [ "$(REPO)" = "$$repo" ]; then \
 			echo "REPO=... must not be $$repo" >&2; \
 			exit 1; \
@@ -121,17 +88,8 @@ check-image-repo:
 publishdevimage: check-image-repo ## Build and publish tailscale image to location specified by ${REPO}
 	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=client ./build_docker.sh
 
-publishdevoperator: check-image-repo ## Build and publish k8s-operator image to location specified by ${REPO}
-	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=k8s-operator ./build_docker.sh
-
-publishdevnameserver: check-image-repo ## Build and publish k8s-nameserver image to location specified by ${REPO}
-	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=k8s-nameserver ./build_docker.sh
-
 publishdevtsidp: check-image-repo ## Build and publish tsidp image to location specified by ${REPO}
 	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=tsidp ./build_docker.sh
-
-publishdevproxy: check-image-repo ## Build and publish k8s-proxy image to location specified by ${REPO}
-	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=k8s-proxy ./build_docker.sh
 
 .PHONY: sshintegrationtest
 sshintegrationtest: ## Run the SSH integration tests in various Docker containers

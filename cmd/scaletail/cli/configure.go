@@ -30,7 +30,6 @@ services on the host to use Tailscale in more ways.
 			return fs
 		})(),
 		Subcommands: nonNilCmds(
-			configureKubeconfigCmd(),
 			synologyConfigureCmd(),
 			ccall(maybeConfigSynologyCertCmd),
 			ccall(maybeSysExtCmd),

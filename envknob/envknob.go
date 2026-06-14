@@ -32,7 +32,6 @@ import (
 	"time"
 
 	"scaletail.com/feature/buildfeatures"
-	"scaletail.com/kube/kubetypes"
 	"scaletail.com/syncs"
 	"scaletail.com/types/opt"
 	"scaletail.com/version"
@@ -409,15 +408,9 @@ func TKASkipSignatureCheck() bool { return Bool("TS_UNSAFE_SKIP_NKS_VERIFICATION
 func AssumeNetworkUp() bool { return Bool("TS_ASSUME_NETWORK_UP_FOR_TEST") }
 
 // App returns the scaletail app type of this instance, if set via
-// TS_INTERNAL_APP env var. TS_INTERNAL_APP can be used to set app type for
-// components that wrap scaletaild, such as containerboot. App type is intended
-// to only be used to set known predefined app types, such as Tailscale
-// Kubernetes Operator components.
+// TS_INTERNAL_APP env var. ScaleTail currently does not ship wrapper
+// components that need app-specific behavior, so unknown values are ignored.
 func App() string {
-	a := os.Getenv("TS_INTERNAL_APP")
-	if a == kubetypes.AppConnector || a == kubetypes.AppEgressProxy || a == kubetypes.AppIngressProxy || a == kubetypes.AppIngressResource || a == kubetypes.AppProxyGroupEgress || a == kubetypes.AppProxyGroupIngress {
-		return a
-	}
 	return ""
 }
 
@@ -428,9 +421,8 @@ func App() string {
 // multiple Ingress proxy instances serve the same HTTPS endpoint with a shared
 // TLS credentials. The TLS credentials should only be issued by one of the
 // replicas.
-// For HTTPS Ingress the operator and containerboot ensure
-// that read-only replicas will not be serving the HTTPS endpoints before there
-// is a shared cert available.
+// Read-only replicas should not serve HTTPS endpoints before a shared cert is
+// available.
 func IsCertShareReadOnlyMode() bool {
 	m := String("TS_CERT_SHARE_MODE")
 	return m == "ro"

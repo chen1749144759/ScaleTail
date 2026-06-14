@@ -1046,7 +1046,7 @@ func checkForAccidentalSettingReverts(newPrefs, curPrefs *ipn.Prefs, env upCheck
 			// See https://github.com/tailscale/tailscale/issues/12307
 			// Stateful filtering was on by default in scaletail 1.66.0-1.66.3, then off in 1.66.4.
 			// This broke Tailscale installations in containerized
-			// environments that use the default containerboot
+			// environments that use the default container startup wrapper
 			// configuration that configures scaletail using
 			// 'scaletail up' command, which requires that all
 			// previously set flags are explicitly provided on

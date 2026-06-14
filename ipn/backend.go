@@ -120,7 +120,7 @@ type Notify struct {
 
 	// SelfChange, if non-nil, indicates that this node's own [tailcfg.Node]
 	// has changed: addresses, name, key expiry, capabilities, etc. It carries
-	// the new self node so reactive consumers (containerboot, kube agents,
+	// the new self node so reactive consumers (local agents,
 	// sniproxy, etc.) can read the current self state without watching the
 	// full netmap.
 	//

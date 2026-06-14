@@ -263,7 +263,7 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 // We do not want to place the clamping rule into FORWARD/ts-forward chains
 // because wgengine populates those chains with rules that contain accept
 // verdicts that would cause no further procesing within that chain. This
-// functionality is currently invoked from outside wgengine (containerboot), so
+// functionality is currently invoked from outside wgengine, so
 // we don't want to race with wgengine for rule ordering within chains.
 func (n *nftablesRunner) ClampMSSToPMTU(tun string, addr netip.Addr) error {
 	polAccept := nftables.ChainPolicyAccept

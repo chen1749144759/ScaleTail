@@ -42,9 +42,6 @@ func TestLicenseHeaders(t *testing.T) {
 		// Generated eBPF management code
 		"derp/xdp/bpf_bpfeb.go",
 		"derp/xdp/bpf_bpfel.go",
-
-		// Generated kube deepcopy funcs file starts with a Go build tag + an empty line
-		"k8s-operator/apis/v1alpha1/zz_generated.deepcopy.go",
 	)
 
 	err := filepath.Walk(".", func(path string, fi os.FileInfo, err error) error {

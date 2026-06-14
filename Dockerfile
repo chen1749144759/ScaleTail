@@ -69,7 +69,7 @@ RUN GOARCH=$TARGETARCH go install -ldflags="\
       -X scaletail.com/version.longStamp=$VERSION_LONG \
       -X scaletail.com/version.shortStamp=$VERSION_SHORT \
       -X scaletail.com/version.gitCommitStamp=$VERSION_GIT_HASH" \
-      -v ./cmd/scaletail ./cmd/scaletaild ./cmd/containerboot
+      -v ./cmd/scaletail ./cmd/scaletaild
 
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates iptables iproute2 ip6tables
@@ -82,6 +82,4 @@ RUN rm /usr/sbin/iptables && ln -s /usr/sbin/iptables-legacy /usr/sbin/iptables
 RUN rm /usr/sbin/ip6tables && ln -s /usr/sbin/ip6tables-legacy /usr/sbin/ip6tables
 
 COPY --from=build-env /go/bin/* /usr/local/bin/
-# For compat with the previous run.sh, although ideally you should be
-# using build_docker.sh which sets an entrypoint for the image.
-RUN mkdir /scaletail && ln -s /usr/local/bin/containerboot /tailscale/run.sh
+ENTRYPOINT ["/usr/local/bin/scaletaild"]

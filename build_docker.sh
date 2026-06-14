@@ -51,62 +51,21 @@ case "$TARGET" in
     go run github.com/tailscale/mkctr \
       --gopaths="\
         scaletail.com/cmd/scaletail:/usr/local/bin/tailscale, \
-        scaletail.com/cmd/scaletaild:/usr/local/bin/scaletaild, \
-        scaletail.com/cmd/containerboot:/usr/local/bin/containerboot" \
+        scaletail.com/cmd/scaletaild:/usr/local/bin/scaletaild" \
       --ldflags="\
         -X scaletail.com/version.longStamp=${VERSION_LONG} \
         -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
         -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
-      --gotags="ts_kube,ts_package_container" \
+      --gotags="ts_package_container" \
       --repos="${REPOS}" \
       --push="${PUSH}" \
       --target="${PLATFORM}" \
       --goarch="${GOARCH}" \
       --annotations="${ANNOTATIONS}" \
       --files="${FILES}" \
-      /usr/local/bin/containerboot
-    ;;
-  k8s-operator)
-    DEFAULT_REPOS="tailscale/k8s-operator"
-    REPOS="${REPOS:-${DEFAULT_REPOS}}"
-    go run github.com/tailscale/mkctr \
-      --gopaths="scaletail.com/cmd/k8s-operator:/usr/local/bin/operator" \
-      --ldflags="\
-        -X scaletail.com/version.longStamp=${VERSION_LONG} \
-        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
-        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
-      --base="${BASE}" \
-      --tags="${TAGS}" \
-      --gotags="ts_kube,ts_package_container" \
-      --repos="${REPOS}" \
-      --push="${PUSH}" \
-      --target="${PLATFORM}" \
-      --goarch="${GOARCH}" \
-      --annotations="${ANNOTATIONS}" \
-      --files="${FILES}" \
-      /usr/local/bin/operator
-    ;;
-  k8s-nameserver)
-    DEFAULT_REPOS="tailscale/k8s-nameserver"
-    REPOS="${REPOS:-${DEFAULT_REPOS}}"
-    go run github.com/tailscale/mkctr \
-      --gopaths="scaletail.com/cmd/k8s-nameserver:/usr/local/bin/k8s-nameserver" \
-      --ldflags=" \
-        -X scaletail.com/version.longStamp=${VERSION_LONG} \
-        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
-        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
-      --base="${BASE}" \
-      --tags="${TAGS}" \
-      --gotags="ts_kube,ts_package_container" \
-      --repos="${REPOS}" \
-      --push="${PUSH}" \
-      --target="${PLATFORM}" \
-      --goarch="${GOARCH}" \
-      --annotations="${ANNOTATIONS}" \
-      --files="${FILES}" \
-      /usr/local/bin/k8s-nameserver
+      /usr/local/bin/scaletaild
     ;;
   tsidp)
     DEFAULT_REPOS="tailscale/tsidp"
@@ -127,26 +86,6 @@ case "$TARGET" in
       --annotations="${ANNOTATIONS}" \
       --files="${FILES}" \
       /usr/local/bin/tsidp
-    ;;
-  k8s-proxy)
-    DEFAULT_REPOS="tailscale/k8s-proxy"
-    REPOS="${REPOS:-${DEFAULT_REPOS}}"
-    go run github.com/tailscale/mkctr \
-      --gopaths="scaletail.com/cmd/k8s-proxy:/usr/local/bin/k8s-proxy" \
-      --ldflags=" \
-        -X scaletail.com/version.longStamp=${VERSION_LONG} \
-        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
-        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
-      --base="${BASE}" \
-      --tags="${TAGS}" \
-      --gotags="ts_kube,ts_package_container" \
-      --repos="${REPOS}" \
-      --push="${PUSH}" \
-      --target="${PLATFORM}" \
-      --goarch="${GOARCH}" \
-      --annotations="${ANNOTATIONS}" \
-      --files="${FILES}" \
-      /usr/local/bin/k8s-proxy
     ;;
   *)
     echo "unknown target: $TARGET"

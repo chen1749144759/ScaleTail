@@ -222,7 +222,7 @@ func SetPackage(v string) { packagingType.Store(v) }
 
 // SetApp sets the app type for the app.
 // It is used by tsnet to specify what app is using it such as "golinks"
-// and "k8s-operator".
+// and other wrapper applications.
 func SetApp(v string) { appType.Store(v) }
 
 // FirewallMode returns the firewall mode for the app.

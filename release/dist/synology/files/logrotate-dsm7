@@ -1,8 +1,0 @@
-/var/packages/ScaleTail/var/scaletaild.stdout.log {
-  size 10M
-  rotate 3
-  missingok
-  copytruncate
-  compress
-  notifempty
-}

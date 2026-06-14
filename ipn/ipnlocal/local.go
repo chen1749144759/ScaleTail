@@ -1908,7 +1908,7 @@ func (b *LocalBackend) setControlClientStatusLocked(c controlclient.Client, st c
 		b.health.SetDERPMap(st.NetMap.DERPMap)
 
 		// Notify watchers that the self node may have changed. Reactive
-		// consumers (containerboot, kube agents, sniproxy, etc.) listen on
+		// consumers (local agents, sniproxy, etc.) listen on
 		// this signal and re-fetch peers/DNS via the LocalAPI if they need
 		// more than self info.
 		var selfChange *tailcfg.Node
