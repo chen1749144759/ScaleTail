@@ -170,7 +170,6 @@ var Features = map[FeatureTag]FeatureMeta{
 	"identityfederation": {Sym: "IdentityFederation", Desc: "Auth key generation via identity federation support"},
 	"ipnbus":             {Sym: "IPNBus", Desc: "IPN notification bus (watch-ipn-bus) support, used by GUIs, debugging, and nicer 'scaletail up' support"},
 	"iptables":           {Sym: "IPTables", Desc: "Linux iptables support"},
-	"kube":               {Sym: "Kube", Desc: "Kubernetes integration"},
 	"linuxdnsfight":      {Sym: "LinuxDNSFight", Desc: "Linux support for detecting DNS fights (inotify watching of /etc/resolv.conf)"},
 	"linkspeed": {
 		Sym:  "LinkSpeed",

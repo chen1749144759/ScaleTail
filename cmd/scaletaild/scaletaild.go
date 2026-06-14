@@ -192,7 +192,7 @@ func main() {
 	}
 	flag.StringVar(&args.tunname, "tun", defaultTunName(), `tunnel interface name; use "userspace-networking" (beta) to not use TUN`)
 	flag.Var(flagtype.PortValue(&args.port, defaultPort()), "port", "UDP port to listen on for WireGuard and peer-to-peer traffic; 0 means automatically select")
-	flag.StringVar(&args.statepath, "state", "", "absolute path of state file; use 'kube:<secret-name>' to use Kubernetes secrets or 'arn:aws:ssm:...' to store in AWS SSM; use 'mem:' to not store state and register as an ephemeral node. If empty and --statedir is provided, the default is <statedir>/scaletaild.state. Default: "+paths.DefaultScaleTaildStateFile())
+	flag.StringVar(&args.statepath, "state", "", "absolute path of state file; use 'arn:aws:ssm:...' to store in AWS SSM; use 'mem:' to not store state and register as an ephemeral node. If empty and --statedir is provided, the default is <statedir>/scaletaild.state. Default: "+paths.DefaultScaleTaildStateFile())
 	if buildfeatures.HasTPM {
 		flag.Var(&args.encryptState, "encrypt-state", `encrypt the state file on disk; when not set encryption will be enabled if supported on this platform; uses TPM on Linux and Windows, on all other platforms this flag is not supported`)
 	}
@@ -957,12 +957,11 @@ func isPortableStore(path string) bool {
 	if store.HasKnownProviderPrefix(path) && !strings.HasPrefix(path, store.TPMPrefix) {
 		return true
 	}
-	// In most cases Kubernetes Secret and AWS SSM stores would have been caught
-	// by the earlier check - but that check relies on those stores having been
-	// registered. This additional check is here to ensure that if we ever
-	// produce a faulty build that failed to register some store, users who
-	// upgraded to that don't get hardware keys generated.
-	if strings.HasPrefix(path, "kube:") || strings.HasPrefix(path, "arn:") {
+	// In most cases AWS SSM stores would have been caught by the earlier check,
+	// but that check relies on the store having been registered. This additional
+	// check ensures a faulty build that failed to register the store doesn't
+	// generate hardware keys for a portable state path.
+	if strings.HasPrefix(path, "arn:") {
 		return true
 	}
 	return false

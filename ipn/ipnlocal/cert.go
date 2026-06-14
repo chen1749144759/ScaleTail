@@ -280,9 +280,9 @@ func (b *LocalBackend) domainRenewalTimeByARI(cs certStore, pair *TLSCertKeyPair
 	return renewTime, nil
 }
 
-// certStore provides a way to perist and retrieve TLS certificates.
-// As of 2023-02-01, we use store certs in directories on disk everywhere
-// except on Kubernetes, where we use the state store.
+// certStore provides a way to persist and retrieve TLS certificates.
+// Most deployments store certs in directories on disk; custom state stores can
+// opt in to storing certificate material alongside node state.
 type certStore interface {
 	// Read returns the cert and key for domain, if they exist and are valid
 	// for now. If they're expired, it returns errCertExpired.
@@ -408,9 +408,7 @@ type certStateStore struct {
 
 // TLSCertKeyReader is an interface implemented by state stores where it makes
 // sense to read the TLS cert and key in a single operation that can be
-// distinguished from generic state value reads. Currently this is only implemented
-// by the kubestore.Store, which, in some cases, need to read cert and key from a
-// non-cached TLS Secret.
+// distinguished from generic state value reads.
 type TLSCertKeyReader interface {
 	ReadTLSCertAndKey(domain string) ([]byte, []byte, error)
 }
@@ -459,9 +457,8 @@ func (s certStateStore) WriteACMEKey(key []byte) error {
 	return ipn.WriteState(s.StateStore, ipn.StateKey(acmePEMName), key)
 }
 
-// TLSCertKeyWriter is an interface implemented by state stores that can write the TLS
-// cert and key in a single atomic operation. Currently this is only implemented
-// by the kubestore.StoreKube.
+// TLSCertKeyWriter is an interface implemented by state stores that can write
+// the TLS cert and key in a single atomic operation.
 type TLSCertKeyWriter interface {
 	WriteTLSCertAndKey(domain string, cert, key []byte) error
 }

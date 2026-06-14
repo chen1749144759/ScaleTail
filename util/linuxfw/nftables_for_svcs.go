@@ -18,15 +18,13 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// This file contains functionality that is currently (09/2024) used to set up
-// routing for the Tailscale Kubernetes operator egress proxies. A tailnet
-// service (identified by tailnet IP or FQDN) that gets exposed to cluster
-// workloads gets a separate prerouting chain created for it for each IP family
-// of the chain's target addresses. Each service's prerouting chain contains one
-// or more portmapping rules. A portmapping rule DNATs traffic received on a
-// particular port to a port of the tailnet service. Creating a chain per
-// service makes it easier to delete a service when no longer needed and helps
-// with readability.
+// This file contains functionality used to set up service routing proxies. A
+// tailnet service identified by tailnet IP or FQDN gets a separate prerouting
+// chain for each IP family of the chain's target addresses. Each service's
+// prerouting chain contains one or more portmapping rules. A portmapping rule
+// DNATs traffic received on a particular port to a port of the tailnet service.
+// Creating a chain per service makes it easier to delete a service when no
+// longer needed and helps with readability.
 
 // EnsurePortMapRuleForSvc:
 // - ensures that nat table exists
@@ -120,9 +118,8 @@ func (n *nftablesRunner) DeleteSvc(svc, tun string, targetIPs []netip.Addr, pm [
 }
 
 // EnsureDNATRuleForSvc adds a DNAT rule that forwards traffic from the
-// VIPService IP address to a local address. This is used by the Kubernetes
-// operator's network layer proxies to forward tailnet traffic for VIPServices
-// to Kubernetes Services.
+// VIPService IP address to a local address. This is used by service routing
+// proxies to forward tailnet traffic for VIPServices to local backends.
 func (n *nftablesRunner) EnsureDNATRuleForSvc(svc string, origDst, dst netip.Addr) error {
 	t, ch, err := n.ensurePreroutingChain(origDst)
 	if err != nil {

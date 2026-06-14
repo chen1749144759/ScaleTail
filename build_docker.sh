@@ -1,19 +1,19 @@
 #!/usr/bin/env sh
 #
-# This script builds Tailscale container images using
+# This script builds ScaleTail container images using
 # github.com/tailscale/mkctr.
 # By default the images will be tagged with the current version and git
 # hash of this repository as produced by ./cmd/mkversion.
-# This is the image build mechanism used to build the official Tailscale
+# This is the image build mechanism used to build the ScaleTail
 # container images.
 #
 # If you want to build local images for testing, you can use make, which provides few convenience wrappers around this script.
 #
-# To build a Tailscale image and push to the local docker registry:
+# To build a ScaleTail image and push to the local docker registry:
 
 #   $ REPO=local/scaletail TAGS=v0.0.1 PLATFORM=local  make publishdevimage
 #
-# To build a Tailscale image and push to a remote docker registry:
+# To build a ScaleTail image and push to a remote docker registry:
 #
 #   $ REPO=<your-registry>/<your-repo>/scaletail TAGS=v0.0.1  make publishdevimage
 
@@ -28,10 +28,10 @@ DEFAULT_TARGET="client"
 DEFAULT_TAGS="v${VERSION_SHORT},v${VERSION_MINOR}"
 DEFAULT_BASE="tailscale/alpine-base:3.22"
 # Set a few pre-defined OCI annotations. The source annotation is used by tools such as Renovate that scan the linked
-# Github repo to find release notes for any new image tags. Note that for official Tailscale images the default
+# Github repo to find release notes for any new image tags. Note that for ScaleTail images the default
 # annotations defined here will be overriden by release scripts that call this script.
 # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
-DEFAULT_ANNOTATIONS="org.opencontainers.image.source=https://github.com/tailscale/tailscale/blob/main/build_docker.sh,org.opencontainers.image.vendor=Tailscale"
+DEFAULT_ANNOTATIONS="org.opencontainers.image.source=https://github.com/chen1749144759/ScaleTail/blob/main/build_docker.sh,org.opencontainers.image.vendor=ScaleTail"
 
 PUSH="${PUSH:-false}"
 TARGET="${TARGET:-${DEFAULT_TARGET}}"
@@ -46,11 +46,11 @@ ANNOTATIONS="${ANNOTATIONS:-${DEFAULT_ANNOTATIONS}}"
 
 case "$TARGET" in
   client)
-    DEFAULT_REPOS="tailscale/tailscale"
+    DEFAULT_REPOS="ghcr.io/chen1749144759/scaletail"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
       --gopaths="\
-        scaletail.com/cmd/scaletail:/usr/local/bin/tailscale, \
+        scaletail.com/cmd/scaletail:/usr/local/bin/scaletail, \
         scaletail.com/cmd/scaletaild:/usr/local/bin/scaletaild" \
       --ldflags="\
         -X scaletail.com/version.longStamp=${VERSION_LONG} \
@@ -68,7 +68,7 @@ case "$TARGET" in
       /usr/local/bin/scaletaild
     ;;
   tsidp)
-    DEFAULT_REPOS="tailscale/tsidp"
+    DEFAULT_REPOS="ghcr.io/chen1749144759/scaletail-tsidp"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
       --gopaths="scaletail.com/cmd/tsidp:/usr/local/bin/tsidp" \

@@ -96,11 +96,6 @@ func TestIsPortableStore(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "kube_store",
-			path: "kube:my-secret",
-			want: true,
-		},
-		{
 			name: "aws_arn_store",
 			path: "arn:aws:ssm:us-east-1:123456789012:parameter/tailscale/state",
 			want: true,

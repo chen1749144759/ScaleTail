@@ -1569,7 +1569,7 @@ const (
 	// PeerCapabilityKubernetes grants a peer Kubernetes-specific
 	// capabilities, such as the ability to impersonate specific Tailscale
 	// user groups as Kubernetes user groups. This capability is read by
-	// peers that are Tailscale Kubernetes operator instances.
+	// peers that act as service routing agents.
 	PeerCapabilityKubernetes PeerCapability = "scaletail.com/cap/kubernetes"
 
 	// PeerCapabilityRelay grants the ability for a peer to allocate relay

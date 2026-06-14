@@ -251,8 +251,7 @@ func (n *nftablesRunner) EnsureSNATForDst(src, dst netip.Addr) error {
 // interface> - 40 (IP and TCP headers). This can be useful if this tailscale
 // instance is expected to run as a forwarding proxy, forwarding packets from an
 // endpoint with higher MTU in an environment where path MTU discovery is
-// expected to not work (such as the proxies created by the Tailscale Kubernetes
-// operator). ClamMSSToPMTU creates a new base-chain ts-clamp in the filter
+// expected to not work. ClampMSSToPMTU creates a new base-chain ts-clamp in the filter
 // table with accept policy and priority -150. In practice, this means that for
 // SYN packets the clamp rule in this chain will likely run first and accept the
 // packet. This is fine because 1) nftables run ALL chains with the same hook
@@ -549,7 +548,7 @@ type NetfilterRunner interface {
 	// AddDNATRule adds a rule to the nat/PREROUTING chain to DNAT traffic
 	// destined for the given original destination to the given new destination.
 	// This is used to forward all traffic destined for the Tailscale interface
-	// to the provided destination, as used in the Kubernetes ingress proxies.
+	// to the provided destination, as used in service routing proxies.
 	AddDNATRule(origDst, dst netip.Addr) error
 
 	// DNATWithLoadBalancer adds a rule to the nat/PREROUTING chain to DNAT
@@ -557,20 +556,20 @@ type NetfilterRunner interface {
 	// destination(s) using round robin to load balance if more than one
 	// destination is provided. This is used to forward all traffic destined
 	// for the Tailscale interface to the provided destination(s), as used
-	// in the Kubernetes ingress proxies.
+	// in service routing proxies.
 	DNATWithLoadBalancer(origDst netip.Addr, dsts []netip.Addr) error
 
 	// EnsureSNATForDst sets up firewall to mask the source for traffic destined for dst to src:
 	// - creates a SNAT rule if it doesn't already exist
 	// - deletes any pre-existing rules matching the destination
 	// This is used to forward traffic destined for the local machine over
-	// the Tailscale interface, as used in the Kubernetes egress proxies.
+	// the Tailscale interface, as used in service routing proxies.
 	EnsureSNATForDst(src, dst netip.Addr) error
 
 	// DNATNonTailscaleTraffic adds a rule to the nat/PREROUTING chain to DNAT
 	// all traffic inbound from any interface except exemptInterface to dst.
 	// This is used to forward traffic destined for the local machine over
-	// the Tailscale interface, as used in the Kubernetes egress proxies.
+	// the Tailscale interface, as used in service routing proxies.
 	DNATNonTailscaleTraffic(exemptInterface string, dst netip.Addr) error
 
 	EnsurePortMapRuleForSvc(svc, tun string, targetIP netip.Addr, pm PortMap) error

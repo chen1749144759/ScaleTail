@@ -51,8 +51,6 @@ const TPMPrefix = "tpmseal:"
 //     is ignored and an in-memory store is used.
 //   - (Linux-only) if the string begins with "arn:",
 //     the suffix an AWS ARN for an SSM.
-//   - (Linux-only) if the string begins with "kube:",
-//     the suffix is a Kubernetes secret name
 //   - (Linux or Windows) if the string begins with "tpmseal:", the suffix is
 //     filepath that is sealed with the local TPM device.
 //   - In all other cases, the path is treated as a filepath.

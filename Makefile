@@ -1,4 +1,4 @@
-IMAGE_REPO ?= tailscale/tailscale
+IMAGE_REPO ?= ghcr.io/chen1749144759/scaletail
 TAGS ?= "latest"
 
 PLATFORM ?= "flyio" ## flyio==linux/amd64. Set to "" to build all platforms.
@@ -45,22 +45,22 @@ depaware: ## Run depaware checks
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --file=depaware-min.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min)" --vendor --internal \
 		scaletail.com/cmd/scaletaild
 
-buildwindows: ## Build tailscale CLI for windows/amd64
+buildwindows: ## Build ScaleTail CLI for windows/amd64
 	GOOS=windows GOARCH=amd64 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
-build386: ## Build tailscale CLI for linux/386
+build386: ## Build ScaleTail CLI for linux/386
 	GOOS=linux GOARCH=386 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
-buildlinuxarm: ## Build tailscale CLI for linux/arm
+buildlinuxarm: ## Build ScaleTail CLI for linux/arm
 	GOOS=linux GOARCH=arm ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
-buildwasm: ## Build tailscale CLI for js/wasm
+buildwasm: ## Build ScaleTail CLI for js/wasm
 	GOOS=js GOARCH=wasm ./tool/go install ./cmd/tsconnect/wasm ./cmd/scaletail/cli
 
 buildplan9:
 	GOOS=plan9 GOARCH=amd64 ./tool/go install ./cmd/scaletail ./cmd/scaletaild
 
-buildlinuxloong64: ## Build tailscale CLI for linux/loong64
+buildlinuxloong64: ## Build ScaleTail CLI for linux/loong64
 	GOOS=linux GOARCH=loong64 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
 buildmultiarchimage: ## Build (and optionally push) multiarch docker image
@@ -74,7 +74,7 @@ staticcheck: ## Run staticcheck.io checks
 .PHONY: check-image-repo
 check-image-repo:
 	@if [ -z "$(REPO)" ]; then \
-		echo "REPO=... required; e.g. REPO=ghcr.io/$$USER/tailscale" >&2; \
+		echo "REPO=... required; e.g. REPO=ghcr.io/$$USER/scaletail" >&2; \
 		exit 1; \
 	fi
 	@for repo in tailscale/tailscale ghcr.io/tailscale/tailscale \
@@ -85,7 +85,7 @@ check-image-repo:
 		fi; \
 	done
 
-publishdevimage: check-image-repo ## Build and publish tailscale image to location specified by ${REPO}
+publishdevimage: check-image-repo ## Build and publish ScaleTail image to location specified by ${REPO}
 	TAGS="${TAGS}" REPOS=${REPO} PLATFORM=${PLATFORM} PUSH=true TARGET=client ./build_docker.sh
 
 publishdevtsidp: check-image-repo ## Build and publish tsidp image to location specified by ${REPO}

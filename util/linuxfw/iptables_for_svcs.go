@@ -11,9 +11,9 @@ import (
 )
 
 // This file contains functionality to insert portmapping rules for a 'service'.
-// These are currently only used by the Kubernetes operator proxies.
+// These are used by service routing proxies.
 // An iptables rule for such a service contains a comment with the service name.
-// A 'service' corresponds to a VIPService as used by the Kubernetes operator.
+// A 'service' corresponds to a VIPService routed by a local proxy.
 
 // EnsurePortMapRuleForSvc adds a prerouting rule that forwards traffic received
 // on match port and NOT on the provided interface to target IP and target port.
@@ -48,9 +48,8 @@ func (i *iptablesRunner) DeletePortMapRuleForSvc(svc, excludeI string, targetIP 
 }
 
 // EnsureDNATRuleForSvc adds a DNAT rule that forwards traffic from the
-// VIPService IP address to a local address. This is used by the Kubernetes
-// operator's network layer proxies to forward tailnet traffic for VIPServices
-// to Kubernetes Services.
+// VIPService IP address to a local address. This is used by service routing
+// proxies to forward tailnet traffic for VIPServices to local backends.
 func (i *iptablesRunner) EnsureDNATRuleForSvc(svcName string, origDst, dst netip.Addr) error {
 	table := i.getIPTByAddr(dst)
 	args := argsForIngressRule(svcName, origDst, dst)

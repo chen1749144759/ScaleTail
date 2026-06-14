@@ -417,7 +417,7 @@ func App() string {
 // IsCertShareReadOnlyMode returns true if this replica should never attempt to
 // issue or renew TLS credentials for any of the HTTPS endpoints that it is
 // serving. It should only return certs found in its cert store.  Currently,
-// this is used by the Kubernetes Operator's HA Ingress via VIPServices, where
+// this is used by high-availability service routing via VIPServices, where
 // multiple Ingress proxy instances serve the same HTTPS endpoint with a shared
 // TLS credentials. The TLS credentials should only be issued by one of the
 // replicas.
