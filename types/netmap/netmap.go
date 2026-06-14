@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
-	"tailscale.com/types/views"
-	"tailscale.com/util/set"
-	"tailscale.com/wgengine/filter/filtertype"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
+	"scaletail.com/types/views"
+	"scaletail.com/util/set"
+	"scaletail.com/wgengine/filter/filtertype"
 )
 
 // NetworkMap is the current state of the world.

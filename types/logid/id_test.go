@@ -7,8 +7,8 @@ import (
 	"math"
 	"testing"
 
-	"tailscale.com/tstest"
-	"tailscale.com/util/must"
+	"scaletail.com/tstest"
+	"scaletail.com/util/must"
 )
 
 func TestIDs(t *testing.T) {

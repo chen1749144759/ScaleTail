@@ -1,4 +1,4 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package qnap
@@ -6,7 +6,7 @@ package qnap
 import (
 	"slices"
 
-	"tailscale.com/release/dist"
+	"scaletail.com/release/dist"
 )
 
 // Targets defines the dist.Targets for QNAP devices.

@@ -19,7 +19,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"tailscale.com/util/precompress"
+	"scaletail.com/util/precompress"
 )
 
 var (

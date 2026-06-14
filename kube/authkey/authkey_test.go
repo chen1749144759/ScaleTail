@@ -12,10 +12,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/ipn"
-	"tailscale.com/kube/kubeapi"
-	"tailscale.com/kube/kubeclient"
-	"tailscale.com/kube/kubetypes"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/kubeapi"
+	"scaletail.com/kube/kubeclient"
+	"scaletail.com/kube/kubetypes"
 )
 
 func TestSetReissueAuthKey(t *testing.T) {

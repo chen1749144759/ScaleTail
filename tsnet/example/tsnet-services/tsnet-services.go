@@ -35,8 +35,8 @@
 //	   "ip": ["*"],
 //	],
 //
-// [Define a Service]: https://tailscale.com/kb/1552/tailscale-services#step-1-define-a-tailscale-service
-// [Generate an auth key]: https://tailscale.com/kb/1085/auth-keys#generate-an-auth-key
+// [Define a Service]: https://scaletail.com/kb/1552/tailscale-services#step-1-define-a-tailscale-service
+// [Generate an auth key]: https://scaletail.com/kb/1085/auth-keys#generate-an-auth-key
 package main
 
 import (
@@ -45,7 +45,7 @@ import (
 	"log"
 	"net/http"
 
-	"tailscale.com/tsnet"
+	"scaletail.com/tsnet"
 )
 
 var (

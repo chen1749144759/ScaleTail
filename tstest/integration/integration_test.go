@@ -33,25 +33,25 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/miekg/dns"
 	"go4.org/mem"
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale"
-	"tailscale.com/cmd/testwrapper/flakytest"
-	"tailscale.com/feature"
-	_ "tailscale.com/feature/clientupdate"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tstun"
-	"tailscale.com/net/udprelay/status"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail"
+	"scaletail.com/cmd/testwrapper/flakytest"
+	"scaletail.com/feature"
+	_ "scaletail.com/feature/clientupdate"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tstun"
+	"scaletail.com/net/udprelay/status"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
 )
 
 func TestMain(m *testing.M) {
@@ -1189,7 +1189,7 @@ func TestClientSideJailing(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	waitPeerIsJailed := func(t *testing.T, b *tailscale.IPNBusWatcher, jailed bool) {
+	waitPeerIsJailed := func(t *testing.T, b *scaletail.IPNBusWatcher, jailed bool) {
 		t.Helper()
 		for {
 			n, err := b.Next()

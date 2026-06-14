@@ -18,17 +18,17 @@ import (
 	"time"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/portmapper/portmappertype"
-	"tailscale.com/net/tlsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/set"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/portmapper/portmappertype"
+	"scaletail.com/net/tlsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/set"
 
 	// The "netcheck" command also wants the portmapper linked.
 	//
@@ -36,7 +36,7 @@ import (
 	// scaletaild subcommand, to avoid making the CLI also link in the portmapper.
 	// For now (2025-09-15), keep doing what we've done for the past five years and
 	// keep linking it here.
-	_ "tailscale.com/feature/condregister/portmapper"
+	_ "scaletail.com/feature/condregister/portmapper"
 )
 
 var netcheckCmd = &ffcli.Command{

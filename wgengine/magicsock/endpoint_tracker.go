@@ -8,11 +8,11 @@ import (
 	"slices"
 	"time"
 
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tempfork/heap"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tempfork/heap"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
 )
 
 const (

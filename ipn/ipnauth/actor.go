@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
 )
 
 // AuditLogFunc is any function that can be used to log audit actions performed by an [Actor].

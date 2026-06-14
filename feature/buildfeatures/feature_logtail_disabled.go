@@ -7,7 +7,7 @@
 
 package buildfeatures
 
-// HasLogTail is whether the binary was built with support for modular feature "upload logs to log.tailscale.com (debug logs for bug reports and also by network flow logs if enabled)".
+// HasLogTail is whether the binary was built with support for modular feature "upload logs to log.scaletail.com (debug logs for bug reports and also by network flow logs if enabled)".
 // Specifically, it's whether the binary was NOT built with the "ts_omit_logtail" build tag.
 // It's a const so it can be used for dead code elimination.
 const HasLogTail = false

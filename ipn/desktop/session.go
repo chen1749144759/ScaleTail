@@ -6,7 +6,7 @@ package desktop
 import (
 	"fmt"
 
-	"tailscale.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnauth"
 )
 
 // SessionID is a unique identifier of a desktop session.

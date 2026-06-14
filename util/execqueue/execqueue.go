@@ -8,7 +8,7 @@ import (
 	"context"
 	"errors"
 
-	"tailscale.com/syncs"
+	"scaletail.com/syncs"
 )
 
 type ExecQueue struct {

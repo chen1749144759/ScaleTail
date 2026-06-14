@@ -17,11 +17,11 @@ import (
 
 	"golang.org/x/net/route"
 	"golang.org/x/sys/unix"
-	"tailscale.com/envknob"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
-	"tailscale.com/version"
+	"scaletail.com/envknob"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
+	"scaletail.com/version"
 )
 
 func control(logf logger.Logf, netMon *netmon.Monitor) func(network, address string, c syscall.RawConn) error {

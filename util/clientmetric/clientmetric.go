@@ -20,9 +20,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/util/set"
-	"tailscale.com/util/testenv"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/util/set"
+	"scaletail.com/util/testenv"
 )
 
 var (

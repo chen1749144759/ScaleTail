@@ -5,7 +5,7 @@
 // to add to during init that scaletaild calls at runtime.
 package scaletaildhooks
 
-import "tailscale.com/feature"
+import "scaletail.com/feature"
 
 // UninstallSystemDaemonWindows is called when the Windows
 // system daemon is uninstalled.

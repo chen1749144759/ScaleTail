@@ -7,8 +7,8 @@ The tsnet-services example demonstrates how to use tsnet with Services.
 To run this example yourself:
 
  1. Add access controls which (i) define a new ACL tag, (ii) allow the demo node to host the Service, and (iii) allow peers on the tailnet to reach the Service. A sample ACL policy is provided below.
- 2. [Generate an auth key](https://tailscale.com/kb/1085/auth-keys#generate-an-auth-key) using the Tailscale admin panel. When doing so, add your new tag to your key (Service hosts must be tagged nodes).
- 3. [Define a Service](https://tailscale.com/kb/1552/tailscale-services#step-1-define-a-tailscale-service). For the purposes of this demo, it must be defined to listen on TCP port 443. Note that you only need to follow Step 1 in the linked document.
+ 2. [Generate an auth key](https://scaletail.com/kb/1085/auth-keys#generate-an-auth-key) using the Tailscale admin panel. When doing so, add your new tag to your key (Service hosts must be tagged nodes).
+ 3. [Define a Service](https://scaletail.com/kb/1552/tailscale-services#step-1-define-a-tailscale-service). For the purposes of this demo, it must be defined to listen on TCP port 443. Note that you only need to follow Step 1 in the linked document.
  4. Run the demo on the command line (step 4 command shown below).
 
 Command for step 4:

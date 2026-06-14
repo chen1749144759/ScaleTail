@@ -14,9 +14,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"tailscale.com/health"
-	"tailscale.com/net/bakedroots"
-	"tailscale.com/util/eventbus/eventbustest"
+	"scaletail.com/health"
+	"scaletail.com/net/bakedroots"
+	"scaletail.com/util/eventbus/eventbustest"
 )
 
 func TestFallbackRootWorks(t *testing.T) {

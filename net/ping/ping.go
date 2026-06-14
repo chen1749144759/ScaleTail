@@ -23,9 +23,9 @@ import (
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/mak"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/mak"
 )
 
 const (

@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/util/must"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/util/must"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 func TestReaderLifecycle(t *testing.T) {

@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/ipn/desktop"
+import _ "scaletail.com/ipn/desktop"

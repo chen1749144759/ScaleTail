@@ -203,7 +203,7 @@ func computeAffected(pkgs []*packages.Package, tag string) map[string]bool {
 }
 
 func isThirdParty(pkg string) bool {
-	return strings.HasPrefix(pkg, "tailscale.com/tempfork/")
+	return strings.HasPrefix(pkg, "scaletail.com/tempfork/")
 }
 
 // hasBuildTag reports whether any source file in pkg mentions `tag`

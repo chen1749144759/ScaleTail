@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 func TestServeUnixSocketCLI(t *testing.T) {

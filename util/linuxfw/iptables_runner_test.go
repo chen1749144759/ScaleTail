@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tsconst"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tsconst"
 )
 
 var testIsNotExistErr = "exitcode:1"

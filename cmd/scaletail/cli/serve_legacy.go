@@ -25,12 +25,12 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/version"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/version"
 )
 
 func init() {
@@ -68,7 +68,7 @@ your tailnet.
 You can also choose to enable the Tailscale Funnel with:
 'scaletail funnel on'. Funnel allows you to publish
 a 'scaletail serve' server publicly, open to the entire
-internet. See https://tailscale.com/funnel.
+internet. See https://scaletail.com/funnel.
 
 EXAMPLES
   - To proxy requests to a web server at 127.0.0.1:3000:

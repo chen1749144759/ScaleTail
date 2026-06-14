@@ -10,17 +10,17 @@ import (
 	"reflect"
 	"testing"
 
-	"tailscale.com/appc"
-	"tailscale.com/ipn"
-	"tailscale.com/net/dns"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/cloudenv"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/set"
+	"scaletail.com/appc"
+	"scaletail.com/ipn"
+	"scaletail.com/net/dns"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/cloudenv"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/set"
 )
 
 func ipps(ippStrs ...string) (ipps []netip.Prefix) {

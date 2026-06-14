@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/appconnectors"
+import _ "scaletail.com/feature/appconnectors"

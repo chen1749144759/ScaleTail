@@ -26,28 +26,28 @@ import (
 	"time"
 
 	dns "golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/net/dns/publicdns"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/neterror"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netx"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/syncs"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/nettype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/cloudenv"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/race"
-	"tailscale.com/version"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/net/dns/publicdns"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/neterror"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netx"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/syncs"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/nettype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/cloudenv"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/race"
+	"scaletail.com/version"
 )
 
 // headerBytes is the number of bytes in a DNS message header.
@@ -539,7 +539,7 @@ func (f *forwarder) getKnownDoHClientForProvider(urlBase string) (c *http.Client
 	})
 	tlsConfig := &tls.Config{
 		// Enforce TLS 1.3, as all of our supported DNS-over-HTTPS servers are compatible with it
-		// (see tailscale.com/net/dns/publicdns/publicdns.go).
+		// (see scaletail.com/net/dns/publicdns/publicdns.go).
 		MinVersion: tls.VersionTLS13,
 	}
 	c = &http.Client{

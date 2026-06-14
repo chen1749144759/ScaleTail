@@ -1,20 +1,20 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-package main // import "tailscale.com/cmd/scaletaild"
+package main // import "scaletail.com/cmd/scaletaild"
 
 import (
 	"os"
 	"strings"
 	"testing"
 
-	"tailscale.com/envknob"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netmon"
-	"tailscale.com/tsd"
-	"tailscale.com/tstest/deptest"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/must"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netmon"
+	"scaletail.com/tsd"
+	"scaletail.com/tstest/deptest"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/must"
 )
 
 func TestNothing(t *testing.T) {
@@ -42,7 +42,7 @@ func TestDeps(t *testing.T) {
 			"testing":                                        "do not use testing package in production code",
 			"gvisor.dev/gvisor/pkg/hostarch":                 "will crash on non-4K page sizes; see https://github.com/tailscale/tailscale/issues/8658",
 			"google.golang.org/protobuf/proto":               "unexpected",
-			"github.com/prometheus/client_golang/prometheus": "use tailscale.com/metrics in scaletaild",
+			"github.com/prometheus/client_golang/prometheus": "use scaletail.com/metrics in scaletaild",
 		},
 	}.Check(t)
 }

@@ -7,9 +7,9 @@ import (
 	"context"
 	"time"
 
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
 )
 
 type rateLimitingBusSender struct {

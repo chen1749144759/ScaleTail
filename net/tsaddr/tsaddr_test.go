@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/types/views"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/types/views"
 )
 
 func TestInCrostiniRange(t *testing.T) {

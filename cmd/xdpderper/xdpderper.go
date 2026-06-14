@@ -15,12 +15,12 @@ import (
 	"syscall"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"tailscale.com/derp/xdp"
-	"tailscale.com/net/netutil"
-	"tailscale.com/tsweb"
+	"scaletail.com/derp/xdp"
+	"scaletail.com/net/netutil"
+	"scaletail.com/tsweb"
 
 	// Support for prometheus varz in tsweb
-	_ "tailscale.com/tsweb/promvarz"
+	_ "scaletail.com/tsweb/promvarz"
 )
 
 var (

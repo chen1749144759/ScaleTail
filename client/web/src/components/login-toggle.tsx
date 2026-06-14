@@ -174,7 +174,7 @@ function ReadonlyModeContent({ auth }: { auth: AuthResponse }) {
       <p className="text-gray-500 text-xs">
         This web interface is running in read-only mode.{" "}
         <a
-          href="https://tailscale.com/s/web-client-read-only"
+          href="https://scaletail.com/s/web-client-read-only"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"
@@ -264,7 +264,7 @@ function LoginModeContent({
               </>
             )}{" "}
             <a
-              href="https://tailscale.com/s/web-client-access"
+              href="https://scaletail.com/s/web-client-access"
               className="text-blue-700"
               target="_blank"
               rel="noreferrer"
@@ -340,7 +340,7 @@ function ManageModeContent({
             You don’t have permission to make changes to this device, but you
             can view most of its details.{" "}
             <a
-              href="https://tailscale.com/s/web-client-access"
+              href="https://scaletail.com/s/web-client-access"
               className="text-blue-700"
               target="_blank"
               rel="noreferrer"

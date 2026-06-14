@@ -10,9 +10,9 @@ import (
 	"flag"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/systray"
-	"tailscale.com/paths"
+	"scaletail.com/client/local"
+	"scaletail.com/client/systray"
+	"scaletail.com/paths"
 )
 
 var socket = flag.String("socket", paths.DefaultScaleTaildSocket(), "scaletaild socket 路径")

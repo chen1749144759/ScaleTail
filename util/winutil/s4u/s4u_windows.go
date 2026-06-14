@@ -22,10 +22,10 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/cmd/scaletaild/childproc"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/winutil"
-	"tailscale.com/util/winutil/conpty"
+	"scaletail.com/cmd/scaletaild/childproc"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/winutil"
+	"scaletail.com/util/winutil/conpty"
 )
 
 func init() {

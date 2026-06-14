@@ -19,7 +19,7 @@ import (
 	"github.com/tailscale/wireguard-go/device"
 	"github.com/tailscale/wireguard-go/tun"
 	"golang.org/x/crypto/curve25519"
-	"tailscale.com/wgengine/wgcfg"
+	"scaletail.com/wgengine/wgcfg"
 )
 
 func init() {

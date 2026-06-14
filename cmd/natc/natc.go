@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // The natc command is a work-in-progress implementation of a NAT based
-// connector for Tailscale. It is intended to be used to route traffic to a
+// connector for ScaleTail. It is intended to be used to route traffic to a
 // specific domain through a specific node.
 package main
 
@@ -29,18 +29,18 @@ import (
 	"github.com/peterbourgon/ff/v3"
 	"go4.org/netipx"
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/cmd/natc/ippool"
-	"tailscale.com/envknob"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netutil"
-	"tailscale.com/tsnet"
-	"tailscale.com/tsweb"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/wgengine/netstack"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/cmd/natc/ippool"
+	"scaletail.com/envknob"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netutil"
+	"scaletail.com/tsnet"
+	"scaletail.com/tsweb"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/wgengine/netstack"
 )
 
 func main() {
@@ -500,9 +500,9 @@ func v4ForV6(v6 netip.Addr) netip.Addr {
 
 // tsMBox is the mailbox used in SOA records.
 // The convention is to replace the @ symbol with a dot.
-// So in this case, the mailbox is support.tailscale.com. with the trailing dot
+// So in this case, the mailbox is support.scaletail.com. with the trailing dot
 // to indicate that it is a fully qualified domain name.
-var tsMBox = dnsmessage.MustNewName("support.tailscale.com.")
+var tsMBox = dnsmessage.MustNewName("support.scaletail.com.")
 
 // handleTCPFlow handles a TCP flow from the given source to the given
 // destination. It uses the source address to determine the node that sent the

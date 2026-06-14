@@ -16,13 +16,13 @@ import (
 
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
-	"tailscale.com/tstest"
-	"tailscale.com/util/cibuild"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/winutil"
-	"tailscale.com/util/winutil/gp"
+	"scaletail.com/tstest"
+	"scaletail.com/util/cibuild"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/winutil"
+	"scaletail.com/util/winutil/gp"
 )
 
 // subkeyStrings is a test type indicating that a string slice should be written

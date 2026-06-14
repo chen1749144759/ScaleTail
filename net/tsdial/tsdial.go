@@ -19,22 +19,22 @@ import (
 	"time"
 
 	"github.com/gaissmai/bart"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/netknob"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/netx"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/testenv"
-	"tailscale.com/version"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/netknob"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/netx"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/testenv"
+	"scaletail.com/version"
 )
 
 // NewDialer returns a new Dialer that can dial out of scaletaild.
@@ -116,7 +116,7 @@ func (c sysConn) Close() error {
 	return nil
 }
 
-// SetTUNName sets the name of the tun device in use ("tailscale0", "utun6",
+// SetTUNName sets the name of the tun device in use ("scaletail0", "utun6",
 // etc). This is needed on some platforms to set sockopts to bind
 // to the same interface index.
 func (d *Dialer) SetTUNName(name string) {
@@ -126,7 +126,7 @@ func (d *Dialer) SetTUNName(name string) {
 }
 
 // TUNName returns the name of the tun device in use, if any.
-// Example format ("tailscale0", "utun6").
+// Example format ("scaletail0", "utun6").
 func (d *Dialer) TUNName() string {
 	d.mu.Lock()
 	defer d.mu.Unlock()

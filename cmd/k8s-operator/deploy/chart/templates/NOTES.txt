@@ -11,18 +11,18 @@ Fail on presence of removed TS_EXPERIMENTAL_KUBE_API_EVENTS extraEnv var.
 You have successfully installed the Tailscale Kubernetes Operator!
 
 Once connected, the operator should appear as a device within the Tailscale admin console:
-https://login.tailscale.com/admin/machines
+https://login.scaletail.com/admin/machines
 
 If you have not used the Tailscale operator before, here are some examples to try out:
 
 * Private Kubernetes API access and authorization using the API server proxy
-  https://tailscale.com/kb/1437/kubernetes-operator-api-server-proxy
+  https://scaletail.com/kb/1437/kubernetes-operator-api-server-proxy
 
 * Private access to cluster Services using an ingress proxy
-  https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress
+  https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress
 
 * Private access to the cluster's available subnets using a subnet router
-  https://tailscale.com/kb/1441/kubernetes-operator-connector
+  https://scaletail.com/kb/1441/kubernetes-operator-connector
 
 You can also explore the CRDs, operator, and associated resources within the {{ .Release.Namespace }} namespace:
 

@@ -25,17 +25,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/k8s-proxy/conf"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/k8s-proxy/conf"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
 )
 
 const (
-	proxyPGFinalizerName = "tailscale.com/kube-apiserver-finalizer"
+	proxyPGFinalizerName = "scaletail.com/kube-apiserver-finalizer"
 
 	// Reasons for KubeAPIServerProxyValid condition.
 	reasonKubeAPIServerProxyInvalid = "KubeAPIServerProxyInvalid"

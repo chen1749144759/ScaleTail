@@ -8,8 +8,8 @@ import (
 	"flag"
 	"strings"
 
-	"tailscale.com/util/prompt"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/prompt"
+	"scaletail.com/util/testenv"
 )
 
 var (

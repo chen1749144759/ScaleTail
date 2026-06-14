@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/tsnet"
+	"scaletail.com/tsnet"
 )
 
 func generateName(prefix string) string {

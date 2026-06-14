@@ -5,7 +5,7 @@
 
 package desktop
 
-import "tailscale.com/types/logger"
+import "scaletail.com/types/logger"
 
 // NewSessionManager returns a new [SessionManager] for the current platform,
 // [ErrNotImplemented] if the platform is not supported, or an error if the

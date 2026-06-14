@@ -18,7 +18,7 @@ import (
 
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/imports"
-	"tailscale.com/util/mak"
+	"scaletail.com/util/mak"
 )
 
 var flagCopyright = flag.Bool("copyright", true, "add Tailscale copyright to generated file headers")

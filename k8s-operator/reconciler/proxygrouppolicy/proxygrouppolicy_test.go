@@ -15,8 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/reconciler/proxygrouppolicy"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/reconciler/proxygrouppolicy"
 )
 
 func TestReconciler_Reconcile(t *testing.T) {

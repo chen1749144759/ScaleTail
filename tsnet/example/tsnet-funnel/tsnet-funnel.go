@@ -15,7 +15,7 @@ import (
 	"log"
 	"net/http"
 
-	"tailscale.com/tsnet"
+	"scaletail.com/tsnet"
 )
 
 func main() {

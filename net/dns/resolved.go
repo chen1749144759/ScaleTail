@@ -14,10 +14,10 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"golang.org/x/sys/unix"
-	"tailscale.com/health"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/health"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/dnsname"
 )
 
 // DBus entities we talk to.

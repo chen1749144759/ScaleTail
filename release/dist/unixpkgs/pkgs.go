@@ -17,7 +17,7 @@ import (
 
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
-	"tailscale.com/release/dist"
+	"scaletail.com/release/dist"
 )
 
 const (
@@ -60,11 +60,11 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
+	ts, err := b.BuildGoBinary("scaletail.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
+	tsd, err := b.BuildGoBinary("scaletail.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err := addDir(dir); err != nil {
 			return nil, err
 		}
-		scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
+		scaletaildDir, err := b.GoPkg("scaletail.com/cmd/scaletaild")
 		if err != nil {
 			return nil, err
 		}
@@ -201,20 +201,20 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
+	ts, err := b.BuildGoBinary("scaletail.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
+	tsd, err := b.BuildGoBinary("scaletail.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
 
-	scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
+	scaletaildDir, err := b.GoPkg("scaletail.com/cmd/scaletaild")
 	if err != nil {
 		return nil, err
 	}
-	repoDir, err := b.GoPkg("tailscale.com")
+	repoDir, err := b.GoPkg("scaletail.com")
 	if err != nil {
 		return nil, err
 	}
@@ -347,20 +347,20 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 	if err := b.BuildWebClientAssets(); err != nil {
 		return nil, err
 	}
-	ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", t.goEnv)
+	ts, err := b.BuildGoBinary("scaletail.com/cmd/scaletail", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
-	tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", t.goEnv)
+	tsd, err := b.BuildGoBinary("scaletail.com/cmd/scaletaild", t.goEnv)
 	if err != nil {
 		return nil, err
 	}
 
-	scaletaildDir, err := b.GoPkg("tailscale.com/cmd/scaletaild")
+	scaletaildDir, err := b.GoPkg("scaletail.com/cmd/scaletaild")
 	if err != nil {
 		return nil, err
 	}
-	repoDir, err := b.GoPkg("tailscale.com")
+	repoDir, err := b.GoPkg("scaletail.com")
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +473,7 @@ func (t *guiPackageTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, fmt.Errorf("unsupported GUI package type %q", t.pkgType)
 	}
 
-	repoDir, err := b.GoPkg("tailscale.com")
+	repoDir, err := b.GoPkg("scaletail.com")
 	if err != nil {
 		return nil, err
 	}

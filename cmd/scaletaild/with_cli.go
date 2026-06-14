@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"tailscale.com/cmd/scaletail/cli"
+	"scaletail.com/cmd/scaletail/cli"
 )
 
 func init() {

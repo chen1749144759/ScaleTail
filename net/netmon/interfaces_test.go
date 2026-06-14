@@ -9,7 +9,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestGetState(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/types/logid"
+	"scaletail.com/types/logid"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 		}()
 	}
 
-	req, err := http.NewRequest("GET", "https://log.tailscale.com/c/"+*collection+"?stream=true", nil)
+	req, err := http.NewRequest("GET", "https://log.scaletail.com/c/"+*collection+"?stream=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

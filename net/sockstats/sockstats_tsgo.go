@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"tailscale.com/net/netmon"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/version"
+	"scaletail.com/net/netmon"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/version"
 )
 
 const IsAvailable = true

@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/cmd/testwrapper/flakytest"
-	"tailscale.com/util/slicesx"
+	"scaletail.com/cmd/testwrapper/flakytest"
+	"scaletail.com/util/slicesx"
 )
 
 const (
@@ -33,7 +33,7 @@ const (
 )
 
 type testAttempt struct {
-	pkg           string // "tailscale.com/types/key"
+	pkg           string // "scaletail.com/types/key"
 	testName      string // "TestFoo"
 	outcome       string // "pass", "fail", "skip"
 	cached        bool   // whether package-level (non-testName specific) was pass due to being cached
@@ -120,7 +120,7 @@ func runTests(ctx context.Context, attempt int, pt *packageTests, goTestArgs, te
 		}
 		pkg := cmp.Or(
 			goOutput.Package,
-			"build:"+goOutput.ImportPath, // can be "./cmd" while Package is "tailscale.com/cmd" so use separate namespace
+			"build:"+goOutput.ImportPath, // can be "./cmd" while Package is "scaletail.com/cmd" so use separate namespace
 		)
 		pkgTests := resultMap[pkg]
 		if pkgTests == nil {
@@ -131,8 +131,8 @@ func runTests(ctx context.Context, attempt int, pt *packageTests, goTestArgs, te
 		}
 		if goOutput.Test == "" {
 			// Detect output lines like:
-			// ok  \ttailscale.com/cmd/testwrapper\t(cached)
-			// ok  \ttailscale.com/cmd/testwrapper\t(cached)\tcoverage: 17.0% of statements
+			// ok  \tscaletail.com/cmd/testwrapper\t(cached)
+			// ok  \tscaletail.com/cmd/testwrapper\t(cached)\tcoverage: 17.0% of statements
 			if goOutput.Package != "" && strings.Contains(goOutput.Output, fmt.Sprintf("%s\t(cached)", goOutput.Package)) {
 				pkgCached[goOutput.Package] = true
 			}
@@ -226,7 +226,7 @@ func main() {
 	// As a special case, if the packages looks like "sharded:1/2" then shell out to
 	// ./tool/listpkgs to cut up the package list pieces for each sharded builder.
 	if nOfM, ok := strings.CutPrefix(packages[0], "sharded:"); ok && len(packages) == 1 {
-		out, err := exec.Command("go", "run", "tailscale.com/tool/listpkgs", "-shard", nOfM, "./...").Output()
+		out, err := exec.Command("go", "run", "scaletail.com/tool/listpkgs", "-shard", nOfM, "./...").Output()
 		if err != nil {
 			log.Fatalf("failed to list packages for sharded test: %v", err)
 		}

@@ -22,7 +22,7 @@ import (
 	"sync"
 
 	"github.com/coder/websocket"
-	"tailscale.com/tsweb"
+	"scaletail.com/tsweb"
 )
 
 type httpDebugger struct {

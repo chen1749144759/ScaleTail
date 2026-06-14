@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/net/stun"
-	"tailscale.com/util/must"
+	"scaletail.com/net/stun"
+	"scaletail.com/util/must"
 )
 
 func TestSTUNServer(t *testing.T) {

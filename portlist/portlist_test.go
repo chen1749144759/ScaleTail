@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func maybeSkip(t testing.TB) {

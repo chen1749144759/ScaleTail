@@ -6,4 +6,4 @@
 // Package apis contains a constant to name the Tailscale Kubernetes Operator's schema group.
 package apis
 
-const GroupName = "tailscale.com"
+const GroupName = "scaletail.com"

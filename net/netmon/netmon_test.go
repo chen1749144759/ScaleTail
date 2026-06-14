@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/mak"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/mak"
 )
 
 func TestMonitorStartClose(t *testing.T) {
@@ -206,7 +206,7 @@ func TestRebindRequired(t *testing.T) {
 		},
 		{
 			name:     "ignore-tailscale-interface-appearing",
-			tsIfName: "tailscale0",
+			tsIfName: "scaletail0",
 			s1: &State{
 				DefaultRouteInterface: "foo",
 				InterfaceIPs: map[string][]netip.Prefix{
@@ -217,19 +217,19 @@ func TestRebindRequired(t *testing.T) {
 				DefaultRouteInterface: "foo",
 				InterfaceIPs: map[string][]netip.Prefix{
 					"foo":        {netip.MustParsePrefix("10.0.1.2/16")},
-					"tailscale0": {netip.MustParsePrefix("100.69.4.20/32")},
+					"scaletail0": {netip.MustParsePrefix("100.69.4.20/32")},
 				},
 			},
 			want: false,
 		},
 		{
 			name:     "ignore-tailscale-interface-disappearing",
-			tsIfName: "tailscale0",
+			tsIfName: "scaletail0",
 			s1: &State{
 				DefaultRouteInterface: "foo",
 				InterfaceIPs: map[string][]netip.Prefix{
 					"foo":        {netip.MustParsePrefix("10.0.1.2/16")},
-					"tailscale0": {netip.MustParsePrefix("100.69.4.20/32")},
+					"scaletail0": {netip.MustParsePrefix("100.69.4.20/32")},
 				},
 			},
 			s2: &State{

@@ -1,2 +1,2 @@
 #! /bin/sh
-exec /var/packages/Tailscale/target/bin/tailscale web -cgi -prefix="/webman/3rdparty/Tailscale/index.cgi/"
+exec /var/packages/ScaleTail/target/bin/scaletail web -cgi -prefix="/webman/3rdparty/ScaleTail/index.cgi/"

@@ -20,15 +20,15 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/memnet"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/views"
-	"tailscale.com/util/httpm"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/memnet"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/views"
+	"scaletail.com/util/httpm"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 func TestQnapAuthnURL(t *testing.T) {
@@ -1435,7 +1435,7 @@ func TestPeerCapabilities(t *testing.T) {
 }
 
 var (
-	defaultControlURL   = "https://controlplane.tailscale.com"
+	defaultControlURL   = "https://controlplane.scaletail.com"
 	testAuthPath        = "/a/12345"
 	testAuthPathSuccess = "/a/will-succeed"
 	testAuthPathError   = "/a/will-error"

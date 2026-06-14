@@ -23,13 +23,13 @@ import (
 // and egress ProxyGroups also allow for serving many annotated Services from a
 // single set of proxies to minimise resource consumption.
 //
-// For ingress and egress, use the tailscale.com/proxy-group annotation on a
+// For ingress and egress, use the scaletail.com/proxy-group annotation on a
 // Service to specify that the proxy should be implemented by a ProxyGroup
 // instead of a single dedicated proxy.
 //
 // More info:
-// * https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress
-// * https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress
+// * https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress
+// * https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress
 //
 // For kube-apiserver, the ProxyGroup is a standalone resource. Use the
 // spec.kubeAPIServer field to configure options specific to the kube-apiserver
@@ -65,7 +65,7 @@ type ProxyGroupSpec struct {
 	// Tags that the Tailscale devices will be tagged with. Defaults to [tag:k8s].
 	// If you specify custom tags here, make sure you also make the operator
 	// an owner of these tags.
-	// See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+	// See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
 	// Tags cannot be changed once a ProxyGroup device has been created.
 	// Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
 	// +optional

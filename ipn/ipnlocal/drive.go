@@ -14,13 +14,13 @@ import (
 	"os"
 	"slices"
 
-	"tailscale.com/drive"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/views"
-	"tailscale.com/util/httpm"
+	"scaletail.com/drive"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/views"
+	"scaletail.com/util/httpm"
 )
 
 func init() {

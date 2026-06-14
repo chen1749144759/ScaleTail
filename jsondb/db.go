@@ -11,7 +11,7 @@ import (
 	"io/fs"
 	"os"
 
-	"tailscale.com/atomicfile"
+	"scaletail.com/atomicfile"
 )
 
 // DB is a database backed by a JSON file.

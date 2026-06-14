@@ -12,10 +12,10 @@ import (
 	"reflect"
 	"testing"
 
-	"tailscale.com/net/netmon"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/net/netmon"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
 )
 
 func TestGetDERPMap(t *testing.T) {
@@ -199,7 +199,7 @@ func TestLookup(t *testing.T) {
 		netMon:         netMon,
 		waitForCompare: true,
 	}
-	addrs, err := resolver.Lookup(context.Background(), "controlplane.tailscale.com")
+	addrs, err := resolver.Lookup(context.Background(), "controlplane.scaletail.com")
 	if err != nil {
 		t.Fatal(err)
 	}

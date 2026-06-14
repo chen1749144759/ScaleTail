@@ -20,10 +20,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
 )
 
 func TestEgressPodReadiness(t *testing.T) {

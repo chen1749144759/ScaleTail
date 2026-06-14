@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/bpf"
 	"golang.org/x/sys/cpu"
 	"golang.org/x/sys/unix"
-	"tailscale.com/disco"
+	"scaletail.com/disco"
 )
 
 func TestParseUDPPacket(t *testing.T) {

@@ -19,10 +19,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	ssmTypes "github.com/aws/aws-sdk-go-v2/service/ssm/types"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/types/logger"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/types/logger"
 )
 
 func init() {

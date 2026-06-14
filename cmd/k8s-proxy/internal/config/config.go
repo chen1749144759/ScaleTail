@@ -25,9 +25,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	clientcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"tailscale.com/kube/k8s-proxy/conf"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/util/testenv"
+	"scaletail.com/kube/k8s-proxy/conf"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/util/testenv"
 )
 
 type configLoader struct {

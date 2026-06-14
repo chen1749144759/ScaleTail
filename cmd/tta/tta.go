@@ -32,13 +32,13 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/atomicfile"
-	"tailscale.com/client/local"
-	"tailscale.com/hostinfo"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
-	"tailscale.com/version/distro"
+	"scaletail.com/atomicfile"
+	"scaletail.com/client/local"
+	"scaletail.com/hostinfo"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
+	"scaletail.com/version/distro"
 )
 
 // connContextKeyType is the type of connContextKey, which isn't of type

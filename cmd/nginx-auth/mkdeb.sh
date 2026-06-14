@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 
 set -e
 
 VERSION=0.1.3
 for ARCH in amd64 arm64; do
-    CGO_ENABLED=0 GOARCH=${ARCH} GOOS=linux go build -o tailscale.nginx-auth .
+    CGO_ENABLED=0 GOARCH=${ARCH} GOOS=linux go build -o scaletail.nginx-auth .
 
     mkpkg \
         --out=tailscale-nginx-auth-${VERSION}-${ARCH}.deb \
@@ -16,7 +16,7 @@ for ARCH in amd64 arm64; do
         --postrm=deb/postrm.sh \
         --prerm=deb/prerm.sh \
         --description="Tailscale NGINX authentication protocol handler" \
-        --files=./tailscale.nginx-auth:/usr/sbin/tailscale.nginx-auth,./tailscale.nginx-auth.socket:/lib/systemd/system/tailscale.nginx-auth.socket,./tailscale.nginx-auth.service:/lib/systemd/system/tailscale.nginx-auth.service,./README.md:/usr/share/tailscale/nginx-auth/README.md
+        --files=./scaletail.nginx-auth:/usr/sbin/scaletail.nginx-auth,./scaletail.nginx-auth.socket:/lib/systemd/system/scaletail.nginx-auth.socket,./scaletail.nginx-auth.service:/lib/systemd/system/scaletail.nginx-auth.service,./README.md:/usr/share/scaletail/nginx-auth/README.md
 
     mkpkg \
         --out=tailscale-nginx-auth-${VERSION}-${ARCH}.rpm \
@@ -28,5 +28,5 @@ for ARCH in amd64 arm64; do
         --postrm=rpm/postrm.sh \
         --prerm=rpm/prerm.sh \
         --description="Tailscale NGINX authentication protocol handler" \
-        --files=./tailscale.nginx-auth:/usr/sbin/tailscale.nginx-auth,./tailscale.nginx-auth.socket:/lib/systemd/system/tailscale.nginx-auth.socket,./tailscale.nginx-auth.service:/lib/systemd/system/tailscale.nginx-auth.service,./README.md:/usr/share/tailscale/nginx-auth/README.md
+        --files=./scaletail.nginx-auth:/usr/sbin/scaletail.nginx-auth,./scaletail.nginx-auth.socket:/lib/systemd/system/scaletail.nginx-auth.socket,./scaletail.nginx-auth.service:/lib/systemd/system/scaletail.nginx-auth.service,./README.md:/usr/share/scaletail/nginx-auth/README.md
 done

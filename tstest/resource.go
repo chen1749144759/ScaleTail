@@ -54,7 +54,7 @@ func ResourceCheck(tb testing.TB) {
 		}
 
 		// Print goroutine diff, omitting tstest.ResourceCheck goroutines.
-		self := func(g goroutine) bool { return bytes.Contains(g.stack, []byte("\ttailscale.com/tstest.goroutines+")) }
+		self := func(g goroutine) bool { return bytes.Contains(g.stack, []byte("\tscaletail.com/tstest.goroutines+")) }
 		start.goroutines = slices.DeleteFunc(start.goroutines, self)
 		end.goroutines = slices.DeleteFunc(end.goroutines, self)
 		tb.Logf("goroutine diff (-start +end):\n%s", diffGoroutines(start, end))

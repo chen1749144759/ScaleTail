@@ -35,78 +35,78 @@ import (
 	"go4.org/mem"
 	"go4.org/netipx"
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/appc"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/control/controlclient"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/drive"
-	"tailscale.com/envknob"
-	"tailscale.com/envknob/featureknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/health/healthmsg"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/conffile"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/log/sockstatlog"
-	"tailscale.com/logpolicy"
-	"tailscale.com/net/dns"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/dnsfallback"
-	"tailscale.com/net/ipset"
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/netkernelconf"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/paths"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsd"
-	"tailscale.com/tstime"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/empty"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/checkchange"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/execqueue"
-	"tailscale.com/util/goroutines"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/osuser"
-	"tailscale.com/util/rands"
-	"tailscale.com/util/set"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/testenv"
-	"tailscale.com/util/usermetric"
-	"tailscale.com/util/vizerror"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
-	"tailscale.com/wgengine"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/magicsock"
-	"tailscale.com/wgengine/router"
-	"tailscale.com/wgengine/wgcfg"
-	"tailscale.com/wgengine/wgcfg/nmcfg"
+	"scaletail.com/appc"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/drive"
+	"scaletail.com/envknob"
+	"scaletail.com/envknob/featureknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/health/healthmsg"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/conffile"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/log/sockstatlog"
+	"scaletail.com/logpolicy"
+	"scaletail.com/net/dns"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/dnsfallback"
+	"scaletail.com/net/ipset"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/netkernelconf"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/paths"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsd"
+	"scaletail.com/tstime"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/empty"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/preftype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/checkchange"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/execqueue"
+	"scaletail.com/util/goroutines"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/osuser"
+	"scaletail.com/util/rands"
+	"scaletail.com/util/set"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/testenv"
+	"scaletail.com/util/usermetric"
+	"scaletail.com/util/vizerror"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
+	"scaletail.com/wgengine"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/magicsock"
+	"scaletail.com/wgengine/router"
+	"scaletail.com/wgengine/wgcfg"
+	"scaletail.com/wgengine/wgcfg/nmcfg"
 )
 
 var controlDebugFlags = getControlDebugFlags()
@@ -243,7 +243,7 @@ type LocalBackend struct {
 	// for testing and graceful shutdown purposes.
 	goTracker goroutines.Tracker
 
-	startOnce sync.Once // protects the one‑time initialization in [LocalBackend.Start]
+	startOnce sync.Once // protects the one-time initialization in [LocalBackend.Start]
 
 	// extHost is the bridge between [LocalBackend] and the registered [ipnext.Extension]s.
 	// It may be nil in tests that use direct composite literal initialization of [LocalBackend]
@@ -3696,8 +3696,8 @@ func (b *LocalBackend) validPopBrowserURLLocked(urlStr string) bool {
 	serverURL := b.sanitizedPrefsLocked().ControlURLOrDefault(b.polc)
 	if ipn.IsLoginServerSynonym(serverURL) {
 		// When connected to the official Tailscale control plane, only allow
-		// URLs from tailscale.com or its subdomains.
-		if h := u.Hostname(); h != "tailscale.com" && !strings.HasSuffix(u.Hostname(), ".tailscale.com") {
+		// URLs from scaletail.com or its subdomains.
+		if h := u.Hostname(); h != "scaletail.com" && !strings.HasSuffix(u.Hostname(), ".scaletail.com") {
 			return false
 		}
 		// When using a different ControlURL, we cannot be sure what legitimate
@@ -4327,7 +4327,7 @@ func (b *LocalBackend) checkPrefsLocked(p *ipn.Prefs) error {
 		return errors.New("can't reconfigure scaletaild when using a config file; config file is locked")
 	}
 	var errs []error
-	if p.Hostname == "badhostname.tailscale." {
+	if p.Hostname == "badhostname.scaletail." {
 		// Keep this one just for testing.
 		errs = append(errs, errors.New("bad hostname [test]"))
 	}
@@ -4368,7 +4368,7 @@ func (b *LocalBackend) checkSSHPrefsLocked(p *ipn.Prefs) error {
 	// Assume that we do have the SSH capability if don't have a netmap yet.
 	if !b.currentNode().SelfHasCapOr(tailcfg.CapabilitySSH, true) {
 		if b.isDefaultServerLocked() {
-			return errors.New("Unable to enable local Tailscale SSH server; not enabled on Tailnet. See https://tailscale.com/s/ssh")
+			return errors.New("Unable to enable local Tailscale SSH server; not enabled on Tailnet. See https://scaletail.com/s/ssh")
 		}
 		return errors.New("Unable to enable local Tailscale SSH server; not enabled on Tailnet.")
 	}
@@ -4397,7 +4397,7 @@ func (b *LocalBackend) sshOnButUnusableHealthCheckMessageLocked() (healthMessage
 	if !isDefault {
 		return healthmsg.TailscaleSSHOnBut + "access controls don't allow anyone to access this device. Update your tailnet's ACLs to allow access."
 	}
-	return healthmsg.TailscaleSSHOnBut + "access controls don't allow anyone to access this device. Update your tailnet's ACLs at https://tailscale.com/s/ssh-policy"
+	return healthmsg.TailscaleSSHOnBut + "access controls don't allow anyone to access this device. Update your tailnet's ACLs at https://scaletail.com/s/ssh-policy"
 }
 
 func (b *LocalBackend) isDefaultServerLocked() bool {
@@ -4560,7 +4560,7 @@ func (b *LocalBackend) checkEditPrefsAccessLocked(actor ipnauth.Actor, prefs ipn
 		errs = append(errs, errors.New("Tailscale SSH server administratively disabled"))
 	}
 
-	// Check if the user is allowed to disconnect Tailscale.
+	// Check if the user is allowed to disconnect ScaleTail.
 	if mp.WantRunningSet && !mp.WantRunning && b.pm.CurrentPrefs().WantRunning() {
 		if err := actor.CheckProfileAccess(b.pm.CurrentProfile(), ipnauth.Disconnect, b.extHost.AuditLogger()); err != nil {
 			errs = append(errs, err)
@@ -5225,7 +5225,7 @@ func (b *LocalBackend) reconfigAppConnectorLocked(nm *netmap.NetworkMap, prefs i
 	if !buildfeatures.HasAppConnectors {
 		return
 	}
-	const appConnectorCapName = "tailscale.com/app-connectors"
+	const appConnectorCapName = "scaletail.com/app-connectors"
 	defer func() {
 		if b.hostinfo != nil {
 			b.hostinfo.AppConnector.Set(b.appConnector != nil)
@@ -6337,7 +6337,7 @@ func (b *LocalBackend) setExposeRemoteWebClientAtomicBoolLocked(prefs ipn.PrefsV
 
 // ShouldHandleViaIP reports whether ip is an IPv6 address in the
 // Tailscale ULA's v6 "via" range embedding an IPv4 address to be forwarded to
-// by Tailscale.
+// by ScaleTail.
 func (b *LocalBackend) ShouldHandleViaIP(ip netip.Addr) bool {
 	if f, ok := b.containsViaIPFuncAtomic.LoadOk(); ok {
 		return f(ip)
@@ -6951,7 +6951,7 @@ func (b *LocalBackend) CheckUDPGROForwarding() error {
 // acting as Tailscale subnet routers or exit nodes. Currently (9/5/2024) this
 // functionality is considered experimental and only safe to use via explicit
 // user opt-in for ephemeral devices, such as containers.
-// https://tailscale.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
+// https://scaletail.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
 func (b *LocalBackend) SetUDPGROForwarding() error {
 	if b.sys.IsNetstackRouter() {
 		return errors.New("UDP GRO forwarding cannot be enabled in userspace mode")
@@ -7290,7 +7290,7 @@ var warnSSHSELinuxWarnable = health.Register(&health.Warnable{
 	Code:     "ssh-unavailable-selinux-enabled",
 	Title:    "Tailscale SSH and SELinux",
 	Severity: health.SeverityLow,
-	Text:     health.StaticMessage("SELinux is enabled; Tailscale SSH may not work. See https://tailscale.com/s/ssh-selinux"),
+	Text:     health.StaticMessage("SELinux is enabled; Tailscale SSH may not work. See https://scaletail.com/s/ssh-selinux"),
 })
 
 // warnNoSNATWithExitNode is a warnable for when a node is advertising as an
@@ -7897,7 +7897,7 @@ func suggestExitNode(report *netcheck.Report, nb *nodeBackend, prevSuggestion ta
 		res, err = suggestExitNodeUsingTrafficSteering(nb, allowList)
 	default:
 		// The control plane will always strip the `traffic-steering`
-		// node attribute if it isn’t enabled for this tailnet, even if
+		// node attribute if it isn't enabled for this tailnet, even if
 		// it is set in the policy file: tailscale/corp#34401
 		res, err = suggestExitNodeUsingDERP(report, nb, prevSuggestion, selectRegion, selectNode, allowList)
 	}
@@ -8062,7 +8062,7 @@ var ErrNoNetMap = errors.New("no network map, try again later")
 
 // suggestExitNodeUsingTrafficSteering uses traffic steering priority scores to
 // pick one of the best exit nodes. These priorities are provided by Control in
-// the node’s [tailcfg.Location]. To be eligible for consideration, the node
+// the node's [tailcfg.Location]. To be eligible for consideration, the node
 // must have NodeAttrSuggestExitNode in its CapMap.
 func suggestExitNodeUsingTrafficSteering(nb *nodeBackend, allowed set.Set[tailcfg.StableNodeID]) (apitype.ExitNodeSuggestionResponse, error) {
 	// TODO(sfllaw): Context needs to be plumbed down here to support

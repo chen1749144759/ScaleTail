@@ -23,13 +23,13 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
 	"gvisor.dev/gvisor/pkg/tcpip/network/ipv6"
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tstun"
-	"tailscale.com/syncs"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tstun"
+	"scaletail.com/syncs"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/logger"
 )
 
 // TODO: this was randomly generated once. Maybe do it per process start? But

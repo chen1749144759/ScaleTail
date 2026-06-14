@@ -22,15 +22,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
 )
 
 func TestTailscaleEgressServices(t *testing.T) {
 	pg := &tsapi.ProxyGroup{
-		TypeMeta: metav1.TypeMeta{Kind: "ProxyGroup", APIVersion: "tailscale.com/v1alpha1"},
+		TypeMeta: metav1.TypeMeta{Kind: "ProxyGroup", APIVersion: "scaletail.com/v1alpha1"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "foo",
 			UID:  types.UID("1234-UID"),
@@ -148,7 +148,7 @@ func validateReadyService(t *testing.T, fc client.WithWatch, esr *egressSvcsReco
 		condition(tsapi.EgressSvcValid, metav1.ConditionTrue, "EgressSvcValid", "EgressSvcValid", clock),
 		condition(tsapi.EgressSvcConfigured, metav1.ConditionTrue, r, r, clock),
 	}
-	svc.ObjectMeta.Finalizers = []string{"tailscale.com/finalizer"}
+	svc.ObjectMeta.Finalizers = []string{"scaletail.com/finalizer"}
 	svc.Spec.ExternalName = fmt.Sprintf("%s.operator-ns.svc.cluster.local", name)
 	expectEqual(t, fc, svc)
 
@@ -226,7 +226,7 @@ func mustGetClusterIPSvc(t *testing.T, cl client.Client, name string) *corev1.Se
 
 func endpointSlice(name string, extNSvc, clusterIPSvc *corev1.Service) *discoveryv1.EndpointSlice {
 	labels := egressSvcChildResourceLabels(extNSvc)
-	labels[discoveryv1.LabelManagedBy] = "tailscale.com"
+	labels[discoveryv1.LabelManagedBy] = "scaletail.com"
 	labels[discoveryv1.LabelServiceName] = name
 	return &discoveryv1.EndpointSlice{
 		ObjectMeta: metav1.ObjectMeta{

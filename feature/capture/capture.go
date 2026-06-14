@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/feature"
-	"tailscale.com/ipn/localapi"
-	"tailscale.com/net/packet"
-	"tailscale.com/util/set"
+	"scaletail.com/feature"
+	"scaletail.com/ipn/localapi"
+	"scaletail.com/net/packet"
+	"scaletail.com/util/set"
 )
 
 func init() {

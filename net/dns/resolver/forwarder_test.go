@@ -21,14 +21,14 @@ import (
 	"time"
 
 	dns "golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/health"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tstest"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus/eventbustest"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/health"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tstest"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus/eventbustest"
 )
 
 func (rr resolverAndDelay) String() string {

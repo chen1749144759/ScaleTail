@@ -34,11 +34,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/util/mak"
+	"scaletail.com/ipn"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/util/mak"
 )
 
 const (
@@ -137,13 +137,13 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 		})
 	}
 	if opts.tailnetTargetIP != "" {
-		mak.Set(&annots, "tailscale.com/operator-last-set-ts-tailnet-target-ip", opts.tailnetTargetIP)
+		mak.Set(&annots, "scaletail.com/operator-last-set-ts-tailnet-target-ip", opts.tailnetTargetIP)
 		tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
 			Name:  "TS_TAILNET_TARGET_IP",
 			Value: opts.tailnetTargetIP,
 		})
 	} else if opts.tailnetTargetFQDN != "" {
-		mak.Set(&annots, "tailscale.com/operator-last-set-ts-tailnet-target-fqdn", opts.tailnetTargetFQDN)
+		mak.Set(&annots, "scaletail.com/operator-last-set-ts-tailnet-target-fqdn", opts.tailnetTargetFQDN)
 		tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
 			Name:  "TS_TAILNET_TARGET_FQDN",
 			Value: opts.tailnetTargetFQDN,
@@ -154,13 +154,13 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 			Name:  "TS_DEST_IP",
 			Value: opts.clusterTargetIP,
 		})
-		mak.Set(&annots, "tailscale.com/operator-last-set-cluster-ip", opts.clusterTargetIP)
+		mak.Set(&annots, "scaletail.com/operator-last-set-cluster-ip", opts.clusterTargetIP)
 	} else if opts.clusterTargetDNS != "" {
 		tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
 			Name:  "TS_EXPERIMENTAL_DEST_DNS_NAME",
 			Value: opts.clusterTargetDNS,
 		})
-		mak.Set(&annots, "tailscale.com/operator-last-set-cluster-dns-name", opts.clusterTargetDNS)
+		mak.Set(&annots, "scaletail.com/operator-last-set-cluster-dns-name", opts.clusterTargetDNS)
 	}
 	if opts.serveConfig != nil {
 		tsContainer.Env = append(tsContainer.Env, corev1.EnvVar{
@@ -217,10 +217,10 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 			Name:      opts.stsName,
 			Namespace: "operator-ns",
 			Labels: map[string]string{
-				"tailscale.com/managed":              "true",
-				"tailscale.com/parent-resource":      "test",
-				"tailscale.com/parent-resource-ns":   opts.namespace,
-				"tailscale.com/parent-resource-type": opts.parentType,
+				"scaletail.com/managed":              "true",
+				"scaletail.com/parent-resource":      "test",
+				"scaletail.com/parent-resource-ns":   opts.namespace,
+				"scaletail.com/parent-resource-type": opts.parentType,
 			},
 		},
 		Spec: appsv1.StatefulSetSpec{
@@ -234,10 +234,10 @@ func expectedSTS(t *testing.T, cl client.Client, opts configOpts) *appsv1.Statef
 					Annotations:                annots,
 					DeletionGracePeriodSeconds: new(int64(10)),
 					Labels: map[string]string{
-						"tailscale.com/managed":              "true",
-						"tailscale.com/parent-resource":      "test",
-						"tailscale.com/parent-resource-ns":   opts.namespace,
-						"tailscale.com/parent-resource-type": opts.parentType,
+						"scaletail.com/managed":              "true",
+						"scaletail.com/parent-resource":      "test",
+						"scaletail.com/parent-resource-ns":   opts.namespace,
+						"scaletail.com/parent-resource-type": opts.parentType,
 						"app":                                "1234-UID",
 					},
 				},
@@ -358,10 +358,10 @@ func expectedSTSUserspace(t *testing.T, cl client.Client, opts configOpts) *apps
 			Name:      opts.stsName,
 			Namespace: "operator-ns",
 			Labels: map[string]string{
-				"tailscale.com/managed":              "true",
-				"tailscale.com/parent-resource":      "test",
-				"tailscale.com/parent-resource-ns":   opts.namespace,
-				"tailscale.com/parent-resource-type": opts.parentType,
+				"scaletail.com/managed":              "true",
+				"scaletail.com/parent-resource":      "test",
+				"scaletail.com/parent-resource-ns":   opts.namespace,
+				"scaletail.com/parent-resource-type": opts.parentType,
 			},
 		},
 		Spec: appsv1.StatefulSetSpec{
@@ -374,10 +374,10 @@ func expectedSTSUserspace(t *testing.T, cl client.Client, opts configOpts) *apps
 				ObjectMeta: metav1.ObjectMeta{
 					DeletionGracePeriodSeconds: new(int64(10)),
 					Labels: map[string]string{
-						"tailscale.com/managed":              "true",
-						"tailscale.com/parent-resource":      "test",
-						"tailscale.com/parent-resource-ns":   opts.namespace,
-						"tailscale.com/parent-resource-type": opts.parentType,
+						"scaletail.com/managed":              "true",
+						"scaletail.com/parent-resource":      "test",
+						"scaletail.com/parent-resource-ns":   opts.namespace,
+						"scaletail.com/parent-resource-type": opts.parentType,
 						"app":                                "1234-UID",
 					},
 				},
@@ -410,10 +410,10 @@ func expectedHeadlessService(name string, parentType string) *corev1.Service {
 			GenerateName: "ts-test-",
 			Namespace:    "operator-ns",
 			Labels: map[string]string{
-				"tailscale.com/managed":              "true",
-				"tailscale.com/parent-resource":      "test",
-				"tailscale.com/parent-resource-ns":   "default",
-				"tailscale.com/parent-resource-type": parentType,
+				"scaletail.com/managed":              "true",
+				"scaletail.com/parent-resource":      "test",
+				"scaletail.com/parent-resource-ns":   "default",
+				"scaletail.com/parent-resource-type": parentType,
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -429,12 +429,12 @@ func expectedHeadlessService(name string, parentType string) *corev1.Service {
 func expectedMetricsService(opts configOpts) *corev1.Service {
 	labels := metricsLabels(opts)
 	selector := map[string]string{
-		"tailscale.com/managed":              "true",
-		"tailscale.com/parent-resource":      "test",
-		"tailscale.com/parent-resource-type": opts.parentType,
+		"scaletail.com/managed":              "true",
+		"scaletail.com/parent-resource":      "test",
+		"scaletail.com/parent-resource-type": opts.parentType,
 	}
 	if opts.namespaced {
-		selector["tailscale.com/parent-resource-ns"] = opts.namespace
+		selector["scaletail.com/parent-resource-ns"] = opts.namespace
 	}
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -456,8 +456,8 @@ func metricsLabels(opts configOpts) map[string]string {
 		promJob = fmt.Sprintf("ts_%s_test", opts.proxyType)
 	}
 	labels := map[string]string{
-		"tailscale.com/managed":        "true",
-		"tailscale.com/metrics-target": opts.stsName,
+		"scaletail.com/managed":        "true",
+		"scaletail.com/metrics-target": opts.stsName,
 		"ts_prom_job":                  promJob,
 		"ts_proxy_type":                opts.proxyType,
 		"ts_proxy_parent_name":         "test",
@@ -578,13 +578,13 @@ func expectedSecret(t *testing.T, cl client.Client, opts configOpts) *corev1.Sec
 	mak.Set(&s.StringData, "cap-95.hujson", string(bn))
 	mak.Set(&s.StringData, "cap-107.hujson", string(bnn))
 	labels := map[string]string{
-		"tailscale.com/managed":              "true",
-		"tailscale.com/parent-resource":      "test",
-		"tailscale.com/parent-resource-ns":   "default",
-		"tailscale.com/parent-resource-type": opts.parentType,
+		"scaletail.com/managed":              "true",
+		"scaletail.com/parent-resource":      "test",
+		"scaletail.com/parent-resource-ns":   "default",
+		"scaletail.com/parent-resource-type": opts.parentType,
 	}
 	if opts.parentType == "connector" {
-		labels["tailscale.com/parent-resource-ns"] = "" // Connector is cluster scoped
+		labels["scaletail.com/parent-resource-ns"] = "" // Connector is cluster scoped
 	}
 	s.Labels = labels
 	for key, val := range opts.secretExtraData {

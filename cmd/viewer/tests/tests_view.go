@@ -13,10 +13,10 @@ import (
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
 	"golang.org/x/exp/constraints"
-	"tailscale.com/types/views"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=StructWithPtrs,StructWithoutPtrs,Map,StructWithSlices,OnlyGetClone,StructWithEmbedded,GenericIntStruct,GenericNoPtrsStruct,GenericCloneableStruct,StructWithContainers,StructWithTypeAliasFields,GenericTypeAliasStruct,StructWithMapOfViews,StructWithNamedMap,StructWithNamedSlice
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=StructWithPtrs,StructWithoutPtrs,Map,StructWithSlices,OnlyGetClone,StructWithEmbedded,GenericIntStruct,GenericNoPtrsStruct,GenericCloneableStruct,StructWithContainers,StructWithTypeAliasFields,GenericTypeAliasStruct,StructWithMapOfViews,StructWithNamedMap,StructWithNamedSlice
 
 // View returns a read-only view of StructWithPtrs.
 func (p *StructWithPtrs) View() StructWithPtrsView {

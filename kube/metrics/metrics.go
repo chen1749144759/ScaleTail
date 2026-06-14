@@ -12,8 +12,8 @@ import (
 	"io"
 	"net/http"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
 )
 
 // metrics is a simple metrics HTTP server, if enabled it forwards requests to

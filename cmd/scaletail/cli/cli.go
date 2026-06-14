@@ -22,14 +22,14 @@ import (
 	"time"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/local"
-	"tailscale.com/cmd/scaletail/cli/ffcomplete"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/paths"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/util/testenv"
-	"tailscale.com/version/distro"
+	"scaletail.com/client/local"
+	"scaletail.com/cmd/scaletail/cli/ffcomplete"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/paths"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/util/testenv"
+	"scaletail.com/version/distro"
 )
 
 var Stderr io.Writer = os.Stderr

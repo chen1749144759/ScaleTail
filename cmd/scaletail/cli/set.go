@@ -16,17 +16,17 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/cmd/scaletail/cli/ffcomplete"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/safesocket"
-	"tailscale.com/tsconst"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/views"
-	"tailscale.com/util/set"
-	"tailscale.com/version"
+	"scaletail.com/cmd/scaletail/cli/ffcomplete"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/safesocket"
+	"scaletail.com/tsconst"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/views"
+	"scaletail.com/util/set"
+	"scaletail.com/version"
 )
 
 var setCmd = &ffcli.Command{

@@ -24,13 +24,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/record"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/set"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/set"
 )
 
 const (

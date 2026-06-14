@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/health"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/winutil"
+	"scaletail.com/health"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/winutil"
 )
 
 // wslDistros reports the names of the installed WSL2 linux distributions.

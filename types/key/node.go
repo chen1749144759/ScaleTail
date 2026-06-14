@@ -14,8 +14,8 @@ import (
 	"go4.org/mem"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/nacl/box"
-	"tailscale.com/types/structs"
-	"tailscale.com/util/bufiox"
+	"scaletail.com/types/structs"
+	"scaletail.com/util/bufiox"
 )
 
 const (

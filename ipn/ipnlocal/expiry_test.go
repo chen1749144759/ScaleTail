@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/eventbus/eventbustest"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/eventbus/eventbustest"
 )
 
 func TestFlagExpiredPeers(t *testing.T) {

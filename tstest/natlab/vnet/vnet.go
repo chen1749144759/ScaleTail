@@ -51,20 +51,20 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
 	"gvisor.dev/gvisor/pkg/tcpip/transport/tcp"
 	"gvisor.dev/gvisor/pkg/waiter"
-	"tailscale.com/client/local"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/netx"
-	"tailscale.com/net/stun"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
-	"tailscale.com/util/zstdframe"
+	"scaletail.com/client/local"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/netx"
+	"scaletail.com/net/stun"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
+	"scaletail.com/util/zstdframe"
 )
 
 const nicID = 1
@@ -423,7 +423,7 @@ func (n *network) acceptTCP(r *tcp.ForwarderRequest) {
 	if n.s.derpIPs.Contains(destIP) {
 		targetDial = destIP.String() + ":" + strconv.Itoa(int(destPort))
 	} else if fakeProxyControlplane.Match(destIP) {
-		targetDial = "controlplane.tailscale.com:" + strconv.Itoa(int(destPort))
+		targetDial = "controlplane.scaletail.com:" + strconv.Itoa(int(destPort))
 	}
 	if targetDial != "" {
 		c, err := net.Dial("tcp", targetDial)
@@ -445,7 +445,7 @@ func (n *network) acceptTCP(r *tcp.ForwarderRequest) {
 	}
 }
 
-// serveLogCatchConn serves a TCP connection to "log.tailscale.com", speaking the
+// serveLogCatchConn serves a TCP connection to "log.scaletail.com", speaking the
 // logtail/logcatcher protocol.
 //
 // We terminate TLS with an arbitrary cert; the client is configured to not

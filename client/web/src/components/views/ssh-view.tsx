@@ -25,7 +25,7 @@ export default function SSHView({
         Run a Tailscale SSH server on this device and allow other devices in
         your tailnet to SSH into it.{" "}
         <a
-          href="https://tailscale.com/kb/1193/tailscale-ssh/"
+          href="https://scaletail.com/kb/1193/tailscale-ssh/"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"

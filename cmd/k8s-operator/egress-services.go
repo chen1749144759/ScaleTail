@@ -31,14 +31,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
 )
 
 const (
@@ -47,9 +47,9 @@ const (
 	reasonEgressSvcCreationFailed = "EgressSvcCreationFailed"
 	reasonProxyGroupNotReady      = "ProxyGroupNotReady"
 
-	labelProxyGroup = "tailscale.com/proxy-group"
+	labelProxyGroup = "scaletail.com/proxy-group"
 
-	labelSvcType = "tailscale.com/svc-type" // ingress or egress
+	labelSvcType = "scaletail.com/svc-type" // ingress or egress
 	typeEgress   = "egress"
 	// maxPorts is the maximum number of ports that can be exposed on a
 	// container. In practice this will be ports in range [10000 - 11000). The
@@ -617,8 +617,8 @@ func unusedPort(usedPorts sets.Set[int32]) int32 {
 }
 
 // tailnetTargetFromSvc returns a tailnet target for the given egress Service.
-// Service must contain exactly one of tailscale.com/tailnet-ip,
-// tailscale.com/tailnet-fqdn annotations.
+// Service must contain exactly one of scaletail.com/tailnet-ip,
+// scaletail.com/tailnet-fqdn annotations.
 func tailnetTargetFromSvc(svc *corev1.Service) egressservices.TailnetTarget {
 	if fqdn := svc.Annotations[AnnotationTailnetTargetFQDN]; fqdn != "" {
 		return egressservices.TailnetTarget{
@@ -700,7 +700,7 @@ func egressSvcEpsLabels(extNSvc, clusterIPSvc *corev1.Service) map[string]string
 	lbels[discoveryv1.LabelServiceName] = clusterIPSvc.Name
 	// Kubernetes recommends setting this label.
 	// https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/#management
-	lbels[discoveryv1.LabelManagedBy] = "tailscale.com"
+	lbels[discoveryv1.LabelManagedBy] = "scaletail.com"
 	return lbels
 }
 

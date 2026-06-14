@@ -8,8 +8,8 @@ import (
 	"errors"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/ipn"
-	"tailscale.com/types/lazy"
+	"scaletail.com/ipn"
+	"scaletail.com/types/lazy"
 )
 
 // WindowsActor implements [Actor].

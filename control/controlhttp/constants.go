@@ -10,14 +10,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/health"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netx"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
+	"scaletail.com/health"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netx"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
 )
 
 const (

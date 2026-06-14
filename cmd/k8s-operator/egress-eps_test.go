@@ -16,12 +16,12 @@ import (
 	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
+	"scaletail.com/util/mak"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
-	"tailscale.com/util/mak"
 )
 
 func TestTailscaleEgressEndpointSlices(t *testing.T) {

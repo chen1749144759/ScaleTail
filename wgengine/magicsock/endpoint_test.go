@@ -9,13 +9,13 @@ import (
 	"testing/synctest"
 	"time"
 
-	"tailscale.com/disco"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/stun"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime/mono"
-	"tailscale.com/types/key"
-	"tailscale.com/util/ringlog"
+	"scaletail.com/disco"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/stun"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime/mono"
+	"scaletail.com/types/key"
+	"scaletail.com/util/ringlog"
 )
 
 func TestProbeUDPLifetimeConfig_Equals(t *testing.T) {

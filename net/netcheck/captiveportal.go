@@ -9,8 +9,8 @@ import (
 	"context"
 	"time"
 
-	"tailscale.com/net/captivedetection"
-	"tailscale.com/tailcfg"
+	"scaletail.com/net/captivedetection"
+	"scaletail.com/tailcfg"
 )
 
 func init() {

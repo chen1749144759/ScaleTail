@@ -20,11 +20,11 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/unix"
-	"tailscale.com/hostinfo"
-	"tailscale.com/net/neterror"
-	"tailscale.com/net/packet"
-	"tailscale.com/types/nettype"
-	"tailscale.com/util/clientmetric"
+	"scaletail.com/hostinfo"
+	"scaletail.com/net/neterror"
+	"scaletail.com/net/packet"
+	"scaletail.com/types/nettype"
+	"scaletail.com/util/clientmetric"
 )
 
 // xnetBatchReaderWriter defines the batching i/o methods of

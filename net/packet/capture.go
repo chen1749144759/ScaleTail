@@ -16,7 +16,7 @@ import (
 // within the lifetime of the function.
 type CaptureCallback func(CapturePath, time.Time, []byte, CaptureMeta)
 
-// CaptureSink is the minimal interface from [tailscale.com/feature/capture]'s
+// CaptureSink is the minimal interface from [scaletail.com/feature/capture]'s
 // Sink type that is needed by the core (magicsock/LocalBackend/wgengine/etc).
 // This lets the relativel heavy feature/capture package be optionally linked.
 type CaptureSink interface {

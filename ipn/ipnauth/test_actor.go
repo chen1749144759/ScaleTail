@@ -8,7 +8,7 @@ import (
 	"context"
 	"errors"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 var _ Actor = (*TestActor)(nil)

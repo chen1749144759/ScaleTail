@@ -14,16 +14,16 @@ import (
 
 	"github.com/tailscale/wireguard-go/tun"
 
-	"tailscale.com/net/dns"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsd"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/wgengine"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/router"
-	"tailscale.com/wgengine/wgcfg"
+	"scaletail.com/net/dns"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsd"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/wgengine"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/router"
+	"scaletail.com/wgengine/wgcfg"
 )
 
 func epFromTyped(eps []tailcfg.Endpoint) (ret []netip.AddrPort) {

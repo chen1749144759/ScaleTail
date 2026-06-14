@@ -11,8 +11,8 @@ package sockstats
 import (
 	"context"
 
-	"tailscale.com/net/netmon"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/netmon"
+	"scaletail.com/types/logger"
 )
 
 // SockStats contains statistics for sockets instrumented with the

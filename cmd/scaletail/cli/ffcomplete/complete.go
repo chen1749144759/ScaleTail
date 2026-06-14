@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/cmd/scaletail/cli/ffcomplete/internal"
-	"tailscale.com/tempfork/spf13/cobra"
+	"scaletail.com/cmd/scaletail/cli/ffcomplete/internal"
+	"scaletail.com/tempfork/spf13/cobra"
 )
 
 type compOpts struct {

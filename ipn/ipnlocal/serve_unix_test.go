@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestExpandProxyArgUnix(t *testing.T) {

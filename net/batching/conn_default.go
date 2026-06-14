@@ -6,7 +6,7 @@
 package batching
 
 import (
-	"tailscale.com/types/nettype"
+	"scaletail.com/types/nettype"
 )
 
 // TryUpgradeToConn is no-op on all platforms except linux.

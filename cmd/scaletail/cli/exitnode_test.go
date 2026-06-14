@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
 )
 
 func TestFilterFormatAndSortExitNodes(t *testing.T) {

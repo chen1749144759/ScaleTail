@@ -106,7 +106,7 @@
         src = ./.;
         vendorHash = flakeHashes.vendor.sri;
         nativeBuildInputs = [pkgs.makeWrapper pkgs.installShellFiles];
-        ldflags = ["-X tailscale.com/version.gitCommitStamp=${tailscaleRev}"];
+        ldflags = ["-X scaletail.com/version.gitCommitStamp=${tailscaleRev}"];
         env.CGO_ENABLED = 0;
         subPackages = [
           "cmd/scaletail"

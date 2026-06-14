@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"golang.org/x/sys/unix"
-	"tailscale.com/net/netmon"
+	"scaletail.com/net/netmon"
 )
 
 // bypassControlFunc is set as net.Dialer.Control so that sockets dialed by

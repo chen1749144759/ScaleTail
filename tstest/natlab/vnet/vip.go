@@ -12,12 +12,12 @@ var vips = map[string]virtualIP{} // DNS name => details
 
 var (
 	fakeDNS               = newVIP("dns", "4.11.4.11", "2411::411")
-	fakeProxyControlplane = newVIP("controlplane.tailscale.com", 1)
+	fakeProxyControlplane = newVIP("controlplane.scaletail.com", 1)
 	fakeTestAgent         = newVIP("test-driver.tailscale", 2)
 	fakeControl           = newVIP("control.tailscale", 3)
 	fakeDERP1             = newVIP("derp1.tailscale", "33.4.0.1") // 3340=DERP; 1=derp 1
 	fakeDERP2             = newVIP("derp2.tailscale", "33.4.0.2") // 3340=DERP; 2=derp 2
-	fakeLogCatcher        = newVIP("log.tailscale.com", 4)
+	fakeLogCatcher        = newVIP("log.scaletail.com", 4)
 	fakeSyslog            = newVIP("syslog.tailscale", 9)
 	fakeCloudInit         = newVIP("cloud-init.tailscale", 5) // serves cloud-init metadata/userdata per node
 	fakeFiles             = newVIP("files.tailscale", 6)      // serves binary files (tta, tailscale, scaletaild) to VMs

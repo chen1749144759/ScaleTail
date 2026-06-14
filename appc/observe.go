@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/util/mak"
+	"scaletail.com/util/mak"
 )
 
 // ObserveDNSResponse is a callback invoked by the DNS resolver when a DNS

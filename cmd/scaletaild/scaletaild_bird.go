@@ -6,8 +6,8 @@
 package main
 
 import (
-	"tailscale.com/chirp"
-	"tailscale.com/wgengine"
+	"scaletail.com/chirp"
+	"scaletail.com/wgengine"
 )
 
 func init() {

@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime/mono"
-	"tailscale.com/types/key"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime/mono"
+	"scaletail.com/types/key"
 )
 
 // ServeHTTPDebug serves an HTML representation of the innards of c for debugging.

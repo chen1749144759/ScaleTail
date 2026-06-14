@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"tailscale.com/feature/buildfeatures"
+	"scaletail.com/feature/buildfeatures"
 )
 
 // VerifyCertificate checks if the given certificate c is issued by a firewall manufacturer

@@ -24,10 +24,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"tailscale.com/client/tailscale/v2"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/tstest"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/tstest"
 )
 
 const (
@@ -39,7 +39,7 @@ func TestRecorder(t *testing.T) {
 	tsr := &tsapi.Recorder{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:       "test",
-			Finalizers: []string{"tailscale.com/finalizer"},
+			Finalizers: []string{"scaletail.com/finalizer"},
 		},
 		Spec: tsapi.RecorderSpec{
 			Replicas: new(int32(3)),

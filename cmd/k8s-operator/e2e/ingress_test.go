@@ -17,13 +17,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	kube "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstest"
+	"scaletail.com/util/httpm"
 	"tailscale.com/client/tailscale/v2"
-	kube "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstest"
-	"tailscale.com/util/httpm"
 )
 
 // See [TestMain] for test requirements.
@@ -41,7 +41,7 @@ func TestL3Ingress(t *testing.T) {
 			Name:      generateName("test-ingress"),
 			Namespace: ns,
 			Annotations: map[string]string{
-				"tailscale.com/expose": "true",
+				"scaletail.com/expose": "true",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -81,8 +81,8 @@ func TestL3Ingress(t *testing.T) {
 		if err := kubeClient.List(t.Context(), &secrets,
 			client.InNamespace("tailscale"),
 			client.MatchingLabels{
-				"tailscale.com/parent-resource":    svc.Name,
-				"tailscale.com/parent-resource-ns": ns,
+				"scaletail.com/parent-resource":    svc.Name,
+				"scaletail.com/parent-resource-ns": ns,
 			},
 		); err != nil {
 			return err
@@ -131,7 +131,7 @@ func TestL3HAIngress(t *testing.T) {
 			Name:      generateName("test-ingress"),
 			Namespace: ns,
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": pg.Name,
+				"scaletail.com/proxy-group": pg.Name,
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -263,7 +263,7 @@ func TestL7HAIngress(t *testing.T) {
 	createAndCleanup(t, kubeClient, pg)
 
 	// Apply Ingress to expose nginx.
-	ingress := l7Ingress(ns, nginx.Name, map[string]string{"tailscale.com/proxy-group": pg.Name})
+	ingress := l7Ingress(ns, nginx.Name, map[string]string{"scaletail.com/proxy-group": pg.Name})
 	createAndCleanup(t, kubeClient, ingress)
 
 	t.Log("Waiting for the Ingress to be ready...")
@@ -334,7 +334,7 @@ func TestL7HAIngressMultiTailnet(t *testing.T) {
 
 	// Apply Ingress to expose nginx.
 	ingress := l7Ingress(ns, nginx.Name, map[string]string{
-		"tailscale.com/proxy-group": secondTailnetPG.Name,
+		"scaletail.com/proxy-group": secondTailnetPG.Name,
 	})
 	createAndCleanup(t, kubeClient, ingress)
 
@@ -457,7 +457,7 @@ func triggerReconcile(t testing.TB, key client.ObjectKey, obj client.Object, aft
 		if ann == nil {
 			ann = map[string]string{}
 		}
-		ann["tailscale.com/trigger-reconcile"] = "true"
+		ann["scaletail.com/trigger-reconcile"] = "true"
 		obj.SetAnnotations(ann)
 		if err := kubeClient.Update(t.Context(), obj); err != nil {
 			t.Logf("failed to update %s: %v", key, err)
@@ -518,8 +518,8 @@ func verifyProxyGroupTailnet(t *testing.T, pg *tsapi.ProxyGroup, cl *tsnet.Serve
 			client.InNamespace("tailscale"),
 			client.MatchingLabels{
 				kubetypes.LabelSecretType:            kubetypes.LabelSecretTypeState,
-				"tailscale.com/parent-resource-type": "proxygroup",
-				"tailscale.com/parent-resource":      pg.Name,
+				"scaletail.com/parent-resource-type": "proxygroup",
+				"scaletail.com/parent-resource":      pg.Name,
 			},
 		); err != nil {
 			return err

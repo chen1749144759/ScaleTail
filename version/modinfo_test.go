@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"tailscale.com/version"
+	"scaletail.com/version"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 func TestFindModuleInfo(t *testing.T) {
 	dir := t.TempDir()
 	name := filepath.Join(dir, "scaletaild-version-test")
-	out, err := exec.Command("go", "build", "-o", name, "tailscale.com/cmd/scaletaild").CombinedOutput()
+	out, err := exec.Command("go", "build", "-o", name, "scaletail.com/cmd/scaletaild").CombinedOutput()
 	if err != nil {
 		t.Fatalf("failed to build scaletaild: %v\n%s", err, out)
 	}
@@ -29,7 +29,7 @@ func TestFindModuleInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefix := "path\ttailscale.com/cmd/scaletaild\nmod\ttailscale.com"
+	prefix := "path\tscaletail.com/cmd/scaletaild\nmod\ttailscale.com"
 	if !strings.HasPrefix(modinfo, prefix) {
 		t.Errorf("unexpected modinfo contents %q", modinfo)
 	}

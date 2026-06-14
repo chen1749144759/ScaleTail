@@ -16,7 +16,7 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/unix"
-	"tailscale.com/tstest/natlab/vnet"
+	"scaletail.com/tstest/natlab/vnet"
 )
 
 const (

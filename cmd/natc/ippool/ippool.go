@@ -14,10 +14,10 @@ import (
 
 	"github.com/gaissmai/bart"
 	"go4.org/netipx"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/mak"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/mak"
 )
 
 var ErrNoIPsAvailable = errors.New("no IPs available")

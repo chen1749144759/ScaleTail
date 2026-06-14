@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestRaceSuccess1(t *testing.T) {

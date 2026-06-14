@@ -6,7 +6,7 @@ package feature
 import (
 	"runtime"
 
-	"tailscale.com/feature/buildfeatures"
+	"scaletail.com/feature/buildfeatures"
 )
 
 // HookSystemdReady sends a readiness to systemd. This will unblock service

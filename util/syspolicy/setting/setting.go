@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/syncs"
-	"tailscale.com/types/lazy"
-	"tailscale.com/util/syspolicy/internal"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/testenv"
+	"scaletail.com/syncs"
+	"scaletail.com/types/lazy"
+	"scaletail.com/util/syspolicy/internal"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/testenv"
 )
 
 // Scope indicates the broadest scope at which a policy setting may apply,

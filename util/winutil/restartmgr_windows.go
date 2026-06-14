@@ -18,7 +18,7 @@ import (
 
 	"github.com/dblohm7/wingoes"
 	"golang.org/x/sys/windows"
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 var (

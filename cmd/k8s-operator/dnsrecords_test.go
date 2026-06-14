@@ -19,12 +19,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	operatorutils "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	operatorutils "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
 )
 
 func TestDNSRecordsReconciler(t *testing.T) {
@@ -76,12 +76,12 @@ func TestDNSRecordsReconciler(t *testing.T) {
 	}
 
 	// 1. DNS record is created for an egress proxy configured via
-	// tailscale.com/tailnet-fqdn annotation
+	// scaletail.com/tailnet-fqdn annotation
 	egressSvcFQDN := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "egress-fqdn",
 			Namespace:   "test",
-			Annotations: map[string]string{"tailscale.com/tailnet-fqdn": "foo.bar.ts.net"},
+			Annotations: map[string]string{"scaletail.com/tailnet-fqdn": "foo.bar.ts.net"},
 		},
 		Spec: corev1.ServiceSpec{
 			ExternalName: "unused",
@@ -102,10 +102,10 @@ func TestDNSRecordsReconciler(t *testing.T) {
 	wantHostsIPv6 := map[string][]string{"foo.bar.ts.net": {"2600:1900:4011:161:0:d:0:d"}}
 	expectHostsRecordsWithIPv6(t, fc, wantHosts, wantHostsIPv6)
 
-	// 2. DNS record is updated if tailscale.com/tailnet-fqdn annotation's
+	// 2. DNS record is updated if scaletail.com/tailnet-fqdn annotation's
 	// value changes
 	mustUpdate(t, fc, "test", "egress-fqdn", func(svc *corev1.Service) {
-		svc.Annotations["tailscale.com/tailnet-fqdn"] = "baz.bar.ts.net"
+		svc.Annotations["scaletail.com/tailnet-fqdn"] = "baz.bar.ts.net"
 	})
 	expectReconciled(t, dnsRR, "tailscale", "egress-fqdn") // dns-records-reconciler reconcile the headless Service
 	wantHosts = map[string][]string{"baz.bar.ts.net": {"10.9.8.7"}}

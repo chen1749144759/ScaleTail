@@ -31,44 +31,44 @@ import (
 	"time"
 
 	"go4.org/mem"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/control/ts2021"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/logtail"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/dnsfallback"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netx"
-	"tailscale.com/net/tlsdial"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/tstime"
-	"tailscale.com/types/events"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/tkatype"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/singleflight"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/testenv"
-	"tailscale.com/util/vizerror"
-	"tailscale.com/util/zstdframe"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/control/ts2021"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/logtail"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/dnsfallback"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netx"
+	"scaletail.com/net/tlsdial"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/tstime"
+	"scaletail.com/types/events"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/tkatype"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/singleflight"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/testenv"
+	"scaletail.com/util/vizerror"
+	"scaletail.com/util/zstdframe"
 )
 
 // Direct is the client that connects to a tailcontrol server for a node.
 type Direct struct {
-	httpc             *http.Client // HTTP client used to do TLS requests to control (just https://controlplane.tailscale.com/key?v=123)
+	httpc             *http.Client // HTTP client used to do TLS requests to control (just https://controlplane.scaletail.com/key?v=123)
 	interceptedDial   *atomic.Bool // if non-nil, pointer to bool whether ScreenTime intercepted our dial
 	dialer            *tsdial.Dialer
 	dnsCache          *dnscache.Resolver
@@ -364,7 +364,7 @@ func NewDirect(opts Options) (*Direct, error) {
 		}
 		c.serverNoiseKey = key.NewMachine().Public() // prevent early error before hitting test client
 	}
-	if strings.Contains(opts.ServerURL, "controlplane.tailscale.com") && envknob.Bool("TS_PANIC_IF_HIT_MAIN_CONTROL") {
+	if strings.Contains(opts.ServerURL, "controlplane.scaletail.com") && envknob.Bool("TS_PANIC_IF_HIT_MAIN_CONTROL") {
 		c.panicOnUse = true
 	}
 
@@ -505,7 +505,7 @@ func (c *Direct) TryLogout(ctx context.Context) error {
 }
 
 func (c *Direct) TryLogin(ctx context.Context, flags LoginFlags) (url string, err error) {
-	if strings.Contains(c.serverURL, "controlplane.tailscale.com") && envknob.Bool("TS_PANIC_IF_HIT_MAIN_CONTROL") {
+	if strings.Contains(c.serverURL, "controlplane.scaletail.com") && envknob.Bool("TS_PANIC_IF_HIT_MAIN_CONTROL") {
 		panic(fmt.Sprintf("[unexpected] controlclient: TryLogin called on %s; tainted=%v", c.serverURL, c.panicOnUse))
 	}
 	c.logf("[v1] direct.TryLogin(flags=%v)", flags)

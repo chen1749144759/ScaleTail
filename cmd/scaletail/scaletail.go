@@ -3,7 +3,7 @@
 
 // The scaletail command is the Tailscale command-line client. It interacts
 // with the scaletaild node agent.
-package main // import "tailscale.com/cmd/scaletail"
+package main // import "scaletail.com/cmd/scaletail"
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"tailscale.com/cmd/scaletail/cli"
+	"scaletail.com/cmd/scaletail/cli"
 )
 
 func main() {

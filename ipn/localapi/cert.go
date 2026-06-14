@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/ipn/ipnlocal"
+	"scaletail.com/ipn/ipnlocal"
 )
 
 func init() {

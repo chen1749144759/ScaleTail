@@ -8,9 +8,9 @@ import (
 	_ "embed"
 
 	"golang.org/x/tools/go/analysis/unitchecker"
-	"tailscale.com/cmd/vet/jsontags"
-	"tailscale.com/cmd/vet/lowerell"
-	"tailscale.com/cmd/vet/subtestnames"
+	"scaletail.com/cmd/vet/jsontags"
+	"scaletail.com/cmd/vet/lowerell"
+	"scaletail.com/cmd/vet/subtestnames"
 )
 
 //go:embed jsontags_allowlist

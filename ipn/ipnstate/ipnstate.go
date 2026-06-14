@@ -17,15 +17,15 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/version"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/version"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=TKAPeer
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=TKAPeer
 
 // Status represents the entire state of the IPN network.
 type Status struct {
@@ -242,7 +242,7 @@ type PeerStatus struct {
 	AllowedIPs *views.Slice[netip.Prefix] `json:",omitempty"`
 
 	// Tags are the list of ACL tags applied to this node.
-	// See tailscale.com/tailcfg#Node.Tags for more information.
+	// See scaletail.com/tailcfg#Node.Tags for more information.
 	Tags *views.Slice[string] `json:",omitempty"`
 
 	// PrimaryRoutes are the routes this node is currently the primary
@@ -285,8 +285,8 @@ type PeerStatus struct {
 	// Capabilities are capabilities that the node has.
 	// They're free-form strings, but should be in the form of URLs/URIs
 	// such as:
-	//    "https://tailscale.com/cap/is-admin"
-	//    "https://tailscale.com/cap/file-sharing"
+	//    "https://scaletail.com/cap/is-admin"
+	//    "https://scaletail.com/cap/file-sharing"
 	//    "funnel"
 	//
 	// Deprecated: use CapMap instead. See https://github.com/tailscale/tailscale/issues/11508

@@ -2,7 +2,7 @@
 # ts-git-hook launcher (installed at .git/hooks/ts-git-hook).
 #
 # Written by misc/install-git-hooks.go from the canonical copy embedded
-# in tailscale.com/misc/git_hook/githook. On every invocation it:
+# in scaletail.com/misc/git_hook/githook. On every invocation it:
 #
 #   1. Compares the binary's reported version against the shared
 #      githook HOOK_VERSION (resolved via `go list -m tailscale.com`)

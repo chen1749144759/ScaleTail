@@ -3,7 +3,7 @@
 
 //go:build !plan9
 
-// The generate command creates tailscale.com CRDs.
+// The generate command creates scaletail.com CRDs.
 package main
 
 import (
@@ -21,13 +21,13 @@ import (
 
 const (
 	operatorDeploymentFilesPath         = "cmd/k8s-operator/deploy"
-	connectorCRDPath                    = operatorDeploymentFilesPath + "/crds/tailscale.com_connectors.yaml"
-	proxyClassCRDPath                   = operatorDeploymentFilesPath + "/crds/tailscale.com_proxyclasses.yaml"
-	dnsConfigCRDPath                    = operatorDeploymentFilesPath + "/crds/tailscale.com_dnsconfigs.yaml"
-	recorderCRDPath                     = operatorDeploymentFilesPath + "/crds/tailscale.com_recorders.yaml"
-	proxyGroupCRDPath                   = operatorDeploymentFilesPath + "/crds/tailscale.com_proxygroups.yaml"
-	tailnetCRDPath                      = operatorDeploymentFilesPath + "/crds/tailscale.com_tailnets.yaml"
-	proxyGroupPolicyCRDPath             = operatorDeploymentFilesPath + "/crds/tailscale.com_proxygrouppolicies.yaml"
+	connectorCRDPath                    = operatorDeploymentFilesPath + "/crds/scaletail.com_connectors.yaml"
+	proxyClassCRDPath                   = operatorDeploymentFilesPath + "/crds/scaletail.com_proxyclasses.yaml"
+	dnsConfigCRDPath                    = operatorDeploymentFilesPath + "/crds/scaletail.com_dnsconfigs.yaml"
+	recorderCRDPath                     = operatorDeploymentFilesPath + "/crds/scaletail.com_recorders.yaml"
+	proxyGroupCRDPath                   = operatorDeploymentFilesPath + "/crds/scaletail.com_proxygroups.yaml"
+	tailnetCRDPath                      = operatorDeploymentFilesPath + "/crds/scaletail.com_tailnets.yaml"
+	proxyGroupPolicyCRDPath             = operatorDeploymentFilesPath + "/crds/scaletail.com_proxygrouppolicies.yaml"
 	helmTemplatesPath                   = operatorDeploymentFilesPath + "/chart/templates"
 	connectorCRDHelmTemplatePath        = helmTemplatesPath + "/connector.yaml"
 	proxyClassCRDHelmTemplatePath       = helmTemplatesPath + "/proxyclass.yaml"
@@ -124,7 +124,7 @@ func main() {
 	}
 }
 
-// generate places tailscale.com CRDs (currently Connector, ProxyClass, DNSConfig, Recorder) into
+// generate places scaletail.com CRDs (currently Connector, ProxyClass, DNSConfig, Recorder) into
 // the Helm chart templates behind .Values.installCRDs=true condition (true by
 // default).
 func generate(baseDir string) error {

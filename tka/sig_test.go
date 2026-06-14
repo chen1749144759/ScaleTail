@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
 )
 
 func TestSigDirect(t *testing.T) {

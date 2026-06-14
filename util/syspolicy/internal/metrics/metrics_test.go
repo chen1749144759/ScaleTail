@@ -7,11 +7,11 @@ import (
 	"errors"
 	"testing"
 
-	"tailscale.com/types/lazy"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/syspolicy/internal"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/types/lazy"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/syspolicy/internal"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 func TestSettingMetricNames(t *testing.T) {

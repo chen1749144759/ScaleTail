@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"tailscale.com/tstest"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/tstest"
+	"scaletail.com/util/dnsname"
 )
 
 func TestOSConfigPrintable(t *testing.T) {

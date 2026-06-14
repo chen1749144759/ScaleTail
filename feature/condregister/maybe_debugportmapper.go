@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/debugportmapper"
+import _ "scaletail.com/feature/debugportmapper"

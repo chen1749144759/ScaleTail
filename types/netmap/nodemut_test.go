@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/opt"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/opt"
 )
 
 // tests mapResponseContainsNonPatchFields

@@ -119,7 +119,7 @@ Shortcuts[^1] to file issues:
 - [go/bugc](http://go/bugc) (corp, safe choice)
 - [go/bugo](http://go/bugo) (open source, if you want it public to the world).
 
-[^1]: These shortcuts point to our Tailscale’s internal URL shortener service, which you too [can run in your own Tailnet](https://tailscale.com/blog/golink).
+[^1]: These shortcuts point to our Tailscale’s internal URL shortener service, which you too [can run in your own Tailnet](https://scaletail.com/blog/golink).
 
 The following guide can help you decide whether a tracking issue is warranted.
 

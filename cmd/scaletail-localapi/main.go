@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
 )
 
 func main() {

@@ -191,7 +191,7 @@ export default function DeviceDetailsView({
             ·{" "}
             <a
               className="link"
-              href="https://tailscale.com/privacy-policy/"
+              href="https://scaletail.com/privacy-policy/"
               target="_blank"
               rel="noreferrer"
             >
@@ -200,7 +200,7 @@ export default function DeviceDetailsView({
             ·{" "}
             <a
               className="link"
-              href="https://tailscale.com/terms/"
+              href="https://scaletail.com/terms/"
               target="_blank"
               rel="noreferrer"
             >

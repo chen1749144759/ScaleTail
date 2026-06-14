@@ -8,11 +8,11 @@ import (
 	"errors"
 	"net/netip"
 
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/stun"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/nettype"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/stun"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/nettype"
 )
 
 // Standalone creates the necessary UDP sockets on the given bindAddr and starts

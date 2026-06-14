@@ -19,15 +19,15 @@ import (
 	"time"
 
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/net/memnet"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/must"
+	"scaletail.com/net/memnet"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/must"
 )
 
 // TestMain installs a safety net that refuses non-localhost dials for any
-// test in this package. Config.BaseURL defaults to https://log.tailscale.com
+// test in this package. Config.BaseURL defaults to https://log.scaletail.com
 // and Config.HTTPC defaults to http.DefaultClient, so a test that forgets to
 // override either can otherwise silently hit the real logtail server.
 // Tests that need an HTTP server should use memnet (see newTestLogtailServer).

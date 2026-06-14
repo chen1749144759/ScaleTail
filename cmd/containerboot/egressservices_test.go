@@ -16,8 +16,8 @@ import (
 	"sync"
 	"testing"
 
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/kubetypes"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/kubetypes"
 )
 
 func Test_updatesForSvc(t *testing.T) {

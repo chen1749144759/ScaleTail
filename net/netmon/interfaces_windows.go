@@ -13,8 +13,8 @@ import (
 
 	"golang.org/x/sys/windows"
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/tsconst"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/tsconst"
 )
 
 const (

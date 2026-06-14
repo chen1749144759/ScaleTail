@@ -18,27 +18,27 @@ import (
 	"slices"
 	"strings"
 
-	"tailscale.com/atomicfile"
-	"tailscale.com/drive"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/version"
+	"scaletail.com/atomicfile"
+	"scaletail.com/drive"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/preftype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/version"
 )
 
 // DefaultControlURL is the URL base of the control plane
 // ("coordination server") for use when no explicit one is configured.
 // The default control plane is the hosted version run by Tailscale.com.
-const DefaultControlURL = "https://controlplane.tailscale.com"
+const DefaultControlURL = "https://controlplane.scaletail.com"
 
 var (
 	// ErrExitNodeIDAlreadySet is returned from (*Prefs).SetExitNodeIP when the
@@ -49,7 +49,7 @@ var (
 // IsLoginServerSynonym reports whether a URL is a drop-in replacement
 // for the primary Tailscale login server.
 func IsLoginServerSynonym(val any) bool {
-	return val == "https://login.tailscale.com" || val == "https://controlplane.tailscale.com"
+	return val == "https://login.scaletail.com" || val == "https://controlplane.scaletail.com"
 }
 
 // Prefs are the user modifiable settings of the Tailscale node agent.
@@ -798,7 +798,7 @@ func (p *Prefs) AdminPageURL(polc policyclient.Client) string {
 	url := p.ControlURLOrDefault(polc)
 	if IsLoginServerSynonym(url) {
 		// TODO(crawshaw): In future release, make this https://console.tailscale.com
-		url = "https://login.tailscale.com"
+		url = "https://login.scaletail.com"
 	}
 	return url + "/admin"
 }

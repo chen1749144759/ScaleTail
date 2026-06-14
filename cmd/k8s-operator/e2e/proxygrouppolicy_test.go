@@ -12,7 +12,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
 )
 
 // See [TestMain] for test requirements.
@@ -43,8 +43,8 @@ func TestProxyGroupPolicy(t *testing.T) {
 			Name:      "egress-to-proxy-group",
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				"tailscale.com/tailnet-fqdn": "test.something.ts.net",
-				"tailscale.com/proxy-group":  "test",
+				"scaletail.com/tailnet-fqdn": "test.something.ts.net",
+				"scaletail.com/proxy-group":  "test",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -76,7 +76,7 @@ func TestProxyGroupPolicy(t *testing.T) {
 			Name:      "ingress-to-proxy-group",
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test",
+				"scaletail.com/proxy-group": "test",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -107,7 +107,7 @@ func TestProxyGroupPolicy(t *testing.T) {
 			Name:      "ingress-to-proxy-group",
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test",
+				"scaletail.com/proxy-group": "test",
 			},
 		},
 		Spec: networkingv1.IngressSpec{

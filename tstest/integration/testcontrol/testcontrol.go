@@ -28,22 +28,22 @@ import (
 	"time"
 
 	"golang.org/x/net/http2"
-	"tailscale.com/control/controlhttp/controlhttpserver"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/tstest/tkatest"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/httpm"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/util/rands"
-	"tailscale.com/util/set"
-	"tailscale.com/util/zstdframe"
+	"scaletail.com/control/controlhttp/controlhttpserver"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/tstest/tkatest"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/httpm"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/util/rands"
+	"scaletail.com/util/set"
+	"scaletail.com/util/zstdframe"
 )
 
 const msgLimit = 1 << 20 // encrypted message length limit
@@ -73,11 +73,11 @@ type Server struct {
 	// Online=true. This is a coarse stand-in for the per-node
 	// online/offline tracking that production control servers do based
 	// on streaming map sessions: certain disco-key handling fast paths
-	// in [tailscale.com/control/controlclient] and
-	// [tailscale.com/wgengine/userspace] only fire when the peer is
+	// in [scaletail.com/control/controlclient] and
+	// [scaletail.com/wgengine/userspace] only fire when the peer is
 	// reported online, so without this flag they are silently skipped
 	// in tests, which can mask bugs and slow down recovery from disco
-	// rotations. See [tailscale.com/control/controlclient/map.go]
+	// rotations. See [scaletail.com/control/controlclient/map.go]
 	// removeUnwantedDiscoUpdates and
 	// removeUnwantedDiscoUpdatesFromFullNetmapUpdate for callers that
 	// branch on Online.
@@ -719,7 +719,7 @@ func (s *Server) getUser(nodeKey key.NodePublic) (*tailcfg.User, *tailcfg.Login)
 		Provider:      "testcontrol",
 		LoginName:     loginName,
 		DisplayName:   displayName,
-		ProfilePicURL: "https://tailscale.com/static/images/marketing/team-carney.jpg",
+		ProfilePicURL: "https://scaletail.com/static/images/marketing/team-carney.jpg",
 	}
 	user := &tailcfg.User{
 		ID:          id,

@@ -24,14 +24,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/net/dns/resolvconffile"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/set"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/net/dns/resolvconffile"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/set"
 )
 
 const (
@@ -430,14 +430,14 @@ func isTailscaleLoadBalancerService(svc *corev1.Service, isDefaultLoadBalancer b
 			svc.Spec.LoadBalancerClass == nil && isDefaultLoadBalancer)
 }
 
-// hasExposeAnnotation reports whether Service has the tailscale.com/expose
+// hasExposeAnnotation reports whether Service has the scaletail.com/expose
 // annotation set
 func hasExposeAnnotation(svc *corev1.Service) bool {
 	return svc != nil && svc.Annotations[AnnotationExpose] == "true"
 }
 
-// tailnetTargetAnnotation returns the value of tailscale.com/tailnet-ip
-// annotation or of the deprecated tailscale.com/ts-tailnet-target-ip
+// tailnetTargetAnnotation returns the value of scaletail.com/tailnet-ip
+// annotation or of the deprecated scaletail.com/ts-tailnet-target-ip
 // annotation. If neither is set, it returns an empty string. If both are set,
 // it returns the value of the new annotation.
 func tailnetTargetAnnotation(svc *corev1.Service) string {

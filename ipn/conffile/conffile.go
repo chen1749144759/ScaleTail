@@ -12,8 +12,8 @@ import (
 	"os"
 	"runtime"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
 )
 
 // Config describes a config file.

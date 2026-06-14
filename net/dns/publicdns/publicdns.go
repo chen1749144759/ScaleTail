@@ -19,8 +19,8 @@ import (
 	"strings"
 	"sync"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/util/testenv"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/util/testenv"
 )
 
 // dohOfIP maps from public DNS IPs to their DoH base URL.

@@ -15,15 +15,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/control/controlclient"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/execqueue"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/testenv"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/execqueue"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/testenv"
 )
 
 // ExtensionHost is a bridge between the [LocalBackend] and the registered [ipnext.Extension]s.

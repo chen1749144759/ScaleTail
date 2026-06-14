@@ -15,10 +15,10 @@ import (
 
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcapgo"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
 )
 
 // Note: the exported Node and Network are the configuration types;
@@ -49,7 +49,7 @@ func (c *Config) NumNodes() int {
 	return len(c.nodes)
 }
 
-// SetBlendReality sets whether to blend the real controlplane.tailscale.com and
+// SetBlendReality sets whether to blend the real controlplane.scaletail.com and
 // DERP servers into the virtual network. This is mostly useful for interactive
 // testing when working on natlab.
 func (c *Config) SetBlendReality(v bool) {

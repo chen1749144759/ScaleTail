@@ -30,7 +30,7 @@ Examples of unacceptable behavior include without limitation:
 - The use of any coded or suggestive content to hide or provoke otherwise unacceptable behavior.
 - Other conduct which could reasonably be considered harmful, illegal, or inappropriate in a professional setting.
 
-Please also see the Tailscale Acceptable Use Policy, available at [tailscale.com/tailscale-aup](https://tailscale.com/tailscale-aup).
+Please also see the Tailscale Acceptable Use Policy, available at [scaletail.com/tailscale-aup](https://scaletail.com/tailscale-aup).
 
 ## Reporting Incidents
 
@@ -85,11 +85,11 @@ Consequence: A permanent ban from any sort of public interaction within the comm
 ## Acceptable Use Policy
 
 Violation of this Community Code of Conduct may also violate the Tailscale Acceptable Use Policy, which may result in suspension or termination of your Tailscale account.
-For more information, please see the Tailscale Acceptable Use Policy, available at [tailscale.com/tailscale-aup](https://tailscale.com/tailscale-aup).
+For more information, please see the Tailscale Acceptable Use Policy, available at [scaletail.com/tailscale-aup](https://scaletail.com/tailscale-aup).
 
 ## Privacy
 
-Please see the Tailscale [Privacy Policy](https://tailscale.com/privacy-policy) for more information about how Tailscale collects, uses, discloses and protects information.
+Please see the Tailscale [Privacy Policy](https://scaletail.com/privacy-policy) for more information about how Tailscale collects, uses, discloses and protects information.
 
 ## Attribution
 

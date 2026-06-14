@@ -11,7 +11,7 @@ import (
 	"fmt"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/systray"
+	"scaletail.com/client/systray"
 )
 
 func init() {

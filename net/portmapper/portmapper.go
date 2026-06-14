@@ -18,19 +18,19 @@ import (
 	"time"
 
 	"go4.org/mem"
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/neterror"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/portmapper/portmappertype"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/nettype"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/neterror"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/portmapper/portmappertype"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/nettype"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
 )
 
 var (
@@ -783,7 +783,7 @@ func (c *Client) createOrGetMapping(ctx context.Context) (mapping mapping, exter
 	}
 }
 
-//go:generate go run tailscale.com/cmd/addlicense -file pmpresultcode_string.go go run golang.org/x/tools/cmd/stringer -type=pmpResultCode -trimprefix=pmpCode
+//go:generate go run scaletail.com/cmd/addlicense -file pmpresultcode_string.go go run golang.org/x/tools/cmd/stringer -type=pmpResultCode -trimprefix=pmpCode
 
 type pmpResultCode uint16
 

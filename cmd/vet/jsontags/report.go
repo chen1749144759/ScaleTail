@@ -12,7 +12,7 @@ import (
 	_ "embed"
 
 	"golang.org/x/tools/go/analysis"
-	"tailscale.com/util/set"
+	"scaletail.com/util/set"
 )
 
 var jsontagsAllowlist map[ReportKind]set.Set[string]
@@ -23,8 +23,8 @@ var jsontagsAllowlist map[ReportKind]set.Set[string]
 //
 // For example:
 //
-//	OmitEmptyUnsupportedInV1	tailscale.com/path/to/package.StructType.FieldName
-//	OmitEmptyUnsupportedInV1	tailscale.com/path/to/package.*.FieldName
+//	OmitEmptyUnsupportedInV1	scaletail.com/path/to/package.StructType.FieldName
+//	OmitEmptyUnsupportedInV1	scaletail.com/path/to/package.*.FieldName
 //
 // The struct type name may be "*" for anonymous struct types such
 // as those declared within a function or as a type literal in a variable.
@@ -53,8 +53,8 @@ func ParseAllowlist(s string) map[ReportKind]set.Set[string] {
 //
 //	{
 //		"OmitEmptyUnsupportedInV1": set.Of(
-//			"tailscale.com/path/to/package.StructType.FieldName",
-//			"tailscale.com/path/to/package.*.FieldName",
+//			"scaletail.com/path/to/package.StructType.FieldName",
+//			"scaletail.com/path/to/package.*.FieldName",
 //		),
 //	}
 //

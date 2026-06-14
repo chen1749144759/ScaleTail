@@ -6,7 +6,7 @@ package magicsock
 import (
 	"sync/atomic"
 
-	"tailscale.com/types/key"
+	"scaletail.com/types/key"
 )
 
 type discoKeyPair struct {

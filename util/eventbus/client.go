@@ -6,9 +6,9 @@ package eventbus
 import (
 	"reflect"
 
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/set"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/set"
 )
 
 // A Client can publish and subscribe to events on its attached

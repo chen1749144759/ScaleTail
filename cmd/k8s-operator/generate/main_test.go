@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tstest/nettest"
-	"tailscale.com/util/cibuild"
+	"scaletail.com/tstest/nettest"
+	"scaletail.com/util/cibuild"
 )
 
 func Test_generate(t *testing.T) {
@@ -74,19 +74,19 @@ func Test_generate(t *testing.T) {
 	if err := helmTemplateWithCRDCmd.Run(); err != nil {
 		t.Fatalf("templating Helm chart with CRDs failed: %v", err)
 	}
-	if !strings.Contains(installContentsWithCRD.String(), "name: connectors.tailscale.com") {
+	if !strings.Contains(installContentsWithCRD.String(), "name: connectors.scaletail.com") {
 		t.Errorf("Connector CRD not found in default chart install")
 	}
-	if !strings.Contains(installContentsWithCRD.String(), "name: proxyclasses.tailscale.com") {
+	if !strings.Contains(installContentsWithCRD.String(), "name: proxyclasses.scaletail.com") {
 		t.Errorf("ProxyClass CRD not found in default chart install")
 	}
-	if !strings.Contains(installContentsWithCRD.String(), "name: dnsconfigs.tailscale.com") {
+	if !strings.Contains(installContentsWithCRD.String(), "name: dnsconfigs.scaletail.com") {
 		t.Errorf("DNSConfig CRD not found in default chart install")
 	}
-	if !strings.Contains(installContentsWithCRD.String(), "name: recorders.tailscale.com") {
+	if !strings.Contains(installContentsWithCRD.String(), "name: recorders.scaletail.com") {
 		t.Errorf("Recorder CRD not found in default chart install")
 	}
-	if !strings.Contains(installContentsWithCRD.String(), "name: proxygroups.tailscale.com") {
+	if !strings.Contains(installContentsWithCRD.String(), "name: proxygroups.scaletail.com") {
 		t.Errorf("ProxyGroup CRD not found in default chart install")
 	}
 
@@ -98,19 +98,19 @@ func Test_generate(t *testing.T) {
 	if err := helmTemplateWithoutCRDCmd.Run(); err != nil {
 		t.Fatalf("templating Helm chart without CRDs failed: %v", err)
 	}
-	if strings.Contains(installContentsWithoutCRD.String(), "name: connectors.tailscale.com") {
+	if strings.Contains(installContentsWithoutCRD.String(), "name: connectors.scaletail.com") {
 		t.Errorf("Connector CRD found in chart install that should not contain a CRD")
 	}
-	if strings.Contains(installContentsWithoutCRD.String(), "name: connectors.tailscale.com") {
+	if strings.Contains(installContentsWithoutCRD.String(), "name: connectors.scaletail.com") {
 		t.Errorf("ProxyClass CRD found in chart install that should not contain a CRD")
 	}
-	if strings.Contains(installContentsWithoutCRD.String(), "name: dnsconfigs.tailscale.com") {
+	if strings.Contains(installContentsWithoutCRD.String(), "name: dnsconfigs.scaletail.com") {
 		t.Errorf("DNSConfig CRD found in chart install that should not contain a CRD")
 	}
-	if strings.Contains(installContentsWithoutCRD.String(), "name: recorders.tailscale.com") {
+	if strings.Contains(installContentsWithoutCRD.String(), "name: recorders.scaletail.com") {
 		t.Errorf("Recorder CRD found in chart install that should not contain a CRD")
 	}
-	if strings.Contains(installContentsWithoutCRD.String(), "name: proxygroups.tailscale.com") {
+	if strings.Contains(installContentsWithoutCRD.String(), "name: proxygroups.scaletail.com") {
 		t.Errorf("ProxyGroup CRD found in chart install that should not contain a CRD")
 	}
 }

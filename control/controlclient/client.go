@@ -11,8 +11,8 @@ package controlclient
 import (
 	"context"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
 )
 
 // LoginFlags is a bitmask of options to change the behavior of Client.Login

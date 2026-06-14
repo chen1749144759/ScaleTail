@@ -15,7 +15,7 @@ import (
 	"testing"
 	"text/template"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 var (

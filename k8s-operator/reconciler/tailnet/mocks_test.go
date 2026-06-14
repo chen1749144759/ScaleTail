@@ -11,7 +11,7 @@ import (
 
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/k8s-operator/tsclient"
+	"scaletail.com/k8s-operator/tsclient"
 )
 
 type (

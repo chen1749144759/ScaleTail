@@ -12,7 +12,7 @@ import (
 	"fmt"
 
 	"github.com/illarion/gonotify/v3"
-	"tailscale.com/net/dns"
+	"scaletail.com/net/dns"
 )
 
 func init() {

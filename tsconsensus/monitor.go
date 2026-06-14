@@ -12,9 +12,9 @@ import (
 	"net/http"
 	"slices"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tsnet"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tsnet"
+	"scaletail.com/util/dnsname"
 )
 
 type status struct {

@@ -11,14 +11,14 @@ import (
 	"strings"
 
 	"go4.org/mem"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/health"
-	"tailscale.com/net/dns/resolvconffile"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/health"
+	"scaletail.com/net/dns/resolvconffile"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 // NewOSConfigurator creates a new OS configurator.

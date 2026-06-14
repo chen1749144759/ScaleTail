@@ -14,8 +14,8 @@ import (
 	"slices"
 
 	"go4.org/mem"
-	"tailscale.com/util/set"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/set"
+	"scaletail.com/util/testenv"
 )
 
 // rand fills b with cryptographically strong random bytes. Panics if

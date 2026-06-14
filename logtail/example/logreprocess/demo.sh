@@ -9,11 +9,11 @@
 #
 # To run this demo, first install the example applications:
 #
-#        go install tailscale.com/logtail/example/...
+#        go install scaletail.com/logtail/example/...
 #
 # Then generate a LOGTAIL_API_KEY and two test collections by visiting:
 #
-#        https://log.tailscale.com
+#        https://log.scaletail.com
 #
 # Then set the three variables below.
 trap 'rv=$?; [ "$rv" = 0 ] || echo "-- exiting with code $rv"; exit $rv' EXIT

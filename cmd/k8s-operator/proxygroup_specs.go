@@ -18,11 +18,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/ingressservices"
+	"scaletail.com/kube/kubetypes"
 	"sigs.k8s.io/yaml"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/ingressservices"
-	"tailscale.com/kube/kubetypes"
 )
 
 const (

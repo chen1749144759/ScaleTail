@@ -3,9 +3,9 @@
 
 //go:build !windows && go1.19
 
-package main // import "tailscale.com/cmd/scaletaild"
+package main // import "scaletail.com/cmd/scaletaild"
 
-import "tailscale.com/logpolicy"
+import "scaletail.com/logpolicy"
 
 func isWindowsService() bool { return false }
 

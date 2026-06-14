@@ -9,7 +9,7 @@ import (
 	"context"
 	"flag"
 
-	"tailscale.com/types/lazy"
+	"scaletail.com/types/lazy"
 )
 
 var lazyInTest lazy.SyncValue[bool]

@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 type FakeLocalClient struct {

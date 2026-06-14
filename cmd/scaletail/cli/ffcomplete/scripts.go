@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/tempfork/spf13/cobra"
+	"scaletail.com/tempfork/spf13/cobra"
 )
 
 func compCmd(fs *flag.FlagSet) string {

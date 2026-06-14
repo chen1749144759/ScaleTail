@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"os"
 
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/health"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/health"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 // NewOSConfigurator creates a new OS configurator.

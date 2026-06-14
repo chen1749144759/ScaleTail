@@ -14,8 +14,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/tstime"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/tstime"
 )
 
 // SetConnectorCondition ensures that Connector status has a condition with the

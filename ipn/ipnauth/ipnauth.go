@@ -14,15 +14,15 @@ import (
 	"runtime"
 	"strconv"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/safesocket"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/groupmember"
-	"tailscale.com/util/winutil"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/safesocket"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/groupmember"
+	"scaletail.com/util/winutil"
+	"scaletail.com/version/distro"
 )
 
 // ErrNotImplemented is returned by ConnIdentity.WindowsToken when it is not

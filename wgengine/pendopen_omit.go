@@ -6,9 +6,9 @@
 package wgengine
 
 import (
-	"tailscale.com/net/packet"
-	"tailscale.com/net/tstun"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/tstun"
+	"scaletail.com/wgengine/filter"
 )
 
 type flowtrackTuple = struct{}

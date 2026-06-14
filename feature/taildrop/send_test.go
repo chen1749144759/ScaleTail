@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"tailscale.com/tstime"
-	"tailscale.com/util/must"
+	"scaletail.com/tstime"
+	"scaletail.com/util/must"
 )
 
 func TestPutFile(t *testing.T) {

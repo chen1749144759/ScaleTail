@@ -1,6 +1,6 @@
 # DERP
 
-This is the code for the [Tailscale DERP server](https://tailscale.com/kb/1232/derp-servers).
+This is the code for the [Tailscale DERP server](https://scaletail.com/kb/1232/derp-servers).
 
 In general, you should not need to or want to run this code. The overwhelming
 majority of Tailscale users (both individuals and companies) do not.
@@ -28,7 +28,7 @@ If you've decided or been advised to run your own `derper`, then read on.
 ## Guide to running `cmd/derper`
 
 * You must build and update the `cmd/derper` binary yourself. There are no
-  packages. Use `go install tailscale.com/cmd/derper@latest` with the latest
+  packages. Use `go install scaletail.com/cmd/derper@latest` with the latest
   version of Go. You should update this binary approximately as regularly as
   you update Tailscale nodes. If using `--verify-clients`, the `derper` binary
   and `scaletaild` binary on the machine must be built from the same git revision.

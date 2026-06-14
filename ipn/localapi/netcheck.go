@@ -8,11 +8,11 @@ import (
 	"errors"
 	"net/http"
 
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/netmon"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/httpm"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/netmon"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/httpm"
 )
 
 func (h *Handler) serveNetcheck(w http.ResponseWriter, r *http.Request) {

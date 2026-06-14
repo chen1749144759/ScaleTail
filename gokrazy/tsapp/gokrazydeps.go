@@ -13,6 +13,6 @@ import (
 	_ "github.com/gokrazy/serial-busybox"
 	_ "github.com/tailscale/gokrazy-kernel"
 	_ "github.com/tailscale/ts-gokrazy/gokrazyinit"
-	_ "tailscale.com/cmd/scaletail"
-	_ "tailscale.com/cmd/scaletaild"
+	_ "scaletail.com/cmd/scaletail"
+	_ "scaletail.com/cmd/scaletaild"
 )

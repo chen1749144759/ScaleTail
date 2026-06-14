@@ -13,9 +13,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/must"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/must"
 )
 
 func TestImpersonationHeaders(t *testing.T) {

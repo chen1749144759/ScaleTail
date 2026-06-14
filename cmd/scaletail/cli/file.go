@@ -29,17 +29,17 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/peterbourgon/ff/v3/ffcli"
 	"golang.org/x/time/rate"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/cmd/scaletail/cli/ffcomplete"
-	"tailscale.com/envknob"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tailcfg"
-	tsrate "tailscale.com/tstime/rate"
-	"tailscale.com/util/quarantine"
-	"tailscale.com/util/truncate"
-	"tailscale.com/version"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/cmd/scaletail/cli/ffcomplete"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tailcfg"
+	tsrate "scaletail.com/tstime/rate"
+	"scaletail.com/util/quarantine"
+	"scaletail.com/util/truncate"
+	"scaletail.com/version"
 )
 
 func init() {
@@ -284,7 +284,7 @@ func runCp(ctx context.Context, args []string) error {
 // per OutgoingFile event for files going to peer. It runs until ctx is
 // done (which runCp does on return) and is best-effort: if the bus
 // subscription fails for any reason, onUpdate simply isn't called and the
-// caller's progress display stays at 0 — exactly the right degradation,
+// caller's progress display stays at 0, exactly the right degradation,
 // since the warning timer will then fire on its normal 3-second deadline.
 func watchOutgoingFiles(ctx context.Context, peer tailcfg.StableNodeID, onUpdate func(name string, sent int64)) {
 	// NotifyPeerChanges opts in to per-peer add/remove notifications so the
@@ -323,8 +323,8 @@ func watchOutgoingFiles(ctx context.Context, peer tailcfg.StableNodeID, onUpdate
 // interval. interval must be > 0; runCp's caller gates on the
 // --update-interval flag and skips invoking us when it's <= 0.
 //
-// It returns when ctx is done OR when it detects the transfer is stuck —
-// "stuck" being: contentCount has equalled contentLength with a near-zero
+// It returns when ctx is done OR when it detects the transfer is stuck.
+// "Stuck" means contentCount has equalled contentLength with a near-zero
 // rate for >2 seconds. The stuck case prints a final newline so subsequent
 // output (e.g. an error from PushFile) lands on a fresh line below the
 // frozen progress line, instead of being painted over by it.
@@ -419,7 +419,7 @@ func truncateString(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
-	return truncate.String(s, max(n-1, 0)) + "…"
+	return truncate.String(s, max(n-3, 0)) + "..."
 }
 
 func formatIEC(n float64, unit string) string {
@@ -453,7 +453,7 @@ func getTargetStableID(ctx context.Context, ipStr string) (id tailcfg.StableNode
 		return "", false, errors.New("no status available")
 	}
 	if st.Self == nil {
-		// We have a status structure, but it doesn’t include Self info. Probably not connected.
+		// We have a status structure, but it doesn't include Self info. Probably not connected.
 		return "", false, errors.New("local node is not configured or missing Self information")
 	}
 
@@ -469,7 +469,7 @@ peerLoop:
 		}
 	}
 
-	// If we didn’t find a matching peer at all:
+	// If we didn't find a matching peer at all:
 	if foundPeer == nil {
 		if !tsaddr.IsTailscaleIP(ip) {
 			return "", false, fmt.Errorf("unknown target; %v is not a Tailscale IP address", ip)

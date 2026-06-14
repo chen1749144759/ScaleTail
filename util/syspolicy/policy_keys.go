@@ -4,10 +4,10 @@
 package syspolicy
 
 import (
-	"tailscale.com/util/syspolicy/internal"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/syspolicy/internal"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/testenv"
 )
 
 // implicitDefinitions is a list of [setting.Definition] that will be registered

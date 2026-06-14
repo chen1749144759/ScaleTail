@@ -29,35 +29,35 @@ import (
 	"time"
 
 	"golang.org/x/term"
-	"tailscale.com/atomicfile"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/log/filelogger"
-	"tailscale.com/logtail"
-	"tailscale.com/logtail/filch"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/dnsfallback"
-	"tailscale.com/net/netknob"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/netx"
-	"tailscale.com/net/tlsdial"
-	"tailscale.com/paths"
-	"tailscale.com/safesocket"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/must"
-	"tailscale.com/util/racebuild"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/testenv"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/atomicfile"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/log/filelogger"
+	"scaletail.com/logtail"
+	"scaletail.com/logtail/filch"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/dnsfallback"
+	"scaletail.com/net/netknob"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/netx"
+	"scaletail.com/net/tlsdial"
+	"scaletail.com/paths"
+	"scaletail.com/safesocket"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/must"
+	"scaletail.com/util/racebuild"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/testenv"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 var getLogTargetOnce struct {
@@ -922,7 +922,7 @@ func (opts TransportOptions) New() http.RoundTripper {
 	}
 
 	tr.TLSClientConfig = tlsdial.Config(opts.Health, tr.TLSClientConfig)
-	// Force TLS 1.3 since we know log.tailscale.com supports it.
+	// Force TLS 1.3 since we know log.scaletail.com supports it.
 	tr.TLSClientConfig.MinVersion = tls.VersionTLS13
 
 	return tr

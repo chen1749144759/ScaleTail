@@ -9,7 +9,7 @@ import (
 	"io"
 	"net"
 
-	"tailscale.com/syncs"
+	"scaletail.com/syncs"
 )
 
 // NewOneConnListener returns a net.Listener that returns c on its

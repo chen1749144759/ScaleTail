@@ -8,9 +8,9 @@ import (
 	"log"
 	"sync/atomic"
 
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/testenv"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/testenv"
 )
 
 const (

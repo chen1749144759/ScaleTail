@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"testing"
 
-	"tailscale.com/control/controlclient"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/tsd"
-	"tailscale.com/tstest"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/tsd"
+	"scaletail.com/tstest"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
 )
 
 // Option is any optional configuration that can be passed to [NewServer] or [NewBackend].

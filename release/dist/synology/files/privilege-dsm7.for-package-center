@@ -2,8 +2,8 @@
   "defaults":{
     "run-as": "package"
   },
-  "username": "tailscale",
-  "groupname": "tailscale",
+  "username": "scaletail",
+  "groupname": "scaletail",
   "tool": [{
     "relpath": "bin/scaletaild",
     "user": "package",

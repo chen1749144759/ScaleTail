@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
+	"scaletail.com/atomicfile"
+	"scaletail.com/ipn"
+	"scaletail.com/version"
 	"software.sslmate.com/src/go-pkcs12"
-	"tailscale.com/atomicfile"
-	"tailscale.com/ipn"
-	"tailscale.com/version"
 )
 
 func init() {

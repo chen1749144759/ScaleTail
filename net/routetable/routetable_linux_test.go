@@ -44,7 +44,7 @@ func TestRouteEntryFormatting(t *testing.T) {
 				Type:      RouteTypeMulticast,
 				Dst:       RouteDestination{Prefix: netip.MustParsePrefix("100.64.0.0/10")},
 				Gateway:   netip.MustParseAddr("1.2.3.1"),
-				Interface: "tailscale0",
+				Interface: "scaletail0",
 				Sys: RouteEntryLinux{
 					Type:     unix.RTN_UNICAST,
 					Table:    52,
@@ -53,7 +53,7 @@ func TestRouteEntryFormatting(t *testing.T) {
 					Priority: 555,
 				},
 			},
-			want: `{Family: IPv4, Type: multicast, Dst: 100.64.0.0/10, Gateway: 1.2.3.1, Interface: tailscale0, Sys: {Type: unicast, Table: 52, Proto: static, Src: 1.2.3.4, Priority: 555}}`,
+			want: `{Family: IPv4, Type: multicast, Dst: 100.64.0.0/10, Gateway: 1.2.3.1, Interface: scaletail0, Sys: {Type: unicast, Table: 52, Proto: static, Src: 1.2.3.4, Priority: 555}}`,
 		},
 		{
 			re: RouteEntry{

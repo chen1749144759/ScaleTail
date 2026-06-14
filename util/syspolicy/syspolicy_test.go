@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/syspolicy/internal/loggerx"
-	"tailscale.com/util/syspolicy/internal/metrics"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/syspolicy/rsop"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/syspolicy/source"
-	"tailscale.com/util/testenv"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/syspolicy/internal/loggerx"
+	"scaletail.com/util/syspolicy/internal/metrics"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/syspolicy/rsop"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/source"
+	"scaletail.com/util/testenv"
 )
 
 var someOtherError = errors.New("error other than not found")
@@ -629,12 +629,12 @@ func BenchmarkGetString(b *testing.B) {
 	loggerx.SetForTest(b, logger.Discard, logger.Discard)
 	registerWellKnownSettingsForTest(b)
 
-	wantControlURL := "https://login.tailscale.com"
+	wantControlURL := "https://login.scaletail.com"
 	registerSingleSettingStoreForTest(b, source.TestSettingOf(pkey.ControlURL, wantControlURL))
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		gotControlURL, _ := getString(pkey.ControlURL, "https://controlplane.tailscale.com")
+		gotControlURL, _ := getString(pkey.ControlURL, "https://controlplane.scaletail.com")
 		if gotControlURL != wantControlURL {
 			b.Fatalf("got %v; want %v", gotControlURL, wantControlURL)
 		}
@@ -646,22 +646,22 @@ func TestSelectControlURL(t *testing.T) {
 		reg, disk, want string
 	}{
 		// Modern default case.
-		{"", "", "https://controlplane.tailscale.com"},
+		{"", "", "https://controlplane.scaletail.com"},
 
 		// For a user who installed prior to Dec 2020, with
 		// stuff in their registry.
-		{"https://login.tailscale.com", "", "https://login.tailscale.com"},
+		{"https://login.scaletail.com", "", "https://login.scaletail.com"},
 
 		// Ignore pre-Dec'20 LoginURL from installer if prefs
 		// prefs overridden manually to an on-prem control
 		// server.
-		{"https://login.tailscale.com", "http://on-prem", "http://on-prem"},
+		{"https://login.scaletail.com", "http://on-prem", "http://on-prem"},
 
 		// Something unknown explicitly set in the registry always wins.
 		{"http://explicit-reg", "", "http://explicit-reg"},
 		{"http://explicit-reg", "http://on-prem", "http://explicit-reg"},
-		{"http://explicit-reg", "https://login.tailscale.com", "http://explicit-reg"},
-		{"http://explicit-reg", "https://controlplane.tailscale.com", "http://explicit-reg"},
+		{"http://explicit-reg", "https://login.scaletail.com", "http://explicit-reg"},
+		{"http://explicit-reg", "https://controlplane.scaletail.com", "http://explicit-reg"},
 
 		// If nothing in the registry, disk wins.
 		{"", "http://on-prem", "http://on-prem"},

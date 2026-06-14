@@ -15,7 +15,7 @@ import (
 	"github.com/tailscale/wireguard-go/conn"
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/unix"
-	"tailscale.com/net/packet"
+	"scaletail.com/net/packet"
 )
 
 func Test_linuxBatchingConn_splitCoalescedMessages(t *testing.T) {

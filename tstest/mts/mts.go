@@ -30,10 +30,10 @@ import (
 	"syscall"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/types/bools"
-	"tailscale.com/types/lazy"
-	"tailscale.com/util/mak"
+	"scaletail.com/client/local"
+	"scaletail.com/types/bools"
+	"scaletail.com/types/lazy"
+	"scaletail.com/util/mak"
 )
 
 func usage(args ...any) {
@@ -292,7 +292,7 @@ func (c *Client) RunCommand(name string, args []string) {
 	if _, err := lc.StatusWithoutPeers(probeCtx); err != nil {
 		log.Fatalf("instance %q not running? start with 'mts server start %q'; got error: %v", name, name, err)
 	}
-	args = append([]string{"run", "tailscale.com/cmd/scaletail", "--socket=" + sock}, args...)
+	args = append([]string{"run", "scaletail.com/cmd/scaletail", "--socket=" + sock}, args...)
 	cmd := exec.Command("go", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -316,7 +316,7 @@ type Server struct {
 
 func (s *Server) scaletaild() string {
 	v, err := s.lazyScaleTaild.GetErr(func() (string, error) {
-		out, err := exec.Command("go", "list", "-f", "{{.Target}}", "tailscale.com/cmd/scaletaild").CombinedOutput()
+		out, err := exec.Command("go", "list", "-f", "{{.Target}}", "scaletail.com/cmd/scaletaild").CombinedOutput()
 		if err != nil {
 			return "", err
 		}

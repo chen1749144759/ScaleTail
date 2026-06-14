@@ -8,8 +8,8 @@ import (
 	"testing/synctest"
 	"time"
 
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/eventbus/eventbustest"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/eventbus/eventbustest"
 )
 
 func TestExample_Expect(t *testing.T) {

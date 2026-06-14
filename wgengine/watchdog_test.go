@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/health"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/usermetric"
+	"scaletail.com/health"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/usermetric"
 )
 
 func TestWatchdog(t *testing.T) {

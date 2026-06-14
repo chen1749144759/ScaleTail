@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/coder/websocket"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/net/wsconn"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/net/wsconn"
 )
 
 var counterWebSocketAccepts = expvar.NewInt("derp_websocket_accepts")

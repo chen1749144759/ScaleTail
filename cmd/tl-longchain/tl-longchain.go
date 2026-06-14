@@ -12,7 +12,7 @@
 //
 // Note that the Tailscale client this command is executed on must have
 // ACL visibility to all other nodes to be able to see their signatures.
-// https://tailscale.com/kb/1087/device-visibility
+// https://scaletail.com/kb/1087/device-visibility
 package main
 
 import (
@@ -22,10 +22,10 @@ import (
 	"log"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
 )
 
 var (

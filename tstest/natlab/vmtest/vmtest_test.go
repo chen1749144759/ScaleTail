@@ -11,14 +11,14 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/tstest/natlab/vmtest"
-	"tailscale.com/tstest/natlab/vnet"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
+	"scaletail.com/client/local"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/tstest/natlab/vmtest"
+	"scaletail.com/tstest/natlab/vnet"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
 )
 
 func TestMacOSAndLinuxCanPing(t *testing.T) {

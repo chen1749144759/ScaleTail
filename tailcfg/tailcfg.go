@@ -5,7 +5,7 @@
 // the node and the coordination server.
 package tailcfg
 
-//go:generate go run tailscale.com/cmd/viewer --type=User,Node,Hostinfo,NetInfo,Login,DNSConfig,RegisterResponse,RegisterResponseAuth,RegisterRequest,DERPHomeParams,DERPRegion,DERPMap,DERPNode,SSHRule,SSHAction,SSHPrincipal,ControlDialPlan,Location,UserProfile,VIPService,SSHPolicy --clonefunc
+//go:generate go run scaletail.com/cmd/viewer --type=User,Node,Hostinfo,NetInfo,Login,DNSConfig,RegisterResponse,RegisterResponseAuth,RegisterRequest,DERPHomeParams,DERPRegion,DERPMap,DERPNode,SSHRule,SSHAction,SSHPrincipal,ControlDialPlan,Location,UserProfile,VIPService,SSHPolicy --clonefunc
 
 import (
 	"bytes"
@@ -21,16 +21,16 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/key"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/structs"
-	"tailscale.com/types/tkatype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/util/vizerror"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/key"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/structs"
+	"scaletail.com/types/tkatype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/util/vizerror"
 )
 
 // CapabilityVersion represents the client's capability level. That
@@ -435,8 +435,8 @@ type Node struct {
 	// Capabilities are capabilities that the node has.
 	// They're free-form strings, but should be in the form of URLs/URIs
 	// such as:
-	//    "https://tailscale.com/cap/is-admin"
-	//    "https://tailscale.com/cap/file-sharing"
+	//    "https://scaletail.com/cap/is-admin"
+	//    "https://scaletail.com/cap/file-sharing"
 	//
 	// Deprecated: use CapMap instead. See https://github.com/tailscale/tailscale/issues/11508
 	Capabilities []NodeCapability `json:",omitempty"`
@@ -1539,50 +1539,50 @@ type CapGrant struct {
 // the peer communicates with the node that has this rule. Its meaning is
 // application-defined.
 //
-// It must be a URL like "https://tailscale.com/cap/file-send".
+// It must be a URL like "https://scaletail.com/cap/file-send".
 type PeerCapability string
 
 const (
 	// PeerCapabilityFileSharingTarget grants the current node the ability to send
 	// files to the peer which has this capability.
-	PeerCapabilityFileSharingTarget PeerCapability = "https://tailscale.com/cap/file-sharing-target"
+	PeerCapabilityFileSharingTarget PeerCapability = "https://scaletail.com/cap/file-sharing-target"
 	// PeerCapabilityFileSharingSend grants the ability to receive files from a
 	// node that's owned by a different user.
-	PeerCapabilityFileSharingSend PeerCapability = "https://tailscale.com/cap/file-send"
+	PeerCapabilityFileSharingSend PeerCapability = "https://scaletail.com/cap/file-send"
 	// PeerCapabilityDebugPeer grants the ability for a peer to read this node's
 	// goroutines, metrics, magicsock internal state, etc.
-	PeerCapabilityDebugPeer PeerCapability = "https://tailscale.com/cap/debug-peer"
+	PeerCapabilityDebugPeer PeerCapability = "https://scaletail.com/cap/debug-peer"
 	// PeerCapabilityWakeOnLAN grants the ability to send a Wake-On-LAN packet.
-	PeerCapabilityWakeOnLAN PeerCapability = "https://tailscale.com/cap/wake-on-lan"
+	PeerCapabilityWakeOnLAN PeerCapability = "https://scaletail.com/cap/wake-on-lan"
 	// PeerCapabilityIngress grants the ability for a peer to send ingress traffic.
-	PeerCapabilityIngress PeerCapability = "https://tailscale.com/cap/ingress"
+	PeerCapabilityIngress PeerCapability = "https://scaletail.com/cap/ingress"
 	// PeerCapabilityWebUI grants the ability for a peer to edit features from the
 	// device Web UI.
-	PeerCapabilityWebUI PeerCapability = "tailscale.com/cap/webui"
+	PeerCapabilityWebUI PeerCapability = "scaletail.com/cap/webui"
 	// PeerCapabilityTaildrive grants the ability for a peer to access Taildrive
 	// shares.
-	PeerCapabilityTaildrive PeerCapability = "tailscale.com/cap/drive"
+	PeerCapabilityTaildrive PeerCapability = "scaletail.com/cap/drive"
 	// PeerCapabilityTaildriveSharer indicates that a peer has the ability to
 	// share folders with us.
-	PeerCapabilityTaildriveSharer PeerCapability = "tailscale.com/cap/drive-sharer"
+	PeerCapabilityTaildriveSharer PeerCapability = "scaletail.com/cap/drive-sharer"
 
 	// PeerCapabilityKubernetes grants a peer Kubernetes-specific
 	// capabilities, such as the ability to impersonate specific Tailscale
 	// user groups as Kubernetes user groups. This capability is read by
 	// peers that are Tailscale Kubernetes operator instances.
-	PeerCapabilityKubernetes PeerCapability = "tailscale.com/cap/kubernetes"
+	PeerCapabilityKubernetes PeerCapability = "scaletail.com/cap/kubernetes"
 
 	// PeerCapabilityRelay grants the ability for a peer to allocate relay
 	// endpoints.
-	PeerCapabilityRelay PeerCapability = "tailscale.com/cap/relay"
+	PeerCapabilityRelay PeerCapability = "scaletail.com/cap/relay"
 	// PeerCapabilityRelayTarget grants the current node the ability to allocate
 	// relay endpoints to the peer which has this capability.
-	PeerCapabilityRelayTarget PeerCapability = "tailscale.com/cap/relay-target"
+	PeerCapabilityRelayTarget PeerCapability = "scaletail.com/cap/relay-target"
 
 	// PeerCapabilityTsIDP grants a peer tsidp-specific
 	// capabilities, such as the ability to add user groups to the OIDC
 	// claim
-	PeerCapabilityTsIDP PeerCapability = "tailscale.com/cap/tsidp"
+	PeerCapabilityTsIDP PeerCapability = "scaletail.com/cap/tsidp"
 )
 
 // NodeCapMap is a map of capabilities to their optional values. It is valid for
@@ -2440,7 +2440,7 @@ type Oauth2Token struct {
 // NodeCapability represents a capability granted to the self node as listed in
 // MapResponse.Node.Capabilities.
 //
-// It must be a URL like "https://tailscale.com/cap/file-sharing", or a
+// It must be a URL like "https://scaletail.com/cap/file-sharing", or a
 // well-known capability name like "funnel". The latter is only allowed for
 // Tailscale-defined capabilities.
 //
@@ -2463,26 +2463,26 @@ func (p NodeCapabilityPrefix) ToAttribute(value string) NodeCapability {
 }
 
 const (
-	CapabilityFileSharing        NodeCapability = "https://tailscale.com/cap/file-sharing"
-	CapabilityAdmin              NodeCapability = "https://tailscale.com/cap/is-admin"
-	CapabilityOwner              NodeCapability = "https://tailscale.com/cap/is-owner"
-	CapabilitySSH                NodeCapability = "https://tailscale.com/cap/ssh"                   // feature enabled/available
-	CapabilitySSHRuleIn          NodeCapability = "https://tailscale.com/cap/ssh-rule-in"           // some SSH rule reach this node
-	CapabilityDataPlaneAuditLogs NodeCapability = "https://tailscale.com/cap/data-plane-audit-logs" // feature enabled
-	CapabilityDebug              NodeCapability = "https://tailscale.com/cap/debug"                 // exposes debug endpoints over the PeerAPI
+	CapabilityFileSharing        NodeCapability = "https://scaletail.com/cap/file-sharing"
+	CapabilityAdmin              NodeCapability = "https://scaletail.com/cap/is-admin"
+	CapabilityOwner              NodeCapability = "https://scaletail.com/cap/is-owner"
+	CapabilitySSH                NodeCapability = "https://scaletail.com/cap/ssh"                   // feature enabled/available
+	CapabilitySSHRuleIn          NodeCapability = "https://scaletail.com/cap/ssh-rule-in"           // some SSH rule reach this node
+	CapabilityDataPlaneAuditLogs NodeCapability = "https://scaletail.com/cap/data-plane-audit-logs" // feature enabled
+	CapabilityDebug              NodeCapability = "https://scaletail.com/cap/debug"                 // exposes debug endpoints over the PeerAPI
 	CapabilityHTTPS              NodeCapability = "https"
 
 	// CapabilityMacUIV2 makes the macOS GUI enable its v2 mode.
-	CapabilityMacUIV2 NodeCapability = "https://tailscale.com/cap/mac-ui-v2"
+	CapabilityMacUIV2 NodeCapability = "https://scaletail.com/cap/mac-ui-v2"
 
 	// CapabilityServicesInDesktopClients enables services list/menu/section in desktop clients.
 	// If this capability is not present, desktop clients should not show services.
-	CapabilityServicesInDesktopClients NodeCapability = "https://tailscale.com/cap/services-in-desktop-clients"
+	CapabilityServicesInDesktopClients NodeCapability = "https://scaletail.com/cap/services-in-desktop-clients"
 
 	// CapabilityBindToInterfaceByRoute changes how Darwin nodes create
 	// sockets (in the net/netns package). See that package for more
 	// details on the behaviour of this capability.
-	CapabilityBindToInterfaceByRoute NodeCapability = "https://tailscale.com/cap/bind-to-interface-by-route"
+	CapabilityBindToInterfaceByRoute NodeCapability = "https://scaletail.com/cap/bind-to-interface-by-route"
 
 	// NodeAttrDisableAndroidBindToActiveNetwork disables binding sockets to the
 	// currently active network on Android, which is enabled by default.
@@ -2495,41 +2495,41 @@ const (
 	// macOS and iOS clients) to override the default interface, this capability
 	// disables that and uses the default behavior (of parsing the routing
 	// table).
-	CapabilityDebugDisableAlternateDefaultRouteInterface NodeCapability = "https://tailscale.com/cap/debug-disable-alternate-default-route-interface"
+	CapabilityDebugDisableAlternateDefaultRouteInterface NodeCapability = "https://scaletail.com/cap/debug-disable-alternate-default-route-interface"
 
 	// CapabilityDebugDisableBindConnToInterface disables the automatic binding
 	// of connections to the default network interface on Darwin nodes.
-	CapabilityDebugDisableBindConnToInterface NodeCapability = "https://tailscale.com/cap/debug-disable-bind-conn-to-interface"
+	CapabilityDebugDisableBindConnToInterface NodeCapability = "https://scaletail.com/cap/debug-disable-bind-conn-to-interface"
 
 	// CapabilityDebugDisableBindConnToInterface disables the automatic binding
 	// of connections to the default network interface on Darwin nodes using network extensions
-	CapabilityDebugDisableBindConnToInterfaceAppleExt NodeCapability = "https://tailscale.com/cap/debug-disable-bind-conn-to-interface-apple-ext"
+	CapabilityDebugDisableBindConnToInterfaceAppleExt NodeCapability = "https://scaletail.com/cap/debug-disable-bind-conn-to-interface-apple-ext"
 
 	// CapabilityTailnetLock indicates the node may initialize tailnet lock.
-	CapabilityTailnetLock NodeCapability = "https://tailscale.com/cap/tailnet-lock"
+	CapabilityTailnetLock NodeCapability = "https://scaletail.com/cap/tailnet-lock"
 
 	// Funnel warning capabilities used for reporting errors to the user.
 
 	// CapabilityWarnFunnelNoInvite indicates whether Funnel is enabled for the tailnet.
 	// This cap is no longer used 2023-08-09 onwards.
-	CapabilityWarnFunnelNoInvite NodeCapability = "https://tailscale.com/cap/warn-funnel-no-invite"
+	CapabilityWarnFunnelNoInvite NodeCapability = "https://scaletail.com/cap/warn-funnel-no-invite"
 
 	// CapabilityWarnFunnelNoHTTPS indicates HTTPS has not been enabled for the tailnet.
 	// This cap is no longer used 2023-08-09 onwards.
-	CapabilityWarnFunnelNoHTTPS NodeCapability = "https://tailscale.com/cap/warn-funnel-no-https"
+	CapabilityWarnFunnelNoHTTPS NodeCapability = "https://scaletail.com/cap/warn-funnel-no-https"
 
 	// Debug logging capabilities
 
 	// CapabilityDebugTSDNSResolution enables verbose debug logging for DNS
 	// resolution for Tailscale-controlled domains (the control server, log
 	// server, DERP servers, etc.)
-	CapabilityDebugTSDNSResolution NodeCapability = "https://tailscale.com/cap/debug-ts-dns-resolution"
+	CapabilityDebugTSDNSResolution NodeCapability = "https://scaletail.com/cap/debug-ts-dns-resolution"
 
 	// CapabilityFunnelPorts specifies the ports that the Funnel is available on.
 	// The ports are specified as a comma-separated list of port numbers or port
 	// ranges (e.g. "80,443,8080-8090") in the ports query parameter.
-	// e.g. https://tailscale.com/cap/funnel-ports?ports=80,443,8080-8090
-	CapabilityFunnelPorts NodeCapability = "https://tailscale.com/cap/funnel-ports"
+	// e.g. https://scaletail.com/cap/funnel-ports?ports=80,443,8080-8090
+	CapabilityFunnelPorts NodeCapability = "https://scaletail.com/cap/funnel-ports"
 
 	// NodeAttrOnlyTCP443 specifies that the client should not attempt to generate
 	// any outbound traffic that isn't TCP on port 443 (HTTPS). This is used for
@@ -2879,7 +2879,7 @@ type SetDeviceAttributesRequest struct {
 // Attributes not in the map are left unchanged.
 // The value can be a string, float64, bool, or nil to delete.
 //
-// See https://tailscale.com/s/api-device-posture-attrs.
+// See https://scaletail.com/s/api-device-posture-attrs.
 //
 // TODO(bradfitz): add struct type for specifying optional associated data
 // for each attribute value, like an expiry time?

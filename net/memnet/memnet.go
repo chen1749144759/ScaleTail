@@ -13,8 +13,8 @@ import (
 	"net"
 	"net/netip"
 
-	"tailscale.com/net/netx"
-	"tailscale.com/syncs"
+	"scaletail.com/net/netx"
+	"scaletail.com/syncs"
 )
 
 var _ netx.Network = (*Network)(nil)

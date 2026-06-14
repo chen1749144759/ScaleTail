@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/util/rands"
+	"scaletail.com/util/rands"
 )
 
 //go:embed ui-header.html

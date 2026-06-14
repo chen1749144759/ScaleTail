@@ -5,6 +5,6 @@ metadata:
   name: {{ .Values.ingressClass.name }}
   annotations: {} # we do not support default IngressClass annotation https://kubernetes.io/docs/concepts/services-networking/ingress/#default-ingress-class
 spec:
-  controller: tailscale.com/ts-ingress # controller name currently can not be changed
+  controller: scaletail.com/ts-ingress # controller name currently can not be changed
   # parameters: {} # currently no parameters are supported
 {{- end }}

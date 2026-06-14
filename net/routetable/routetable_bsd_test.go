@@ -15,7 +15,7 @@ import (
 
 	"golang.org/x/net/route"
 	"golang.org/x/sys/unix"
-	"tailscale.com/net/netmon"
+	"scaletail.com/net/netmon"
 )
 
 func TestRouteEntryFromMsg(t *testing.T) {
@@ -27,7 +27,7 @@ func TestRouteEntryFromMsg(t *testing.T) {
 		},
 		2: {
 			Interface: &net.Interface{
-				Name: "tailscale0",
+				Name: "scaletail0",
 			},
 		},
 	}
@@ -126,7 +126,7 @@ func TestRouteEntryFromMsg(t *testing.T) {
 			want: RouteEntry{
 				Family:  6,
 				Type:    RouteTypeUnicast, // TODO
-				Dst:     RouteDestination{Prefix: netip.MustParsePrefix("fe80::/64"), Zone: "tailscale0"},
+				Dst:     RouteDestination{Prefix: netip.MustParsePrefix("fe80::/64"), Zone: "scaletail0"},
 				Gateway: netip.MustParseAddr("1234::"),
 				Sys:     RouteEntryBSD{},
 			},
@@ -220,7 +220,7 @@ func TestRouteEntryFromMsg(t *testing.T) {
 				Type:   RouteTypeUnicast,
 				Dst:    RouteDestination{Prefix: netip.MustParsePrefix("100.64.0.0/10")},
 				Sys: RouteEntryBSD{
-					GatewayInterface: "tailscale0",
+					GatewayInterface: "scaletail0",
 					GatewayIdx:       2,
 				},
 			},

@@ -18,11 +18,11 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/derp"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/stun/stuntest"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest/nettest"
+	"scaletail.com/derp"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/stun/stuntest"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest/nettest"
 )
 
 func newTestClient(t testing.TB) *Client {
@@ -934,7 +934,7 @@ func TestNodeAddrResolve(t *testing.T) {
 	dn := &tailcfg.DERPNode{
 		Name:     "derptest1a",
 		RegionID: 901,
-		HostName: "tailscale.com",
+		HostName: "scaletail.com",
 		// No IPv4 or IPv6 addrs
 	}
 	dnV4Only := &tailcfg.DERPNode{

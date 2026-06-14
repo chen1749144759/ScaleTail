@@ -17,7 +17,7 @@ The 'scaletail dns' subcommand provides tools for diagnosing the internal DNS
 forwarder (100.100.100.100).
 
 For more information about the DNS functionality built into Tailscale, refer to
-https://tailscale.com/kb/1054/dns.
+https://scaletail.com/kb/1054/dns.
 `),
 	ShortUsage: strings.Join([]string{
 		dnsStatusCmd.ShortUsage,

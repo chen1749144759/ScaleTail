@@ -20,10 +20,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/views"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/views"
 )
 
 func TestServeDevConfigMutations(t *testing.T) {

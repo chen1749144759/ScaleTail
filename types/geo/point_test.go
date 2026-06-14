@@ -9,7 +9,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	"tailscale.com/types/geo"
+	"scaletail.com/types/geo"
 )
 
 func TestPointZero(t *testing.T) {

@@ -4,9 +4,9 @@
 package magicsock
 
 import (
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/util/set"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/util/set"
 )
 
 // peerInfo is all the information magicsock tracks about a particular

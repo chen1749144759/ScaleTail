@@ -17,10 +17,10 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/util/httpm"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/util/httpm"
 )
 
 var (

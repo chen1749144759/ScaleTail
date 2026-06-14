@@ -18,12 +18,12 @@ import (
 	"testing"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
 )
 
 func TestCleanMountPoint(t *testing.T) {
@@ -789,18 +789,18 @@ func TestVerifyFunnelEnabled(t *testing.T) {
 		{
 			name:                 "fallback-to-non-interactive-flow",
 			queryFeatureResponse: mockQueryFeatureResponse{resp: nil, err: errors.New("not-allowed")},
-			wantErr:              "Funnel not available; HTTPS must be enabled. See https://tailscale.com/s/https.",
+			wantErr:              "Funnel not available; HTTPS must be enabled. See https://scaletail.com/s/https.",
 		},
 		{
 			name:                 "fallback-flow-missing-acl-rule",
 			queryFeatureResponse: mockQueryFeatureResponse{resp: nil, err: errors.New("not-allowed")},
 			caps:                 []tailcfg.NodeCapability{tailcfg.CapabilityHTTPS},
-			wantErr:              `Funnel not available; "funnel" node attribute not set. See https://tailscale.com/s/no-funnel.`,
+			wantErr:              `Funnel not available; "funnel" node attribute not set. See https://scaletail.com/s/no-funnel.`,
 		},
 		{
 			name:                 "fallback-flow-enabled",
 			queryFeatureResponse: mockQueryFeatureResponse{resp: nil, err: errors.New("not-allowed")},
-			caps:                 []tailcfg.NodeCapability{tailcfg.CapabilityHTTPS, tailcfg.NodeAttrFunnel, "https://tailscale.com/cap/funnel-ports?ports=80,443,8080-8090"},
+			caps:                 []tailcfg.NodeCapability{tailcfg.CapabilityHTTPS, tailcfg.NodeAttrFunnel, "https://scaletail.com/cap/funnel-ports?ports=80,443,8080-8090"},
 			wantErr:              "", // no error, success
 		},
 		{

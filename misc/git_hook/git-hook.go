@@ -19,7 +19,7 @@ import (
 	"os"
 	"strings"
 
-	"tailscale.com/misc/git_hook/githook"
+	"scaletail.com/misc/git_hook/githook"
 )
 
 var pushRemotes = []string{

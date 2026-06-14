@@ -17,17 +17,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/logpolicy"
-	"tailscale.com/logtail"
-	"tailscale.com/logtail/filch"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/mak"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/logpolicy"
+	"scaletail.com/logtail"
+	"scaletail.com/logtail/filch"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/mak"
 )
 
 // pollInterval specifies how often to poll for socket stats.

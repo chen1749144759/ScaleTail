@@ -11,7 +11,7 @@ import (
 	"net"
 	"time"
 
-	"tailscale.com/net/tcpinfo"
+	"scaletail.com/net/tcpinfo"
 )
 
 func (c *sclient) startStatsLoop(ctx context.Context) {

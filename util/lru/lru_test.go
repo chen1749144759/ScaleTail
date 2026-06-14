@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/util/slicesx"
+	"scaletail.com/util/slicesx"
 )
 
 func TestLRU(t *testing.T) {

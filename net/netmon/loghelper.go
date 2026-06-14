@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
 )
 
 const cooldownSeconds = 300

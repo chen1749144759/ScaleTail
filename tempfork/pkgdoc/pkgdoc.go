@@ -206,7 +206,7 @@ func (pkg *Package) bugs() {
 
 // PackageDoc generates Markdown documentation for the package in the given
 // directory. importPath is the full Go import path of that package (e.g.
-// "tailscale.com/tsnet"); it's used to render [Symbol] doc links to the
+// "scaletail.com/tsnet"); it's used to render [Symbol] doc links to the
 // right pkg.go.dev URL. If importPath is empty, build.ImportDir's guess
 // is used (typically "." for module-based repos).
 func PackageDoc(dir, importPath string) ([]byte, error) {

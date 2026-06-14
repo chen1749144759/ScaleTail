@@ -9,11 +9,11 @@ import (
 	"net/netip"
 	"testing"
 
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/views"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/views"
 )
 
 type testStatusGetter struct {

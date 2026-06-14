@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-go@v3.2.0
         
       - name: Install gitops-pusher
-        run: go install tailscale.com/cmd/gitops-pusher@latest
+        run: go install scaletail.com/cmd/gitops-pusher@latest
               
       - name: Deploy ACL
         if: github.event_name == 'push'

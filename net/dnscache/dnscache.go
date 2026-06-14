@@ -18,14 +18,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/envknob"
-	"tailscale.com/net/netx"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/cloudenv"
-	"tailscale.com/util/singleflight"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/util/testenv"
+	"scaletail.com/envknob"
+	"scaletail.com/net/netx"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/cloudenv"
+	"scaletail.com/util/singleflight"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/util/testenv"
 )
 
 var zaddr netip.Addr

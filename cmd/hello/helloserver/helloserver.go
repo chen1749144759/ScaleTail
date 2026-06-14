@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/tailcfg"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/tailcfg"
 )
 
 //go:embed hello.tmpl.html

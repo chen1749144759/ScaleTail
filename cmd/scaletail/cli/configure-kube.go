@@ -19,11 +19,11 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 	"k8s.io/client-go/util/homedir"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/version"
 	"sigs.k8s.io/yaml"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/version"
 )
 
 var configureKubeconfigArgs struct {
@@ -40,7 +40,7 @@ Run this command to configure kubectl to connect to a Kubernetes cluster over Ta
 
 The hostname argument should be set to the Tailscale hostname of the peer running as an auth proxy in the cluster.
 
-See: https://tailscale.com/s/k8s-auth-proxy
+See: https://scaletail.com/s/k8s-auth-proxy
 `),
 		FlagSet: (func() *flag.FlagSet {
 			fs := newFlagSet("kubeconfig")

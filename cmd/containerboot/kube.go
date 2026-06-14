@@ -19,20 +19,20 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/kube/authkey"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/ingressservices"
-	"tailscale.com/kube/kubeapi"
-	"tailscale.com/kube/kubeclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/backoff"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/authkey"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/ingressservices"
+	"scaletail.com/kube/kubeapi"
+	"scaletail.com/kube/kubeclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/backoff"
 )
 
-const fieldManager = "tailscale-container"
+const fieldManager = "scaletail-container"
 
 // kubeClient is a wrapper around Tailscale's internal kube client that knows how to talk to the kube API server. We use
 // this rather than any of the upstream Kubernetes client libaries to avoid extra imports.
@@ -49,7 +49,7 @@ func newKubeClient(root string, stateSecret string) (*kubeClient, error) {
 		kubeclient.SetRootPathForTesting(root)
 	}
 	var err error
-	kc, err := kubeclient.New("tailscale-container")
+	kc, err := kubeclient.New("scaletail-container")
 	if err != nil {
 		return nil, fmt.Errorf("error creating kube client: %w", err)
 	}

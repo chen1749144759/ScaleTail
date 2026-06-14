@@ -9,9 +9,9 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/structs"
-	"tailscale.com/util/syspolicy/pkey"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/structs"
+	"scaletail.com/util/syspolicy/pkey"
 )
 
 // RawItem contains a raw policy setting value as read from a policy store, or an

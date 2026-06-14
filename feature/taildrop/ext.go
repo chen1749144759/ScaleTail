@@ -17,17 +17,17 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/cmd/scaletaild/scaletaildhooks"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/types/empty"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/osshare"
-	"tailscale.com/util/set"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/cmd/scaletaild/scaletaildhooks"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/types/empty"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/osshare"
+	"scaletail.com/util/set"
 )
 
 func init() {

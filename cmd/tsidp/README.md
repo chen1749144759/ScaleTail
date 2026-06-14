@@ -3,7 +3,7 @@
  
 # `tsidp` - Tailscale OpenID Connect (OIDC) Identity Provider
 
-[![status: community project](https://img.shields.io/badge/status-community_project-blue)](https://tailscale.com/kb/1531/community-projects)
+[![status: community project](https://img.shields.io/badge/status-community_project-blue)](https://scaletail.com/kb/1531/community-projects)
 
 `tsidp` is an OIDC Identity Provider (IdP) server that integrates with your Tailscale network. It allows you to use Tailscale identities for authentication in applications that support OpenID Connect, enabling single sign-on (SSO) capabilities within your tailnet.
 
@@ -96,7 +96,7 @@ The `tsidp` server supports several command-line flags:
 
 ## Support
 
-This is an experimental, work in progress, [community project](https://tailscale.com/kb/1531/community-projects). For issues or questions, file issues on the [GitHub repository](https://github.com/tailscale/tailscale).
+This is an experimental, work in progress, [community project](https://scaletail.com/kb/1531/community-projects). For issues or questions, file issues on the [GitHub repository](https://github.com/tailscale/tailscale).
 
 ## License
 

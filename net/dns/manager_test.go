@@ -23,18 +23,18 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	dns "golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/health"
-	"tailscale.com/net/dns/publicdns"
-	"tailscale.com/net/dns/resolver"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tstest"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/httpm"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/health"
+	"scaletail.com/net/dns/publicdns"
+	"scaletail.com/net/dns/resolver"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tstest"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/httpm"
 )
 
 type fakeOSConfigurator struct {
@@ -202,10 +202,10 @@ func TestManager(t *testing.T) {
 		{
 			name: "search-only",
 			in: Config{
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			os: OSConfig{
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 		},
 		{
@@ -291,30 +291,30 @@ func TestManager(t *testing.T) {
 			name: "corp",
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 			},
 			os: OSConfig{
 				Nameservers:   mustIPs("1.1.1.1", "9.9.9.9"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 		},
 		{
 			name: "corp-split",
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   mustIPs("1.1.1.1", "9.9.9.9"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 		},
 		{
 			name: "corp-magic",
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 				Routes:           upstreams("ts.com", ""),
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
@@ -322,7 +322,7 @@ func TestManager(t *testing.T) {
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", "1.1.1.1", "9.9.9.9"),
@@ -336,7 +336,7 @@ func TestManager(t *testing.T) {
 			name: "corp-magic-split",
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 				Routes:           upstreams("ts.com", ""),
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
@@ -345,7 +345,7 @@ func TestManager(t *testing.T) {
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", "1.1.1.1", "9.9.9.9"),
@@ -360,11 +360,11 @@ func TestManager(t *testing.T) {
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
 				Routes:           upstreams("corp.com", "2.2.2.2"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -377,12 +377,12 @@ func TestManager(t *testing.T) {
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
 				Routes:           upstreams("corp.com", "2.2.2.2"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -394,7 +394,7 @@ func TestManager(t *testing.T) {
 			name: "controlknob-disable-v6-registration",
 			in: Config{
 				DefaultResolvers: mustRes("1.1.1.1", "9.9.9.9"),
-				SearchDomains:    fqdns("tailscale.com", "universe.tf"),
+				SearchDomains:    fqdns("scaletail.com", "universe.tf"),
 				Routes:           upstreams("ts.com", ""),
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
@@ -407,7 +407,7 @@ func TestManager(t *testing.T) {
 			})(),
 			os: OSConfig{
 				Nameservers:   mustIPs("100.100.100.100"), // without IPv6
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", "1.1.1.1", "9.9.9.9"),
@@ -421,7 +421,7 @@ func TestManager(t *testing.T) {
 			name: "routes",
 			in: Config{
 				Routes:        upstreams("corp.com", "2.2.2.2"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			bs: OSConfig{
 				Nameservers:   mustIPs("8.8.8.8"),
@@ -429,7 +429,7 @@ func TestManager(t *testing.T) {
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf", "coffee.shop"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf", "coffee.shop"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -441,12 +441,12 @@ func TestManager(t *testing.T) {
 			name: "routes-split",
 			in: Config{
 				Routes:        upstreams("corp.com", "2.2.2.2"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   mustIPs("2.2.2.2"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 				MatchDomains:  fqdns("corp.com"),
 			},
 		},
@@ -456,7 +456,7 @@ func TestManager(t *testing.T) {
 				Routes: upstreams(
 					"corp.com", "2.2.2.2",
 					"bigco.net", "3.3.3.3"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			bs: OSConfig{
 				Nameservers:   mustIPs("8.8.8.8"),
@@ -464,7 +464,7 @@ func TestManager(t *testing.T) {
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf", "coffee.shop"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf", "coffee.shop"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -479,12 +479,12 @@ func TestManager(t *testing.T) {
 				Routes: upstreams(
 					"corp.com", "2.2.2.2",
 					"bigco.net", "3.3.3.3"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 				MatchDomains:  fqdns("bigco.net", "corp.com"),
 			},
 			rs: resolver.Config{
@@ -504,12 +504,12 @@ func TestManager(t *testing.T) {
 				Routes: upstreams(
 					"corp.com", "2.2.2.2",
 					"bigco.net", "3.3.3.3"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: false,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -529,12 +529,12 @@ func TestManager(t *testing.T) {
 				Routes: upstreams(
 					"corp.com", "2.2.2.2",
 					"bigco.net", "3.3.3.3"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: false,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -551,7 +551,7 @@ func TestManager(t *testing.T) {
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
 				Routes:        upstreams("ts.com", ""),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			bs: OSConfig{
 				Nameservers:   mustIPs("8.8.8.8"),
@@ -559,7 +559,7 @@ func TestManager(t *testing.T) {
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf", "coffee.shop"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf", "coffee.shop"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", "8.8.8.8"),
@@ -576,12 +576,12 @@ func TestManager(t *testing.T) {
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
 				Routes:        upstreams("ts.com", ""),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 				MatchDomains:  fqdns("ts.com"),
 			},
 			rs: resolver.Config{
@@ -602,12 +602,12 @@ func TestManager(t *testing.T) {
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
 				Routes:        upstreams("ts.com", ""),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: false,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", ""),
@@ -628,12 +628,12 @@ func TestManager(t *testing.T) {
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
 				Routes:        upstreams("ts.com", ""),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: false,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", ""),
@@ -651,7 +651,7 @@ func TestManager(t *testing.T) {
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			bs: OSConfig{
 				Nameservers:   mustIPs("8.8.8.8"),
@@ -659,7 +659,7 @@ func TestManager(t *testing.T) {
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf", "coffee.shop"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf", "coffee.shop"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -680,12 +680,12 @@ func TestManager(t *testing.T) {
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 				MatchDomains:  fqdns("corp.com", "ts.com"),
 			},
 			rs: resolver.Config{
@@ -710,12 +710,12 @@ func TestManager(t *testing.T) {
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -742,12 +742,12 @@ func TestManager(t *testing.T) {
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			split: true,
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(
@@ -768,11 +768,11 @@ func TestManager(t *testing.T) {
 				Hosts: hosts(
 					"dave.ts.com.", "1.2.3.4",
 					"bradfitz.ts.com.", "2.3.4.5"),
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			os: OSConfig{
 				Nameservers:   serviceAddr46,
-				SearchDomains: fqdns("tailscale.com", "universe.tf"),
+				SearchDomains: fqdns("scaletail.com", "universe.tf"),
 			},
 			rs: resolver.Config{
 				Routes: upstreams(".", "http://[fd7a:115c:a1e0:ab12:4843:cd96:6245:7a66]:2982/doh"),

@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"tailscale.com/drive"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/httpm"
+	"scaletail.com/drive"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/httpm"
 )
 
 const (

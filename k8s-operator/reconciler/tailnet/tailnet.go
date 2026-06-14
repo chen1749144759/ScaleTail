@@ -27,15 +27,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
-	operatorutils "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/reconciler"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/set"
+	"scaletail.com/ipn"
+	operatorutils "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/reconciler"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/set"
 )
 
 type (

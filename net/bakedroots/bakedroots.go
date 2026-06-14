@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"sync"
 
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/testenv"
 )
 
 // Get returns the baked-in roots.

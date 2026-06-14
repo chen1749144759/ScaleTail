@@ -25,20 +25,20 @@ import (
 
 	"golang.org/x/net/dns/dnsmessage"
 	"golang.org/x/net/http/httpguts"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/views"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/views"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/wgengine/filter"
 )
 
 // initListenConfig, if non-nil, is called during peerAPIListener setup.  It is used only
@@ -226,7 +226,7 @@ type peerAPIHandler struct {
 }
 
 // PeerAPIHandler is the interface implemented by [peerAPIHandler] and needed by
-// module features registered via tailscale.com/feature/*.
+// module features registered via scaletail.com/feature/*.
 type PeerAPIHandler interface {
 	Peer() tailcfg.NodeView
 	PeerCaps() tailcfg.PeerCapMap

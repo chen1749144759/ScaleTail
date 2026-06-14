@@ -15,11 +15,11 @@ import (
 	"strings"
 
 	"go4.org/mem"
-	"tailscale.com/envknob"
-	"tailscale.com/hostinfo"
-	"tailscale.com/util/lineiter"
-	"tailscale.com/util/osuser"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/hostinfo"
+	"scaletail.com/util/lineiter"
+	"scaletail.com/util/osuser"
+	"scaletail.com/version/distro"
 )
 
 // userMeta is a wrapper around *user.User with extra fields.

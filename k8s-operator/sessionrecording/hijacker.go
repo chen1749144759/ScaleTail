@@ -21,16 +21,16 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/k8s-operator/sessionrecording/spdy"
-	"tailscale.com/k8s-operator/sessionrecording/tsrecorder"
-	"tailscale.com/k8s-operator/sessionrecording/ws"
-	"tailscale.com/net/netx"
-	"tailscale.com/sessionrecording"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/k8s-operator/sessionrecording/spdy"
+	"scaletail.com/k8s-operator/sessionrecording/tsrecorder"
+	"scaletail.com/k8s-operator/sessionrecording/ws"
+	"scaletail.com/net/netx"
+	"scaletail.com/sessionrecording"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
 )
 
 const (

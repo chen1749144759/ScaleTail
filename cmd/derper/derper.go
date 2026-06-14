@@ -5,10 +5,10 @@
 //
 // For more information, see:
 //
-//   - About: https://tailscale.com/kb/1232/derp-servers
-//   - Protocol & Go docs: https://pkg.go.dev/tailscale.com/derp
+//   - About: https://scaletail.com/kb/1232/derp-servers
+//   - Protocol & Go docs: https://pkg.go.dev/scaletail.com/derp
 //   - Running a DERP server: https://github.com/tailscale/tailscale/tree/main/cmd/derper#derp
-package main // import "tailscale.com/cmd/derper"
+package main // import "scaletail.com/cmd/derper"
 
 import (
 	"cmp"
@@ -39,18 +39,18 @@ import (
 
 	"github.com/tailscale/setec/client/setec"
 	"golang.org/x/time/rate"
-	"tailscale.com/atomicfile"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/metrics"
-	"tailscale.com/net/ktimeout"
-	"tailscale.com/net/stunserver"
-	"tailscale.com/tsweb"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/version"
+	"scaletail.com/atomicfile"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/metrics"
+	"scaletail.com/net/ktimeout"
+	"scaletail.com/net/stunserver"
+	"scaletail.com/tsweb"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/version"
 
 	// Support for prometheus varz in tsweb
-	_ "tailscale.com/tsweb/promvarz"
+	_ "scaletail.com/tsweb/promvarz"
 )
 
 var (
@@ -560,7 +560,7 @@ type templateData struct {
 var homePageTemplate = template.Must(template.New("home").Parse(`<html><body>
 <h1>DERP</h1>
 <p>
-  This is a <a href="https://tailscale.com/">Tailscale</a> DERP server.
+  This is a <a href="https://scaletail.com/">Tailscale</a> DERP server.
 </p>
 
 <p>
@@ -580,11 +580,11 @@ var homePageTemplate = template.Must(template.New("home").Parse(`<html><body>
 
 <ul>
 {{if .ShowAbuseInfo }}
-  <li><a href="https://tailscale.com/security-policies">Tailscale Security Policies</a></li>
-  <li><a href="https://tailscale.com/tailscale-aup">Tailscale Acceptable Use Policies</a></li>
+  <li><a href="https://scaletail.com/security-policies">Tailscale Security Policies</a></li>
+  <li><a href="https://scaletail.com/tailscale-aup">Tailscale Acceptable Use Policies</a></li>
 {{end}}
-  <li><a href="https://tailscale.com/kb/1232/derp-servers">About DERP</a></li>
-  <li><a href="https://pkg.go.dev/tailscale.com/derp">Protocol & Go docs</a></li>
+  <li><a href="https://scaletail.com/kb/1232/derp-servers">About DERP</a></li>
+  <li><a href="https://pkg.go.dev/scaletail.com/derp">Protocol & Go docs</a></li>
   <li><a href="https://github.com/tailscale/tailscale/tree/main/cmd/derper#derp">How to run a DERP server</a></li>
 </ul>
 

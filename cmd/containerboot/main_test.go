@@ -32,15 +32,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sys/unix"
-	"tailscale.com/cmd/testwrapper/flakytest"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/kubeclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/netmap"
+	"scaletail.com/cmd/testwrapper/flakytest"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/kubeclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/netmap"
 )
 
 const configFileAuthKey = "some-auth-key"
@@ -48,7 +48,7 @@ const configFileAuthKey = "some-auth-key"
 func TestContainerBoot(t *testing.T) {
 	flakytest.Mark(t, "https://github.com/tailscale/tailscale/issues/19380")
 	boot := filepath.Join(t.TempDir(), "containerboot")
-	if err := exec.Command("go", "build", "-ldflags", "-X main.testSleepDuration=1ms", "-o", boot, "tailscale.com/cmd/containerboot").Run(); err != nil {
+	if err := exec.Command("go", "build", "-ldflags", "-X main.testSleepDuration=1ms", "-o", boot, "scaletail.com/cmd/containerboot").Run(); err != nil {
 		t.Fatalf("Building containerboot: %v", err)
 	}
 	egressStatus := egressSvcStatus("foo", "foo.tailnetxyz.ts.net", "100.64.0.2")
@@ -1443,7 +1443,7 @@ func waitLogLine(t *testing.T, timeout time.Duration, b *lockingBuffer, want str
 }
 
 // waitArgs waits until the contents of path matches wantArgs, a set
-// of command lines recorded by test_tailscale.sh and
+// of command lines recorded by test_scaletail.sh and
 // test_scaletaild.sh.
 //
 // All occurrences of removeStr are removed from the file prior to
@@ -1482,8 +1482,8 @@ func waitArgs(t *testing.T, timeout time.Duration, removeStr, path, wantArgs str
 //go:embed test_scaletaild.sh
 var fakeScaleTaild []byte
 
-//go:embed test_tailscale.sh
-var fakeTailscale []byte
+//go:embed test_scaletail.sh
+var fakeScaleTail []byte
 
 // localAPI is a minimal fake scaletaild LocalAPI server that presents
 // just enough functionality for containerboot to function
@@ -1867,7 +1867,7 @@ type testEnv struct {
 	kube            *kubeServer // Fake kube server.
 	lapi            *localAPI   // Local TS API server.
 	d               string      // Temp dir for the specific test.
-	argFile         string      // File with commands test_tailscale{,d}.sh were invoked with.
+	argFile         string      // File with commands test_scaletail{,d}.sh were invoked with.
 	runningSockPath string      // Path to the running scaletaild socket.
 	localAddrPort   int         // Port for the containerboot HTTP server.
 	healthAddrPort  int         // Port for the (deprecated) containerboot health server.
@@ -1913,9 +1913,9 @@ func newTestEnv(t *testing.T) testEnv {
 	}
 	files := map[string][]byte{
 		"usr/bin/scaletaild":                             fakeScaleTaild,
-		"usr/bin/tailscale":                              fakeTailscale,
-		"usr/bin/iptables":                               fakeTailscale,
-		"usr/bin/ip6tables":                              fakeTailscale,
+		"usr/bin/scaletail":                              fakeScaleTail,
+		"usr/bin/iptables":                               fakeScaleTail,
+		"usr/bin/ip6tables":                              fakeScaleTail,
 		"dev/net/tun":                                    []byte(""),
 		"proc/sys/net/ipv4/ip_forward":                   []byte("0"),
 		"proc/sys/net/ipv6/conf/all/forwarding":          []byte("0"),

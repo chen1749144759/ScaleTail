@@ -10,12 +10,12 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"go4.org/mem"
-	"tailscale.com/cmd/scaletail/cli/jsonoutput"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
+	"scaletail.com/cmd/scaletail/cli/jsonoutput"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
 )
 
 func TestNetworkLockLogOutput(t *testing.T) {

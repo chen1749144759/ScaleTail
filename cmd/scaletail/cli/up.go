@@ -23,25 +23,25 @@ import (
 
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/feature/buildfeatures"
-	_ "tailscale.com/feature/condregister/awsparamstore"
-	_ "tailscale.com/feature/condregister/identityfederation"
-	_ "tailscale.com/feature/condregister/oauthkey"
-	"tailscale.com/health/healthmsg"
-	"tailscale.com/internal/client/tailscale"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/safesocket"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/preftype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/qrcodes"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/version/distro"
+	"scaletail.com/feature/buildfeatures"
+	_ "scaletail.com/feature/condregister/awsparamstore"
+	_ "scaletail.com/feature/condregister/identityfederation"
+	_ "scaletail.com/feature/condregister/oauthkey"
+	"scaletail.com/health/healthmsg"
+	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/safesocket"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/preftype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/qrcodes"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/version/distro"
 )
 
 var upCmd = &ffcli.Command{
@@ -225,7 +225,7 @@ func resolveValueFromFile(v string) (string, error) {
 // the value looks like an SSM ARN. If the hook is not available or the value
 // is not an SSM ARN, it returns the value unchanged.
 func resolveValueFromParameterStore(ctx context.Context, v string) (string, error) {
-	if f, ok := tailscale.HookResolveValueFromParameterStore.GetOk(); ok {
+	if f, ok := scaletail.HookResolveValueFromParameterStore.GetOk(); ok {
 		return f(ctx, v)
 	}
 	return v, nil
@@ -238,7 +238,7 @@ func resolveValue(ctx context.Context, v string) (string, error) {
 	switch {
 	case strings.HasPrefix(v, "file:"):
 		return resolveValueFromFile(v)
-	case strings.HasPrefix(v, tailscale.ResolvePrefixAWSParameterStore):
+	case strings.HasPrefix(v, scaletail.ResolvePrefixAWSParameterStore):
 		return resolveValueFromParameterStore(ctx, v)
 	}
 	return v, nil
@@ -271,7 +271,7 @@ var upArgsGlobal upArgsT
 // Ex:
 //
 //	{
-//	   "AuthURL": "https://login.tailscale.com/a/0123456789abcdef",
+//	   "AuthURL": "https://login.scaletail.com/a/0123456789abcdef",
 //	   "QR": "data:image/png;base64,0123...cdef"
 //	   "BackendState": "NeedsLogin"
 //	}
@@ -280,7 +280,7 @@ var upArgsGlobal upArgsT
 //	   "BackendState": "Running"
 //	}
 type upOutputJSON struct {
-	AuthURL      string `json:",omitempty"` // Authentication URL of the form https://login.tailscale.com/a/0123456789
+	AuthURL      string `json:",omitempty"` // Authentication URL of the form https://login.scaletail.com/a/0123456789
 	QR           string `json:",omitempty"` // a DataURL (base64) PNG of a QR code AuthURL
 	BackendState string `json:",omitempty"` // name of state like Running or NeedsMachineAuth
 	Error        string `json:",omitempty"` // description of an error
@@ -644,7 +644,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		}
 		// Try to use an OAuth secret to generate an auth key if that functionality
 		// is available.
-		if f, ok := tailscale.HookResolveAuthKey.GetOk(); ok {
+		if f, ok := scaletail.HookResolveAuthKey.GetOk(); ok {
 			clientSecret := authKey // the authkey argument accepts client secrets, if both arguments are provided authkey has precedence
 			if clientSecret == "" {
 				clientSecret, err = upArgs.getClientSecret(ctx)
@@ -660,7 +660,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		}
 		// Try to resolve the auth key via workload identity federation if that functionality
 		// is available and no auth key is yet determined.
-		if f, ok := tailscale.HookResolveAuthKeyViaWIF.GetOk(); ok && authKey == "" {
+		if f, ok := scaletail.HookResolveAuthKeyViaWIF.GetOk(); ok && authKey == "" {
 			idToken, err := upArgs.getIDToken(ctx)
 			if err != nil {
 				return err

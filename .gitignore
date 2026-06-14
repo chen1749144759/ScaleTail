@@ -10,9 +10,9 @@
 # tool/go.exe is built specially and committed.
 !/tool/go.exe
 
-cmd/scaletail/tailscale
-cmd/scaletaild/tailscaled
-ssh/tailssh/testcontainers/tailscaled
+cmd/scaletail/scaletail
+cmd/scaletaild/scaletaild
+ssh/tailssh/testcontainers/scaletaild
 
 # Test binary, built with `go test -c`
 *.test
@@ -48,6 +48,7 @@ client/electron/dist
 
 /gocross
 /dist
+/backups
 
 # Ignore xcode userstate and workspace data
 *.xcuserstate

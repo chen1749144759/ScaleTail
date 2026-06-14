@@ -28,11 +28,11 @@ import (
 	"github.com/huin/goupnp"
 	"github.com/huin/goupnp/dcps/internetgateway2"
 	"github.com/huin/goupnp/soap"
-	"tailscale.com/envknob"
-	"tailscale.com/net/netns"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/mak"
+	"scaletail.com/envknob"
+	"scaletail.com/net/netns"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/mak"
 )
 
 // upnpHTTPClientKey is a context key for storing an HTTP client to use

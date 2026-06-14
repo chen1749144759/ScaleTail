@@ -18,13 +18,13 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/kube/certs"
-	"tailscale.com/kube/kubetypes"
-	klc "tailscale.com/kube/localclient"
-	"tailscale.com/kube/services"
-	"tailscale.com/types/netmap"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/certs"
+	"scaletail.com/kube/kubetypes"
+	klc "scaletail.com/kube/localclient"
+	"scaletail.com/kube/services"
+	"scaletail.com/types/netmap"
 )
 
 // watchServeConfigChanges watches path for changes, and when it sees one, reads
@@ -162,7 +162,7 @@ func isValidHTTPSConfig(certDomain string, sc *ipn.ServeConfig) bool {
 		log.Printf(
 			`serve proxy: this node is configured as a proxy that exposes an HTTPS endpoint to tailnet,
 		(perhaps a Kubernetes operator Ingress proxy) but it is not able to issue TLS certs, so this will likely not work.
-		To make it work, ensure that HTTPS is enabled for your tailnet, see https://tailscale.com/kb/1153/enabling-https for more details.`)
+		To make it work, ensure that HTTPS is enabled for your tailnet, see https://scaletail.com/kb/1153/enabling-https for more details.`)
 		return false
 	}
 	return true

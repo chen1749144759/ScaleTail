@@ -9,8 +9,8 @@ import (
 	"fmt"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn"
 )
 
 var downCmd = &ffcli.Command{

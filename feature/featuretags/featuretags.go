@@ -4,7 +4,7 @@
 // The featuretags package is a registry of all the ts_omit-able build tags.
 package featuretags
 
-import "tailscale.com/util/set"
+import "scaletail.com/util/set"
 
 // CLI is a special feature in the [Features] map that works opposite
 // from the others: it is opt-in, rather than opt-out, having a different
@@ -182,7 +182,7 @@ var Features = map[FeatureTag]FeatureMeta{
 	},
 	"logtail": {
 		Sym:  "LogTail",
-		Desc: "upload logs to log.tailscale.com (debug logs for bug reports and also by network flow logs if enabled)",
+		Desc: "upload logs to log.scaletail.com (debug logs for bug reports and also by network flow logs if enabled)",
 	},
 	"oauthkey": {Sym: "OAuthKey", Desc: "OAuth secret-to-authkey resolution support"},
 	"outboundproxy": {

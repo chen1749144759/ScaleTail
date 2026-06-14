@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/linuxdnsfight"
+import _ "scaletail.com/feature/linuxdnsfight"

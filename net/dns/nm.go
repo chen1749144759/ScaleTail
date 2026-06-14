@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/util/cmpver"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/util/cmpver"
+	"scaletail.com/util/dnsname"
 )
 
 const (
@@ -188,7 +188,7 @@ func (m *nmManager) trySet(ctx context.Context, config OSConfig) error {
 	// Ideally we would like to disable LLMNR and mdns on the
 	// interface here, but older NetworkManagers don't understand
 	// those settings and choke on them, so we don't. Both LLMNR and
-	// mdns will fail since tailscale0 doesn't do multicast, so it's
+	// mdns will fail since scaletail0 doesn't do multicast, so it's
 	// effectively fine. We used to try and enforce LLMNR and mdns
 	// settings here, but that led to #1870.
 

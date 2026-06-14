@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 const (

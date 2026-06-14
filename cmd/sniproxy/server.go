@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/metrics"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/nettype"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/mak"
+	"scaletail.com/metrics"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/nettype"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/mak"
 )
 
 var tsMBox = dnsmessage.MustNewName("support.tailscale.com.")

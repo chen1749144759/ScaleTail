@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestAllocIPs(t *testing.T) {

@@ -5,7 +5,7 @@
 
 // Package proxygrouppolicy provides reconciliation logic for the ProxyGroupPolicy custom resource definition. It is
 // responsible for generating ValidatingAdmissionPolicy resources that limit users to a set number of ProxyGroup
-// names that can be used within Service and Ingress resources via the "tailscale.com/proxy-group" annotation.
+// names that can be used within Service and Ingress resources via the "scaletail.com/proxy-group" annotation.
 package proxygrouppolicy
 
 import (
@@ -23,8 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/util/set"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/util/set"
 )
 
 type (
@@ -188,7 +188,7 @@ const (
 	// Empty allowlist behavior:
 	//   If the list is empty, any present annotation will fail membership,
 	//   effectively acting as "deny-all".
-	ingressCEL = `request.kind.kind != "Ingress" || !("tailscale.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["tailscale.com/proxy-group"] in [%s]`
+	ingressCEL = `request.kind.kind != "Ingress" || !("scaletail.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["scaletail.com/proxy-group"] in [%s]`
 
 	// ingressServiceCEL enforces proxy-group annotation rules for Services
 	// that are using the scaletail load balancer.
@@ -202,7 +202,7 @@ const (
 	//   - If annotation is present → must be in allowlist
 	//
 	// This makes ingress policy apply ONLY to scaletail Services.
-	ingressServiceCEL = `request.kind.kind != "Service" || !((has(object.spec.loadBalancerClass) && object.spec.loadBalancerClass == "tailscale") || ("tailscale.com/expose" in object.metadata.annotations && object.metadata.annotations["tailscale.com/expose"] == "true")) || (!("tailscale.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["tailscale.com/proxy-group"] in [%s])`
+	ingressServiceCEL = `request.kind.kind != "Service" || !((has(object.spec.loadBalancerClass) && object.spec.loadBalancerClass == "tailscale") || ("scaletail.com/expose" in object.metadata.annotations && object.metadata.annotations["scaletail.com/expose"] == "true")) || (!("scaletail.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["scaletail.com/proxy-group"] in [%s])`
 	// egressCEL enforces proxy-group annotation rules for Services that
 	// are NOT using the scaletail load balancer.
 	//
@@ -210,7 +210,7 @@ const (
 	//
 	//   - If Service uses loadBalancerClass "tailscale" → allow
 	//     (ingress policy handles those)
-	//	 - If Service uses "tailscale.com/expose" → allow
+	//	 - If Service uses "scaletail.com/expose" → allow
 	//     (ingress policy handles those)
 	//   - If annotation is absent → allow
 	//   - If annotation is present → must be in allowlist
@@ -220,7 +220,7 @@ const (
 	//
 	// This expression is mutually exclusive with ingressServiceCEL,
 	// preventing policy conflicts.
-	egressCEL = `((has(object.spec.loadBalancerClass) && object.spec.loadBalancerClass == "tailscale") || ("tailscale.com/expose" in object.metadata.annotations && object.metadata.annotations["tailscale.com/expose"] == "true")) || !("tailscale.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["tailscale.com/proxy-group"] in [%s]`
+	egressCEL = `((has(object.spec.loadBalancerClass) && object.spec.loadBalancerClass == "tailscale") || ("scaletail.com/expose" in object.metadata.annotations && object.metadata.annotations["scaletail.com/expose"] == "true")) || !("scaletail.com/proxy-group" in object.metadata.annotations) || object.metadata.annotations["scaletail.com/proxy-group"] in [%s]`
 )
 
 func (r *Reconciler) generateIngressPolicy(ctx context.Context, namespace string, names set.Set[string]) (*admr.ValidatingAdmissionPolicy, error) {
@@ -329,8 +329,8 @@ func (r *Reconciler) generateEgressPolicy(ctx context.Context, namespace string,
 }
 
 const (
-	denyMessage   = `Annotation "tailscale.com/proxy-group" cannot be used on this resource in this namespace`
-	messageFormat = `If set, annotation "tailscale.com/proxy-group" must be one of [%s]`
+	denyMessage   = `Annotation "scaletail.com/proxy-group" cannot be used on this resource in this namespace`
+	messageFormat = `If set, annotation "scaletail.com/proxy-group" must be one of [%s]`
 )
 
 func generateValidation(names set.Set[string], format string) admr.Validation {

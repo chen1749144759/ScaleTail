@@ -18,13 +18,13 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/must"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/must"
 )
 
 // peerAPIHandler serves the PeerAPI for a source specific client.
@@ -349,18 +349,18 @@ func TestHandlePeerAPI(t *testing.T) {
 			name:       "put_unicode",
 			isSelf:     true,
 			capSharing: true,
-			reqs:       []*http.Request{httptest.NewRequest("PUT", "/v0/put/"+hexAll("Томас и его друзья.mp3"), strings.NewReader("главный озорник"))},
+			reqs:       []*http.Request{httptest.NewRequest("PUT", "/v0/put/"+hexAll("孝芯屑邪褋 懈 械谐芯 写褉褍蟹褜褟.mp3"), strings.NewReader("谐谢邪胁薪褘泄 芯蟹芯褉薪懈泻"))},
 			checks: checks(
 				httpStatus(200),
 				bodyContains("{}"),
-				fileHasContents("Томас и его друзья.mp3", "главный озорник"),
+				fileHasContents("孝芯屑邪褋 懈 械谐芯 写褉褍蟹褜褟.mp3", "谐谢邪胁薪褘泄 芯蟹芯褉薪懈泻"),
 			),
 		},
 		{
 			name:       "put_invalid_utf8",
 			isSelf:     true,
 			capSharing: true,
-			reqs:       []*http.Request{httptest.NewRequest("PUT", "/v0/put/"+(hexAll("😜")[:3]), nil)},
+			reqs:       []*http.Request{httptest.NewRequest("PUT", "/v0/put/"+(hexAll("馃槣")[:3]), nil)},
 			checks: checks(
 				httpStatus(400),
 				bodyContains("invalid filename"),

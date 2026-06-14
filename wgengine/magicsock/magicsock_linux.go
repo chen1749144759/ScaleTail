@@ -23,12 +23,12 @@ import (
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/cpu"
 	"golang.org/x/sys/unix"
-	"tailscale.com/disco"
-	"tailscale.com/envknob"
-	"tailscale.com/net/netns"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
+	"scaletail.com/disco"
+	"scaletail.com/envknob"
+	"scaletail.com/net/netns"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
 )
 
 const (

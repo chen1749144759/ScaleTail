@@ -14,12 +14,12 @@ import (
 	"fmt"
 	"sync"
 
-	"tailscale.com/feature"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/feature"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 // featureName is the name of the feature implemented by this package.

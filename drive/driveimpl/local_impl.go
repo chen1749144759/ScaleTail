@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"time"
 
-	"tailscale.com/drive"
-	"tailscale.com/drive/driveimpl/compositedav"
-	"tailscale.com/drive/driveimpl/dirfs"
-	"tailscale.com/types/logger"
+	"scaletail.com/drive"
+	"scaletail.com/drive/driveimpl/compositedav"
+	"scaletail.com/drive/driveimpl/dirfs"
+	"scaletail.com/types/logger"
 )
 
 const (

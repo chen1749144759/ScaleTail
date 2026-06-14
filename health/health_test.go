@@ -17,16 +17,16 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/metrics"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsconst"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/usermetric"
-	"tailscale.com/version"
+	"scaletail.com/metrics"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsconst"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/usermetric"
+	"scaletail.com/version"
 )
 
 var doDebug = flag.Bool("debug", false, "Enable debug logging")

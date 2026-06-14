@@ -13,11 +13,11 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/ipn"
-	"tailscale.com/kube/localclient"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/goroutines"
-	"tailscale.com/util/mak"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/localclient"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/goroutines"
+	"scaletail.com/util/mak"
 )
 
 // CertManager is responsible for issuing certificates for known domains and for

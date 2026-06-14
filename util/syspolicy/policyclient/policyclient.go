@@ -9,9 +9,9 @@ package policyclient
 import (
 	"time"
 
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/testenv"
 )
 
 // Client is the interface between code making questions about the system policy

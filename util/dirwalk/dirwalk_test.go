@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"go4.org/mem"
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestWalkShallowOSSpecific(t *testing.T) {

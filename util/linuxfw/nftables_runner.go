@@ -18,8 +18,8 @@ import (
 	"github.com/google/nftables"
 	"github.com/google/nftables/expr"
 	"golang.org/x/sys/unix"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
 )
 
 const (

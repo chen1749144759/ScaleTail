@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/tailnetlock"
+import _ "scaletail.com/feature/tailnetlock"

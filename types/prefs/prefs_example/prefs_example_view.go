@@ -12,15 +12,15 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/drive"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/prefs"
-	"tailscale.com/types/preftype"
+	"scaletail.com/drive"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/prefs"
+	"scaletail.com/types/preftype"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=Prefs,AutoUpdatePrefs,AppConnectorPrefs
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=Prefs,AutoUpdatePrefs,AppConnectorPrefs
 
 // View returns a read-only view of Prefs.
 func (p *Prefs) View() PrefsView {

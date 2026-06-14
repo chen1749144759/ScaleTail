@@ -7,7 +7,7 @@ import (
 	"flag"
 	"testing"
 
-	"tailscale.com/util/set"
+	"scaletail.com/util/set"
 )
 
 // validUpFlags are the only flags that are valid for scaletail up. The up

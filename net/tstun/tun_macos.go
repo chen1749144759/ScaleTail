@@ -8,7 +8,7 @@ package tstun
 import (
 	"os"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 func init() {

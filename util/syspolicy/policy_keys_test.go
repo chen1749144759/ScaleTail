@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"testing"
 
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 func TestKnownKeysRegistered(t *testing.T) {

@@ -1,7 +1,7 @@
 # End-to-End VM-based Integration Testing
 
 These tests spin up a Tailscale client in a Linux VM and try to connect it to
-[`testcontrol`](https://pkg.go.dev/tailscale.com/tstest/integration/testcontrol)
+[`testcontrol`](https://pkg.go.dev/scaletail.com/tstest/integration/testcontrol)
 server.
 
 ## Running

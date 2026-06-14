@@ -5,4 +5,4 @@
 
 package cli
 
-import _ "tailscale.com/feature/syspolicy"
+import _ "scaletail.com/feature/syspolicy"

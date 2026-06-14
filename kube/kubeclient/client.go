@@ -28,8 +28,8 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/kube/kubeapi"
-	"tailscale.com/tstime"
+	"scaletail.com/kube/kubeapi"
+	"scaletail.com/tstime"
 )
 
 const (

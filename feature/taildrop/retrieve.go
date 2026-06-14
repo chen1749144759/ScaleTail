@@ -13,9 +13,9 @@ import (
 	"sort"
 	"time"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/set"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/set"
 )
 
 // HasFilesWaiting reports whether any files are buffered in [Handler.Dir].
@@ -54,7 +54,7 @@ func (m *manager) HasFilesWaiting() bool {
 		return true
 	}
 
-	// No waiting files → update negative‑result cache
+	// No waiting files -> update negative-result cache.
 	m.emptySince.Store(total)
 	return false
 }

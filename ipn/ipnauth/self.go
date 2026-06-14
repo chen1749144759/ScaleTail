@@ -6,7 +6,7 @@ package ipnauth
 import (
 	"context"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 // Self is a caller identity that represents the scaletaild itself and therefore

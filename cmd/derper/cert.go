@@ -27,7 +27,7 @@ import (
 
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
-	"tailscale.com/tailcfg"
+	"scaletail.com/tailcfg"
 )
 
 var unsafeHostnameCharacters = regexp.MustCompile(`[^a-zA-Z0-9-\.]`)
@@ -133,7 +133,7 @@ func NewManualCertManager(certdir, hostname string) (certProvider, error) {
 			CertName: fmt.Sprintf("sha256-raw:%-02x", sha256.Sum256(x509Cert.Raw)),
 		}
 		dnJSON, _ := json.Marshal(dn)
-		log.Printf("Using self-signed certificate for IP address %q. Configure it in DERPMap using: (https://tailscale.com/s/custom-derp)\n  %s", hostname, dnJSON)
+		log.Printf("Using self-signed certificate for IP address %q. Configure it in DERPMap using: (https://scaletail.com/s/custom-derp)\n  %s", hostname, dnJSON)
 	}
 	return &manualCertManager{
 		cert:       &cert,

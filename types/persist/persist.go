@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/structs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/structs"
 )
 
-//go:generate go run tailscale.com/cmd/viewer -type=Persist
+//go:generate go run scaletail.com/cmd/viewer -type=Persist
 
 // Persist is the JSON type stored on disk on nodes to remember their
 // settings between runs. This is stored as part of ipn.Prefs and is

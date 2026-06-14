@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/cmd/testwrapper/flakytest"
+	"scaletail.com/cmd/testwrapper/flakytest"
 )
 
 var manualTest = flag.Bool("do-speedtest", false, "if true, run the speedtest TestDownload test. Otherwise skip it because it's slow and flaky; see https://github.com/tailscale/tailscale/issues/17338")

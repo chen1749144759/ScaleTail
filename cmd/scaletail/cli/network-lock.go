@@ -22,13 +22,13 @@ import (
 
 	"github.com/mattn/go-isatty"
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/cmd/scaletail/cli/jsonoutput"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tka"
-	"tailscale.com/tsconst"
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
-	"tailscale.com/util/prompt"
+	"scaletail.com/cmd/scaletail/cli/jsonoutput"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tka"
+	"scaletail.com/tsconst"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
+	"scaletail.com/util/prompt"
 )
 
 func init() {

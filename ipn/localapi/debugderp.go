@@ -17,14 +17,14 @@ import (
 	"strconv"
 	"time"
 
-	"tailscale.com/derp/derphttp"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/stun"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/nettype"
+	"scaletail.com/derp/derphttp"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/stun"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/nettype"
 )
 
 func (h *Handler) serveDebugDERPRegion(w http.ResponseWriter, r *http.Request) {

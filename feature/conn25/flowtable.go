@@ -7,8 +7,8 @@ import (
 	"errors"
 	"sync"
 
-	"tailscale.com/net/flowtrack"
-	"tailscale.com/net/packet"
+	"scaletail.com/net/flowtrack"
+	"scaletail.com/net/packet"
 )
 
 // PacketAction may modify the packet.

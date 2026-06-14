@@ -12,13 +12,13 @@ import (
 	"runtime"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/osuser"
-	"tailscale.com/version"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/osuser"
+	"scaletail.com/version"
 )
 
 var _ ipnauth.Actor = (*actor)(nil)

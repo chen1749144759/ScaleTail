@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/tailscale/go-winio"
-	"tailscale.com/client/local"
+	"scaletail.com/client/local"
 )
 
 const systrayCommand = "open-dashboard"

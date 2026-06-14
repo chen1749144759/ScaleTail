@@ -22,9 +22,9 @@ import (
 	"context"
 
 	"go4.org/mem"
-	"tailscale.com/envknob"
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/testenv"
+	"scaletail.com/envknob"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/testenv"
 )
 
 // Logf is the basic Tailscale logger type: a printf-like func.

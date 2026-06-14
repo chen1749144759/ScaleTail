@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"github.com/tailscale/netlink"
-	"tailscale.com/feature"
-	"tailscale.com/tsconst"
-	"tailscale.com/types/logger"
+	"scaletail.com/feature"
+	"scaletail.com/tsconst"
+	"scaletail.com/types/logger"
 )
 
 // MatchDecision is the decision made by the firewall for a packet matched by a rule.

@@ -16,15 +16,15 @@ import (
 	"time"
 
 	"golang.org/x/net/http2"
-	"tailscale.com/control/controlhttp"
-	"tailscale.com/control/controlhttp/controlhttpserver"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest/nettest"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/must"
+	"scaletail.com/control/controlhttp"
+	"scaletail.com/control/controlhttp/controlhttpserver"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest/nettest"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/must"
 )
 
 // maxAllowedNoiseVersion is the highest we expect the Tailscale

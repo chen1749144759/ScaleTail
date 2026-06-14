@@ -10,7 +10,7 @@ import (
 	"github.com/tailscale/wireguard-go/conn"
 	"github.com/tailscale/wireguard-go/device"
 	"github.com/tailscale/wireguard-go/tun"
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // NewDevice returns a wireguard-go Device configured for Tailscale use.
@@ -28,7 +28,7 @@ func NewDevice(tunDev tun.Device, bind conn.Bind, logger *device.Logger) *device
 // The caller is responsible for:
 //   - calling [device.Device.SetPrivateKey] when the key changes
 //   - installing a [device.PeerByIPPacketFunc] on the device for outbound
-//     packet routing (e.g. via [tailscale.com/wgengine.Engine.SetPeerByIPPacketFunc])
+//     packet routing (e.g. via [scaletail.com/wgengine.Engine.SetPeerByIPPacketFunc])
 func ReconfigDevice(d *device.Device, cfg *Config, logf logger.Logf) (err error) {
 	defer func() {
 		if err != nil {

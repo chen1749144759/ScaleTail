@@ -11,7 +11,7 @@ import (
 	"log"
 	"net"
 
-	"tailscale.com/syncs"
+	"scaletail.com/syncs"
 )
 
 var (

@@ -24,9 +24,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/studio-b12/gowebdav"
-	"tailscale.com/drive"
-	"tailscale.com/drive/driveimpl/shared"
-	"tailscale.com/tstest"
+	"scaletail.com/drive"
+	"scaletail.com/drive/driveimpl/shared"
+	"scaletail.com/tstest"
 )
 
 const (

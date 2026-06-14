@@ -14,9 +14,9 @@ import (
 	"net/http"
 	"strings"
 
-	"tailscale.com/metrics"
-	"tailscale.com/tsweb/varz"
-	"tailscale.com/util/set"
+	"scaletail.com/metrics"
+	"scaletail.com/tsweb/varz"
+	"scaletail.com/util/set"
 )
 
 // Registry tracks user-facing metrics of various Tailscale subsystems.

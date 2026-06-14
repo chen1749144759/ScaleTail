@@ -5,7 +5,7 @@
 
 package systray
 
-import "tailscale.com/client/local"
+import "scaletail.com/client/local"
 
 func NotifyExistingOrStartCommandServer(_ *local.Client) bool {
 	return false

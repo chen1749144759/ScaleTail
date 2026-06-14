@@ -12,7 +12,7 @@ import (
 	"testing"
 	"testing/iotest"
 
-	"tailscale.com/util/must"
+	"scaletail.com/util/must"
 )
 
 func TestResume(t *testing.T) {

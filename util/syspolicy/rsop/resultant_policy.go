@@ -10,12 +10,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/syncs"
-	"tailscale.com/util/syspolicy/internal/loggerx"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/testenv"
+	"scaletail.com/syncs"
+	"scaletail.com/util/syspolicy/internal/loggerx"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/testenv"
 
-	"tailscale.com/util/syspolicy/source"
+	"scaletail.com/util/syspolicy/source"
 )
 
 // ErrPolicyClosed is returned by [Policy.Reload], [Policy.addSource],

@@ -3,7 +3,7 @@
 
 // Package syspolicy contains the implementation of system policy management.
 // Calling code should use the client interface in
-// tailscale.com/util/syspolicy/policyclient.
+// scaletail.com/util/syspolicy/policyclient.
 package syspolicy
 
 import (
@@ -12,13 +12,13 @@ import (
 	"reflect"
 	"time"
 
-	"tailscale.com/util/syspolicy/internal/loggerx"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/syspolicy/ptype"
-	"tailscale.com/util/syspolicy/rsop"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/syspolicy/source"
+	"scaletail.com/util/syspolicy/internal/loggerx"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/syspolicy/ptype"
+	"scaletail.com/util/syspolicy/rsop"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/source"
 )
 
 var (
@@ -178,11 +178,11 @@ func convertPolicySettingValueTo[T setting.ValueType](value any, def T) (T, erro
 //
 // See https://github.com/tailscale/tailscale/issues/2798 for some background.
 func SelectControlURL(reg, disk string) string {
-	const def = "https://controlplane.tailscale.com"
+	const def = "https://controlplane.scaletail.com"
 
 	// Prior to Dec 2020's commit 739b02e6, the installer
-	// wrote a LoginURL value of https://login.tailscale.com to the registry.
-	const oldRegDef = "https://login.tailscale.com"
+	// wrote a LoginURL value of https://login.scaletail.com to the registry.
+	const oldRegDef = "https://login.scaletail.com"
 
 	// If they have an explicit value in the registry, use it,
 	// unless it's an old default value from an old installer.
@@ -199,7 +199,7 @@ func SelectControlURL(reg, disk string) string {
 		}
 		if disk != def && disk != oldRegDef {
 			// The value in the registry is the old
-			// default (login.tailscale.com) but the value
+			// default (login.scaletail.com) but the value
 			// on disk is neither our old nor new default
 			// value, so it must be some custom thing that
 			// the user cares about. Prefer the disk value.

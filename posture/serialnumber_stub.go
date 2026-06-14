@@ -14,8 +14,8 @@ import (
 	"errors"
 	"fmt"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 // GetSerialNumber returns client machine serial number(s).

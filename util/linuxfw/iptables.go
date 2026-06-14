@@ -15,8 +15,8 @@ import (
 	"unicode"
 
 	"github.com/coreos/go-iptables/iptables"
-	"tailscale.com/types/logger"
-	"tailscale.com/version/distro"
+	"scaletail.com/types/logger"
+	"scaletail.com/version/distro"
 )
 
 func init() {

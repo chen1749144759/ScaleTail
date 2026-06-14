@@ -3,7 +3,7 @@
 
 //go:build !ts_omit_logtail
 
-// Package logtail sends logs to log.tailscale.com.
+// Package logtail sends logs to log.scaletail.com.
 package logtail
 
 import (
@@ -28,17 +28,17 @@ import (
 
 	"github.com/creachadair/msync/trigger"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/envknob"
-	"tailscale.com/metrics"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/tstime"
-	tslogger "tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/set"
-	"tailscale.com/util/truncate"
-	"tailscale.com/util/zstdframe"
+	"scaletail.com/envknob"
+	"scaletail.com/metrics"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/tstime"
+	tslogger "scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/set"
+	"scaletail.com/util/truncate"
+	"scaletail.com/util/zstdframe"
 )
 
 // maxSize is the maximum size that a single log entry can be.
@@ -512,7 +512,7 @@ func (lg *Logger) upload(ctx context.Context, body []byte, origlen int) (retryAf
 	}
 	if runtime.GOOS == "js" {
 		// We once advertised we'd accept optional client certs (for internal use)
-		// on log.tailscale.com but then Tailscale SSH js/wasm clients prompted
+		// on log.scaletail.com but then Tailscale SSH js/wasm clients prompted
 		// users (on some browsers?) to pick a client cert. We'll fix the server's
 		// TLS ServerHello, but we can also fix it client side for good measure.
 		//

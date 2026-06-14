@@ -9,9 +9,9 @@ import (
 	"errors"
 	"runtime"
 
-	"tailscale.com/envknob"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 // CanRunTailscaleSSH reports whether serving a Tailscale SSH server is

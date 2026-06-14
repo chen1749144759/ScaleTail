@@ -14,9 +14,9 @@ import (
 	"net/netip"
 
 	"github.com/tailscale/hujson"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
 )
 
 const v1Alpha1 = "v1alpha1"

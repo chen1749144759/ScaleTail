@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 // test the specific /proc/net/route path as found on Google Cloud Run instances

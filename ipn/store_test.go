@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"tailscale.com/util/mak"
+	"scaletail.com/util/mak"
 )
 
 type memStore struct {

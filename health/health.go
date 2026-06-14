@@ -18,16 +18,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/cibuild"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/mak"
-	"tailscale.com/version"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/cibuild"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/mak"
+	"scaletail.com/version"
 )
 
 var (

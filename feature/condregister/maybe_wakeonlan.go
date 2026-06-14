@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/wakeonlan"
+import _ "scaletail.com/feature/wakeonlan"

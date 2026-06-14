@@ -11,8 +11,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 var lookupEnv = os.LookupEnv // test hook

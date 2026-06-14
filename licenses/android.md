@@ -1,10 +1,10 @@
-# Tailscale for Android dependencies
+﻿# ScaleTail for Android dependencies
 
-The following open source dependencies are used to build the [Tailscale Android
-Client][].  See also the dependencies in the [Tailscale CLI][].
+The following open source dependencies are used to build the [ScaleTail Android
+Client][].  See also the dependencies in the [ScaleTail CLI][].
 
-[Tailscale Android Client]: https://github.com/tailscale/tailscale-android
-[Tailscale CLI]: ./tailscale.md
+[ScaleTail Android Client]: https://github.com/chen1749144759/ScaleTail
+[ScaleTail CLI]: ./scaletail.md
 
 ## Go Packages
 

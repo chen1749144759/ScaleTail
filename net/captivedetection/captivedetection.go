@@ -17,10 +17,10 @@ import (
 	"syscall"
 	"time"
 
-	"tailscale.com/net/netmon"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/netmon"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
 )
 
 // Detector checks whether the system is behind a captive portal.

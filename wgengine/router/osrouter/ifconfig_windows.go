@@ -14,12 +14,12 @@ import (
 	"sort"
 	"time"
 
-	"tailscale.com/health"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tstun"
-	"tailscale.com/wgengine/router"
-	"tailscale.com/wgengine/winnet"
+	"scaletail.com/health"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tstun"
+	"scaletail.com/wgengine/router"
+	"scaletail.com/wgengine/winnet"
 
 	ole "github.com/go-ole/go-ole"
 	"github.com/tailscale/wireguard-go/tun"

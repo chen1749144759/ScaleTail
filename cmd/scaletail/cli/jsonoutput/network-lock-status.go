@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"io"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tka"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tka"
 )
 
 // PrintNetworkLockStatusJSONV1 prints the current Tailnet Lock status

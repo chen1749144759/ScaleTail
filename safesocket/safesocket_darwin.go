@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"golang.org/x/sys/unix"
-	"tailscale.com/version"
+	"scaletail.com/version"
 )
 
 func init() {

@@ -26,13 +26,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/derp/derpconst"
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/net/bakedroots"
-	"tailscale.com/net/tlsdial/blockblame"
+	"scaletail.com/derp/derpconst"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/net/bakedroots"
+	"scaletail.com/net/tlsdial/blockblame"
 )
 
 var counterFallbackOK int32 // atomic
@@ -115,8 +115,8 @@ func Config(ht *health.Tracker, base *tls.Config) *tls.Config {
 	conf.VerifyConnection = func(cs tls.ConnectionState) (retErr error) {
 		dialedHost := cs.ServerName
 
-		if dialedHost == "log.tailscale.com" && hostinfo.IsNATLabGuestVM() {
-			// Allow log.tailscale.com TLS MITM for integration tests when
+		if dialedHost == "log.scaletail.com" && hostinfo.IsNATLabGuestVM() {
+			// Allow log.scaletail.com TLS MITM for integration tests when
 			// the client's running within a NATLab VM.
 			return nil
 		}

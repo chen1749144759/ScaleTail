@@ -1,7 +1,7 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// Package qnap contains dist Targets for building QNAP Tailscale packages.
+// Package qnap contains dist Targets for building QNAP ScaleTail packages.
 //
 // QNAP dev docs over at https://www.qnap.com/en/how-to/tutorial/article/qpkg-development-guidelines.
 package qnap
@@ -17,7 +17,7 @@ import (
 	"slices"
 	"sync"
 
-	"tailscale.com/release/dist"
+	"scaletail.com/release/dist"
 )
 
 type target struct {
@@ -67,7 +67,7 @@ func (t *target) buildQPKG(b *dist.Build, qnapBuilds *qnapBuilds, inner *innerPk
 		return nil, fmt.Errorf("makeDockerImage: %w", err)
 	}
 
-	filename := fmt.Sprintf("Tailscale_%s-%s_%s.qpkg", b.Version.Short, qnapTag, t.arch)
+	filename := fmt.Sprintf("ScaleTail_%s-%s_%s.qpkg", b.Version.Short, qnapTag, t.arch)
 	filePath := filepath.Join(b.Out, filename)
 
 	args := []string{"run", "--rm",
@@ -75,10 +75,10 @@ func (t *target) buildQPKG(b *dist.Build, qnapBuilds *qnapBuilds, inner *innerPk
 		"-e", fmt.Sprintf("ARCH=%s", t.arch),
 		"-e", fmt.Sprintf("TSTAG=%s", b.Version.Short),
 		"-e", fmt.Sprintf("QNAPTAG=%s", qnapTag),
-		"-v", fmt.Sprintf("%s:/tailscale", inner.tailscalePath),
+		"-v", fmt.Sprintf("%s:/scaletail", inner.scaletailPath),
 		"-v", fmt.Sprintf("%s:/scaletaild", inner.scaletaildPath),
-		// Tailscale folder has QNAP package setup files needed for building.
-		"-v", fmt.Sprintf("%s:/Tailscale", filepath.Join(qnapBuilds.tmpDir, "files/Tailscale")),
+		// ScaleTail folder has QNAP package setup files needed for building.
+		"-v", fmt.Sprintf("%s:/ScaleTail", filepath.Join(qnapBuilds.tmpDir, "files/ScaleTail")),
 		"-v", fmt.Sprintf("%s:/build-qpkg.sh", filepath.Join(qnapBuilds.tmpDir, "files/scripts/build-qpkg.sh")),
 		"-v", fmt.Sprintf("%s:/out", b.Out),
 	}
@@ -133,7 +133,7 @@ func (t *target) buildQPKG(b *dist.Build, qnapBuilds *qnapBuilds, inner *innerPk
 type qnapBuildsMemoizeKey struct{}
 
 type innerPkg struct {
-	tailscalePath  string
+	scaletailPath  string
 	scaletaildPath string
 }
 
@@ -168,7 +168,7 @@ var buildFiles embed.FS
 // The qnapBuilds.tmpDir is filled with the contents of the buildFiles embedded
 // FS for building.
 //
-// We do this to allow for this tailscale.com/release/dist/qnap package to be
+// We do this to allow for this scaletail.com/release/dist/qnap package to be
 // used from both the corp and OSS repos. When built from OSS source directly,
 // this is a superfluous extra step, but when imported as a go module to another
 // repo (such as corp), we must do this to allow for the module's build files
@@ -213,18 +213,18 @@ func newQNAPBuilds(b *dist.Build, signer *signer) (*qnapBuilds, error) {
 }
 
 // buildInnerPackage builds the go binaries used for qnap packages.
-// These binaries get embedded with Tailscale package metadata to form qnap
+// These binaries get embedded with ScaleTail package metadata to form qnap
 // releases.
 func (m *qnapBuilds) buildInnerPackage(b *dist.Build, goenv map[string]string) (*innerPkg, error) {
 	return m.innerPkgs.Do(goenv, func() (*innerPkg, error) {
 		if err := b.BuildWebClientAssets(); err != nil {
 			return nil, err
 		}
-		ts, err := b.BuildGoBinary("tailscale.com/cmd/scaletail", goenv)
+		ts, err := b.BuildGoBinary("scaletail.com/cmd/scaletail", goenv)
 		if err != nil {
 			return nil, err
 		}
-		tsd, err := b.BuildGoBinary("tailscale.com/cmd/scaletaild", goenv)
+		tsd, err := b.BuildGoBinary("scaletail.com/cmd/scaletaild", goenv)
 		if err != nil {
 			return nil, err
 		}
@@ -255,7 +255,7 @@ func (m *qnapBuilds) buildInnerPackage(b *dist.Build, goenv map[string]string) (
 			return nil, err
 		}
 
-		tsPath := filepath.Join(tmpDir, "tailscale")
+		tsPath := filepath.Join(tmpDir, "scaletail")
 		if err := os.WriteFile(tsPath, tsBytes, 0755); err != nil {
 			return nil, err
 		}
@@ -264,7 +264,7 @@ func (m *qnapBuilds) buildInnerPackage(b *dist.Build, goenv map[string]string) (
 			return nil, err
 		}
 
-		return &innerPkg{tailscalePath: tsPath, scaletaildPath: tsdPath}, nil
+		return &innerPkg{scaletailPath: tsPath, scaletaildPath: tsdPath}, nil
 	})
 }
 

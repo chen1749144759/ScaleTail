@@ -15,8 +15,8 @@ import (
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"tailscale.com/sessionrecording"
-	"tailscale.com/tstime"
+	"scaletail.com/sessionrecording"
+	"scaletail.com/tstime"
 )
 
 func New(conn io.WriteCloser, clock tstime.Clock, start time.Time, failOpen bool, logger *zap.SugaredLogger) *Client {

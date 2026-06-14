@@ -27,14 +27,14 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/hostinfo"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/cmpver"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/hostinfo"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/cmpver"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 const (

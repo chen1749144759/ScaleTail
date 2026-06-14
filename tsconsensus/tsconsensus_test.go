@@ -25,19 +25,19 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
-	"tailscale.com/client/tailscale"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/net/netns"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstest/integration"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/tstest/nettest"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
-	"tailscale.com/util/cibuild"
-	"tailscale.com/util/racebuild"
+	"scaletail.com/client/scaletail"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/net/netns"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstest/integration"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/tstest/nettest"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
+	"scaletail.com/util/cibuild"
+	"scaletail.com/util/racebuild"
 )
 
 type fsm struct {
@@ -294,7 +294,7 @@ func startNodesAndWaitForPeerStatus(t testing.TB, ctx context.Context, clusterTa
 	t.Helper()
 	ps := make([]*participant, nNodes)
 	keysToTag := make([]key.NodePublic, nNodes)
-	localClients := make([]*tailscale.LocalClient, nNodes)
+	localClients := make([]*scaletail.LocalClient, nNodes)
 	control, controlURL := startControl(t)
 	for i := range nNodes {
 		ts, key, _ := startNode(t, ctx, controlURL, fmt.Sprintf("node %d", i))

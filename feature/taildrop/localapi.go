@@ -19,16 +19,16 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/localapi"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/httphdr"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/progresstracking"
-	"tailscale.com/util/rands"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/localapi"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/httphdr"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/progresstracking"
+	"scaletail.com/util/rands"
 )
 
 func init() {

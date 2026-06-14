@@ -33,14 +33,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/set"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/set"
 )
 
 const (

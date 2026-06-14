@@ -2,6 +2,6 @@
   "defaults":{
     "run-as": "root"
   },
-  "username": "tailscale",
-  "groupname": "tailscale"
+  "username": "scaletail",
+  "groupname": "scaletail"
 }

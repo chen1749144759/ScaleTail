@@ -26,7 +26,7 @@ func driveCmdStub() *ffcli.Command {
 			return errors.New(
 				"Taildrive CLI commands are not supported when using the macOS GUI app. " +
 					"Please use the Tailscale menu bar icon to configure Taildrive in Settings.\n\n" +
-					"See https://tailscale.com/docs/features/taildrive",
+					"See https://scaletail.com/docs/features/taildrive",
 			)
 		},
 	}

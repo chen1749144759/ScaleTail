@@ -49,7 +49,7 @@ class App extends Component<{}, AppState> {
       lockedOutInstructions = (
         <div class="container mx-auto px-4 text-center space-y-4">
           <p>This instance of Tailscale Connect needs to be signed, due to
-            {" "}<a href="https://tailscale.com/kb/1226/tailnet-lock/" class="link">tailnet lock</a>{" "}
+            {" "}<a href="https://scaletail.com/kb/1226/tailnet-lock/" class="link">tailnet lock</a>{" "}
             being enabled on this domain.
           </p>
 

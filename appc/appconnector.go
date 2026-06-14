@@ -18,15 +18,15 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/syncs"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/execqueue"
-	"tailscale.com/util/slicesx"
+	"scaletail.com/syncs"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/execqueue"
+	"scaletail.com/util/slicesx"
 )
 
 // rateLogger responds to calls to update by adding a count for the current period and

@@ -12,7 +12,7 @@ import (
 	"runtime"
 
 	"golang.org/x/sys/unix"
-	"tailscale.com/version/distro"
+	"scaletail.com/version/distro"
 )
 
 func init() {

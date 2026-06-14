@@ -19,44 +19,44 @@ updatedeps: ## Update depaware deps
 	# depaware (via x/tools/go/packages) shells back to "go", so make sure the "go"
 	# it finds in its $$PATH is the right one.
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --vendor --internal \
-		tailscale.com/cmd/scaletaild \
-		tailscale.com/cmd/scaletail \
-		tailscale.com/cmd/derper \
-		tailscale.com/cmd/k8s-operator \
-		tailscale.com/cmd/stund \
-		tailscale.com/cmd/tsidp
+		scaletail.com/cmd/scaletaild \
+		scaletail.com/cmd/scaletail \
+		scaletail.com/cmd/derper \
+		scaletail.com/cmd/k8s-operator \
+		scaletail.com/cmd/stund \
+		scaletail.com/cmd/tsidp
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --goos=linux,darwin,windows,android,ios --vendor --internal \
-		tailscale.com/tsnet
+		scaletail.com/tsnet
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --file=depaware-minbox.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min --add=cli)" --vendor --internal \
-		tailscale.com/cmd/scaletaild
+		scaletail.com/cmd/scaletaild
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --update --file=depaware-min.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min)" --vendor --internal \
-		tailscale.com/cmd/scaletaild
+		scaletail.com/cmd/scaletaild
 
 depaware: ## Run depaware checks
 	# depaware (via x/tools/go/packages) shells back to "go", so make sure the "go"
 	# it finds in its $$PATH is the right one.
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --vendor --internal \
-		tailscale.com/cmd/scaletaild \
-		tailscale.com/cmd/scaletail \
-		tailscale.com/cmd/derper \
-		tailscale.com/cmd/k8s-operator \
-		tailscale.com/cmd/stund \
-		tailscale.com/cmd/tsidp
+		scaletail.com/cmd/scaletaild \
+		scaletail.com/cmd/scaletail \
+		scaletail.com/cmd/derper \
+		scaletail.com/cmd/k8s-operator \
+		scaletail.com/cmd/stund \
+		scaletail.com/cmd/tsidp
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --goos=linux,darwin,windows,android,ios --vendor --internal \
-		tailscale.com/tsnet
+		scaletail.com/tsnet
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --file=depaware-minbox.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min --add=cli)" --vendor --internal \
-		tailscale.com/cmd/scaletaild
+		scaletail.com/cmd/scaletaild
 	PATH="$$(./tool/go env GOROOT)/bin:$$PATH" ./tool/go run github.com/tailscale/depaware --check --file=depaware-min.txt --goos=linux --tags="$$(./tool/go run ./cmd/featuretags --min)" --vendor --internal \
-		tailscale.com/cmd/scaletaild
+		scaletail.com/cmd/scaletaild
 
 buildwindows: ## Build tailscale CLI for windows/amd64
-	GOOS=windows GOARCH=amd64 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
+	GOOS=windows GOARCH=amd64 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
 build386: ## Build tailscale CLI for linux/386
-	GOOS=linux GOARCH=386 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
+	GOOS=linux GOARCH=386 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
 buildlinuxarm: ## Build tailscale CLI for linux/arm
-	GOOS=linux GOARCH=arm ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
+	GOOS=linux GOARCH=arm ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
 buildwasm: ## Build tailscale CLI for js/wasm
 	GOOS=js GOARCH=wasm ./tool/go install ./cmd/tsconnect/wasm ./cmd/scaletail/cli
@@ -65,7 +65,7 @@ buildplan9:
 	GOOS=plan9 GOARCH=amd64 ./tool/go install ./cmd/scaletail ./cmd/scaletaild
 
 buildlinuxloong64: ## Build tailscale CLI for linux/loong64
-	GOOS=linux GOARCH=loong64 ./tool/go install tailscale.com/cmd/scaletail tailscale.com/cmd/scaletaild
+	GOOS=linux GOARCH=loong64 ./tool/go install scaletail.com/cmd/scaletail scaletail.com/cmd/scaletaild
 
 buildmultiarchimage: ## Build (and optionally push) multiarch docker image
 	./build_docker.sh

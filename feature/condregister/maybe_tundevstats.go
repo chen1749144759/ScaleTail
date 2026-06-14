@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/tundevstats"
+import _ "scaletail.com/feature/tundevstats"

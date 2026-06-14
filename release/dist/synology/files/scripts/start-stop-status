@@ -1,9 +1,9 @@
 #!/bin/bash
 
-SERVICE_NAME="tailscale"
+SERVICE_NAME="scaletail"
 
 if [ "${SYNOPKG_DSM_VERSION_MAJOR}" -eq "6" ]; then
-    PKGVAR="/var/packages/Tailscale/etc"
+    PKGVAR="/var/packages/ScaleTail/etc"
 else
     PKGVAR="${SYNOPKG_PKGVAR}"
 fi
@@ -25,7 +25,7 @@ if [ "${SYNOPKG_DSM_VERSION_MAJOR}" -eq "7" -a ! -e "/dev/net/tun" ]; then
 fi
 
 if [ "${SYNOPKG_DSM_VERSION_MAJOR}" -eq "6" ]; then
-    chown -R tailscale:tailscale "${PKGVAR}/"
+    chown -R scaletail:scaletail "${PKGVAR}/"
 fi
 
 start_daemon() {

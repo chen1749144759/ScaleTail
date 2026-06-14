@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/coreos/go-systemd/activation"
-	"tailscale.com/client/tailscale"
+	"scaletail.com/client/scaletail"
 )
 
 var (
@@ -49,7 +49,7 @@ func main() {
 			return
 		}
 
-		info, err := tailscale.WhoIs(r.Context(), remoteAddr.String())
+		info, err := scaletail.WhoIs(r.Context(), remoteAddr.String())
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			log.Printf("can't look up %s: %v", remoteAddr, err)
@@ -74,7 +74,7 @@ func main() {
 				log.Printf("can't extract tailnet name from hostname %q", info.Node.Name)
 				return
 			}
-			tailnet = strings.TrimSuffix(tailnet, ".beta.tailscale.net")
+			tailnet = strings.TrimSuffix(tailnet, ".beta.scaletail.net")
 		}
 
 		if expectedTailnet := r.Header.Get("Expected-Tailnet"); expectedTailnet != "" && expectedTailnet != tailnet {

@@ -22,13 +22,13 @@ import (
 	"github.com/tailscale/wireguard-go/tun"
 	"golang.org/x/sys/windows"
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
-	"tailscale.com/health"
-	"tailscale.com/net/dns"
-	"tailscale.com/net/netmon"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/wgengine/router"
+	"scaletail.com/health"
+	"scaletail.com/net/dns"
+	"scaletail.com/net/netmon"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/wgengine/router"
 )
 
 func init() {

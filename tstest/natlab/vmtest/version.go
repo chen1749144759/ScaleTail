@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // versionRE matches a concrete X.Y.Z release version.
@@ -35,7 +35,7 @@ func resolveTestVersion(ctx context.Context, v string) (string, error) {
 		}
 		return v, nil
 	}
-	url := "https://pkgs.tailscale.com/" + v + "/?mode=json"
+	url := "https://pkgs.scaletail.com/" + v + "/?mode=json"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return "", err
@@ -113,7 +113,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 	if err != nil {
 		return "", err
 	}
-	url := fmt.Sprintf("https://pkgs.tailscale.com/%s/tailscale_%s_%s.tgz", track, version, arch)
+	url := fmt.Sprintf("https://pkgs.scaletail.com/%s/tailscale_%s_%s.tgz", track, version, arch)
 	logf("downloading %s", url)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

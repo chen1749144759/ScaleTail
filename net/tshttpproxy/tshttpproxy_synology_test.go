@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 func TestSynologyProxyFromConfigCached(t *testing.T) {

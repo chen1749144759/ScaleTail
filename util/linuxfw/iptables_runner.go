@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
 )
 
 // isNotExistError needs to be overridden in tests that rely on distinguishing
@@ -329,7 +329,7 @@ func (i *iptablesRunner) ClampMSSToPMTU(tun string, addr netip.Addr) error {
 // supplemented by later calls to other helpers.
 func (i *iptablesRunner) addBase6(tunname string) error {
 	// TODO: only allow traffic from Tailscale's ULA range to come
-	// from tailscale0.
+	// from scaletail0.
 
 	// Explicitly allow all other inbound traffic to the tun interface
 	args := []string{"-i", tunname, "-j", "ACCEPT"}
@@ -345,7 +345,7 @@ func (i *iptablesRunner) addBase6(tunname string) error {
 	if err := i.ipt6.Append("filter", "ts-forward", args...); err != nil {
 		return fmt.Errorf("adding %v in v6/filter/ts-forward: %w", args, err)
 	}
-	// TODO: drop forwarded traffic to tailscale0 from tailscale's ULA
+	// TODO: drop forwarded traffic to scaletail0 from tailscale's ULA
 	// (see corresponding IPv4 CGNAT rule).
 	args = []string{"-o", tunname, "-j", "ACCEPT"}
 	if err := i.ipt6.Append("filter", "ts-forward", args...); err != nil {

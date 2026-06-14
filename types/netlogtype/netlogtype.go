@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/ipproto"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/ipproto"
 )
 
 // Message is the log message that captures network traffic.

@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/tstime"
-	"tailscale.com/types/key"
+	"scaletail.com/tstime"
+	"scaletail.com/types/key"
 )
 
 func TestServerEndpointJSONUnmarshal(t *testing.T) {

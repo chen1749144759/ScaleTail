@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/rands"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/rands"
 )
 
 // RequestID is an opaque identifier for a HTTP request, used to correlate

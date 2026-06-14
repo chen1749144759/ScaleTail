@@ -6,7 +6,7 @@ package systray
 import (
 	"log"
 
-	"tailscale.com/client/local"
+	"scaletail.com/client/local"
 )
 
 // OpenDashboard starts the dashboard HTTP server and opens it in the browser.

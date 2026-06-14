@@ -2,7 +2,7 @@
 
 # tsnet
 
-[![Go Reference](https://pkg.go.dev/badge/tailscale.com/tsnet.svg)](https://pkg.go.dev/tailscale.com/tsnet)
+[![Go Reference](https://pkg.go.dev/badge/scaletail.com/tsnet.svg)](https://pkg.go.dev/scaletail.com/tsnet)
 
 Package tsnet embeds a Tailscale node directly into a Go program, allowing it to join a tailnet and accept or dial connections without running a separate scaletaild daemon or requiring any system-level configuration.
 
@@ -13,13 +13,13 @@ Normally, Tailscale runs as a background system service (scaletaild) that manage
   - No root privileges required.
   - No system daemons to install or manage.
   - Multiple independent Tailscale nodes can run within a single binary.
-  - The node's [Tailscale identity](https://tailscale.com/docs/concepts/tailscale-identity) and state are stored in a directory you control.
+  - The node's [Tailscale identity](https://scaletail.com/docs/concepts/tailscale-identity) and state are stored in a directory you control.
 
-The core type is [Server](https://pkg.go.dev/tailscale.com/tsnet#Server), which represents one embedded Tailscale node. Calling [Server.Listen](https://pkg.go.dev/tailscale.com/tsnet#Server.Listen) or [Server.Dial](https://pkg.go.dev/tailscale.com/tsnet#Server.Dial) routes traffic exclusively over the tailnet. The standard library's [net.Listener](https://pkg.go.dev/net#Listener) and [net.Conn](https://pkg.go.dev/net#Conn) interfaces are returned, so any existing Go HTTP server, gRPC server, or other net-based code works without modification.
+The core type is [Server](https://pkg.go.dev/scaletail.com/tsnet#Server), which represents one embedded Tailscale node. Calling [Server.Listen](https://pkg.go.dev/scaletail.com/tsnet#Server.Listen) or [Server.Dial](https://pkg.go.dev/scaletail.com/tsnet#Server.Dial) routes traffic exclusively over the tailnet. The standard library's [net.Listener](https://pkg.go.dev/net#Listener) and [net.Conn](https://pkg.go.dev/net#Conn) interfaces are returned, so any existing Go HTTP server, gRPC server, or other net-based code works without modification.
 
 ## Usage
 
-	import "tailscale.com/tsnet"
+	import "scaletail.com/tsnet"
 
 	s := &tsnet.Server{
 		Hostname: "my-service",
@@ -33,24 +33,24 @@ The core type is [Server](https://pkg.go.dev/tailscale.com/tsnet#Server), which 
 	}
 	log.Fatal(http.Serve(ln, myHandler))
 
-On first run, if no [Server.AuthKey](https://pkg.go.dev/tailscale.com/tsnet#Server.AuthKey) is provided and the node is not already enrolled, the server logs an authentication URL. Open it in a browser to add the node to your tailnet.
+On first run, if no [Server.AuthKey](https://pkg.go.dev/scaletail.com/tsnet#Server.AuthKey) is provided and the node is not already enrolled, the server logs an authentication URL. Open it in a browser to add the node to your tailnet.
 
 ## Authentication
 
-A [Server](https://pkg.go.dev/tailscale.com/tsnet#Server) authenticates using, in order of precedence:
+A [Server](https://pkg.go.dev/scaletail.com/tsnet#Server) authenticates using, in order of precedence:
 
- 1. [Server.AuthKey](https://pkg.go.dev/tailscale.com/tsnet#Server.AuthKey).
+ 1. [Server.AuthKey](https://pkg.go.dev/scaletail.com/tsnet#Server.AuthKey).
  2. The TS\_AUTHKEY environment variable.
  3. The TS\_AUTH\_KEY environment variable.
- 4. An OAuth client secret ([Server.ClientSecret](https://pkg.go.dev/tailscale.com/tsnet#Server.ClientSecret) or TS\_CLIENT\_SECRET), used to mint an auth key.
- 5. Workload identity federation ([Server.ClientID](https://pkg.go.dev/tailscale.com/tsnet#Server.ClientID) plus [Server.IDToken](https://pkg.go.dev/tailscale.com/tsnet#Server.IDToken) or [Server.Audience](https://pkg.go.dev/tailscale.com/tsnet#Server.Audience)).
- 6. An interactive login URL printed to [Server.UserLogf](https://pkg.go.dev/tailscale.com/tsnet#Server.UserLogf).
+ 4. An OAuth client secret ([Server.ClientSecret](https://pkg.go.dev/scaletail.com/tsnet#Server.ClientSecret) or TS\_CLIENT\_SECRET), used to mint an auth key.
+ 5. Workload identity federation ([Server.ClientID](https://pkg.go.dev/scaletail.com/tsnet#Server.ClientID) plus [Server.IDToken](https://pkg.go.dev/scaletail.com/tsnet#Server.IDToken) or [Server.Audience](https://pkg.go.dev/scaletail.com/tsnet#Server.Audience)).
+ 6. An interactive login URL printed to [Server.UserLogf](https://pkg.go.dev/scaletail.com/tsnet#Server.UserLogf).
 
-If the node is already enrolled (state found in [Server.Store](https://pkg.go.dev/tailscale.com/tsnet#Server.Store)), the auth key is ignored unless TSNET\_FORCE\_LOGIN=1 is set.
+If the node is already enrolled (state found in [Server.Store](https://pkg.go.dev/scaletail.com/tsnet#Server.Store)), the auth key is ignored unless TSNET\_FORCE\_LOGIN=1 is set.
 
 ## Identifying callers
 
-Use the WhoIs method on the client returned by [Server.LocalClient](https://pkg.go.dev/tailscale.com/tsnet#Server.LocalClient) to identify who is making a request:
+Use the WhoIs method on the client returned by [Server.LocalClient](https://pkg.go.dev/scaletail.com/tsnet#Server.LocalClient) to identify who is making a request:
 
 	lc, _ := srv.LocalClient()
 	http.Serve(ln, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +64,7 @@ Use the WhoIs method on the client returned by [Server.LocalClient](https://pkg.
 
 ## Tailscale Funnel
 
-[Server.ListenFunnel](https://pkg.go.dev/tailscale.com/tsnet#Server.ListenFunnel) exposes your service on the public internet. [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel) currently supports TCP on ports 443, 8443, and 10000. HTTPS must be enabled in the Tailscale admin console.
+[Server.ListenFunnel](https://pkg.go.dev/scaletail.com/tsnet#Server.ListenFunnel) exposes your service on the public internet. [Tailscale Funnel](https://scaletail.com/docs/features/tailscale-funnel) currently supports TCP on ports 443, 8443, and 10000. HTTPS must be enabled in the Tailscale admin console.
 
 	ln, err := srv.ListenFunnel("tcp", ":443")
 	// ln is a TLS listener; connections can come from anywhere on the
@@ -75,7 +75,7 @@ Use the WhoIs method on the client returned by [Server.LocalClient](https://pkg.
 
 ## Tailscale Services
 
-[Server.ListenService](https://pkg.go.dev/tailscale.com/tsnet#Server.ListenService) advertises the node as a host for a named [Tailscale Service](https://tailscale.com/docs/features/tailscale-services). The node must use a tag-based identity. To advertise multiple ports, call ListenService once per port.
+[Server.ListenService](https://pkg.go.dev/scaletail.com/tsnet#Server.ListenService) advertises the node as a host for a named [Tailscale Service](https://scaletail.com/docs/features/tailscale-services). The node must use a tag-based identity. To advertise multiple ports, call ListenService once per port.
 
 	srv.AdvertiseTags = []string{"tag:myservice"}
 
@@ -87,7 +87,7 @@ Use the WhoIs method on the client returned by [Server.LocalClient](https://pkg.
 
 ## Running multiple nodes in one process
 
-Each [Server](https://pkg.go.dev/tailscale.com/tsnet#Server) instance is an independent node. Give each a unique [Server.Dir](https://pkg.go.dev/tailscale.com/tsnet#Server.Dir) and [Server.Hostname](https://pkg.go.dev/tailscale.com/tsnet#Server.Hostname):
+Each [Server](https://pkg.go.dev/scaletail.com/tsnet#Server) instance is an independent node. Give each a unique [Server.Dir](https://pkg.go.dev/scaletail.com/tsnet#Server.Dir) and [Server.Hostname](https://pkg.go.dev/scaletail.com/tsnet#Server.Hostname):
 
 	for _, name := range []string{"frontend", "backend"} {
 		srv := &tsnet.Server{

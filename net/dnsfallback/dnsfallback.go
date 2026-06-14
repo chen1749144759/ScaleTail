@@ -25,15 +25,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/atomicfile"
-	"tailscale.com/feature"
-	"tailscale.com/health"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/tlsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/slicesx"
+	"scaletail.com/atomicfile"
+	"scaletail.com/feature"
+	"scaletail.com/health"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/tlsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/slicesx"
 )
 
 // MakeLookupFunc creates a function that can be used to resolve hostnames
@@ -128,7 +128,7 @@ func lookup(ctx context.Context, host string, logf logger.Logf, ht *health.Track
 }
 
 // serverName and serverIP of are, say, "derpN.tailscale.com".
-// queryName is the name being sought (e.g. "controlplane.tailscale.com"), passed as hint.
+// queryName is the name being sought (e.g. "controlplane.scaletail.com"), passed as hint.
 //
 // ht may be nil.
 func bootstrapDNSMap(ctx context.Context, serverName string, serverIP netip.Addr, queryName string, logf logger.Logf, ht *health.Tracker, netMon *netmon.Monitor) (dnsMap, error) {
@@ -161,7 +161,7 @@ func bootstrapDNSMap(ctx context.Context, serverName string, serverIP netip.Addr
 }
 
 // dnsMap is the JSON type returned by the DERP /bootstrap-dns handler:
-// https://derp10.tailscale.com/bootstrap-dns
+// https://derp10.scaletail.com/bootstrap-dns
 type dnsMap map[string][]netip.Addr
 
 // GetDERPMap returns a fallback DERP map that is always available, useful for basic

@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"tailscale.com/version/distro"
+	"scaletail.com/version/distro"
 )
 
 // SetDirectFileRoot sets the directory where received files are written.

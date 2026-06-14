@@ -31,7 +31,7 @@ var ConnectorKind = "Connector"
 // exit node.
 // Connector is a cluster-scoped resource.
 // More info:
-// https://tailscale.com/kb/1441/kubernetes-operator-connector
+// https://scaletail.com/kb/1441/kubernetes-operator-connector
 type Connector struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -67,9 +67,9 @@ type ConnectorSpec struct {
 	// To autoapprove the subnet routes or exit node defined by a Connector,
 	// you can configure Tailscale ACLs to give these tags the necessary
 	// permissions.
-	// See https://tailscale.com/kb/1337/acl-syntax#autoapprovers.
+	// See https://scaletail.com/kb/1337/acl-syntax#autoapprovers.
 	// If you specify custom tags here, you must also make the operator an owner of these tags.
-	// See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+	// See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
 	// Tags cannot be changed once a Connector node has been created.
 	// Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
 	// +optional
@@ -99,7 +99,7 @@ type ConnectorSpec struct {
 	ProxyClass string `json:"proxyClass,omitempty"`
 	// SubnetRouter defines subnet routes that the Connector device should
 	// expose to tailnet as a Tailscale subnet router.
-	// https://tailscale.com/kb/1019/subnets/
+	// https://scaletail.com/kb/1019/subnets/
 	// If this field is unset, the device does not get configured as a Tailscale subnet router.
 	// This field is mutually exclusive with the appConnector field.
 	// +optional
@@ -117,19 +117,19 @@ type ConnectorSpec struct {
 	// can be whitelisted, it is also your responsibility to ensure that cluster traffic from the connector flows
 	// via that predictable IP, for example by enforcing that cluster egress traffic is routed via an egress NAT
 	// device with a static IP address.
-	// https://tailscale.com/kb/1281/app-connectors
+	// https://scaletail.com/kb/1281/app-connectors
 	// +optional
 	AppConnector *AppConnector `json:"appConnector,omitempty"`
 
 	// ExitNode defines whether the Connector device should act as a Tailscale exit node. Defaults to false.
 	// This field is mutually exclusive with the appConnector field.
-	// https://tailscale.com/kb/1103/exit-nodes
+	// https://scaletail.com/kb/1103/exit-nodes
 	// +optional
 	ExitNode bool `json:"exitNode"`
 
 	// Replicas specifies how many devices to create. Set this to enable
 	// high availability for app connectors, subnet routers, or exit nodes.
-	// https://tailscale.com/kb/1115/high-availability. Defaults to 1.
+	// https://scaletail.com/kb/1115/high-availability. Defaults to 1.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	Replicas *int32 `json:"replicas,omitempty"`
@@ -147,7 +147,7 @@ type SubnetRouter struct {
 	// AdvertiseRoutes refer to CIDRs that the subnet router should make
 	// available. Route values must be strings that represent a valid IPv4
 	// or IPv6 CIDR range. Values can be Tailscale 4via6 subnet routes.
-	// https://tailscale.com/kb/1201/4via6-subnets/
+	// https://scaletail.com/kb/1201/4via6-subnets/
 	AdvertiseRoutes Routes `json:"advertiseRoutes"`
 }
 
@@ -157,7 +157,7 @@ type AppConnector struct {
 	// If not set, routes for the domains will be discovered dynamically.
 	// If set, the app connector will immediately be able to route traffic using the preconfigured routes, but may
 	// also dynamically discover other routes.
-	// https://tailscale.com/kb/1332/apps-best-practices#preconfiguration
+	// https://scaletail.com/kb/1332/apps-best-practices#preconfiguration
 	// +optional
 	Routes Routes `json:"routes"`
 }

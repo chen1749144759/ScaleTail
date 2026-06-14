@@ -8,22 +8,22 @@ import (
 	"strings"
 	"testing"
 
-	"tailscale.com/client/tailscale"
+	"scaletail.com/client/scaletail"
 )
 
 func TestEmbeddedTypeUnmarshal(t *testing.T) {
 	var gitopsErr ACLGitopsTestError
 	gitopsErr.Message = "gitops response error"
-	gitopsErr.Data = []tailscale.ACLTestFailureSummary{
+	gitopsErr.Data = []scaletail.ACLTestFailureSummary{
 		{
 			User:   "GitopsError",
 			Errors: []string{"this was initially created as a gitops error"},
 		},
 	}
 
-	var aclTestErr tailscale.ACLTestError
+	var aclTestErr scaletail.ACLTestError
 	aclTestErr.Message = "native ACL response error"
-	aclTestErr.Data = []tailscale.ACLTestFailureSummary{
+	aclTestErr.Data = []scaletail.ACLTestFailureSummary{
 		{
 			User:   "ACLError",
 			Errors: []string{"this was initially created as an ACL error"},
@@ -43,7 +43,7 @@ func TestEmbeddedTypeUnmarshal(t *testing.T) {
 	})
 	t.Run("unmarshal-acl-from-gitops", func(t *testing.T) {
 		b, _ := json.Marshal(gitopsErr)
-		var e tailscale.ACLTestError
+		var e scaletail.ACLTestError
 		err := json.Unmarshal(b, &e)
 		if err != nil {
 			t.Fatal(err)

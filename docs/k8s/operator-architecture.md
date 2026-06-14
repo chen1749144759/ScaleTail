@@ -72,7 +72,7 @@ flowchart LR
 
 The user deploys an app to the default namespace, and creates a normal Service
 that selects the app's Pods. Either add the annotation
-`tailscale.com/expose: "true"` or specify `.spec.type` as `Loadbalancer` and
+`scaletail.com/expose: "true"` or specify `.spec.type` as `Loadbalancer` and
 `.spec.loadBalancerClass` as `tailscale`. The operator will create an ingress
 proxy that allows devices anywhere on the tailnet to access the Service.
 
@@ -196,12 +196,12 @@ flowchart TD
 [Documentation][kb-operator-l3-egress]
 
 1. The user deploys a Service with `type: ExternalName` and an annotation 
-  `tailscale.com/tailnet-fqdn: db.tails-scales.ts.net`.
+  `scaletail.com/tailnet-fqdn: db.tails-scales.ts.net`.
 1. The operator creates a proxy Pod managed by a single replica StatefulSet, and a headless Service pointing at the proxy Pod.
 1. The operator updates the `ExternalName` Service's `spec.externalName` field to point
   at the headless Service it created in the previous step.
 
-(Optional) If the user also adds the `tailscale.com/proxy-group: egress-proxies`
+(Optional) If the user also adds the `scaletail.com/proxy-group: egress-proxies`
 annotation to their `ExternalName` Service, the operator will skip creating a
 proxy Pod and instead point the headless Service at the existing ProxyGroup's
 pods. In this case, ports are also required in the `ExternalName` Service spec.
@@ -589,14 +589,14 @@ flowchart TD
 
 ```
 
-[kb-operator]: https://tailscale.com/kb/1236/kubernetes-operator
-[kb-operator-proxy]: https://tailscale.com/kb/1437/kubernetes-operator-api-server-proxy
-[kb-operator-l3-ingress]: https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress#exposing-a-cluster-workload-using-a-kubernetes-service
-[kb-operator-l7-ingress]: https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress#exposing-cluster-workloads-using-a-kubernetes-ingress
-[kb-operator-l3-egress]: https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress
-[kb-operator-l3-egress-proxygroup]: https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress#configure-an-egress-service-using-proxygroup
-[kb-operator-connector]: https://tailscale.com/kb/1441/kubernetes-operator-connector
-[kb-operator-app-connector]: https://tailscale.com/kb/1517/kubernetes-operator-app-connector
-[kb-operator-recorder]: https://tailscale.com/kb/1484/kubernetes-operator-deploying-tsrecorder
-[kb-ha]: https://tailscale.com/kb/1115/high-availability
+[kb-operator]: https://scaletail.com/kb/1236/kubernetes-operator
+[kb-operator-proxy]: https://scaletail.com/kb/1437/kubernetes-operator-api-server-proxy
+[kb-operator-l3-ingress]: https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress#exposing-a-cluster-workload-using-a-kubernetes-service
+[kb-operator-l7-ingress]: https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress#exposing-cluster-workloads-using-a-kubernetes-ingress
+[kb-operator-l3-egress]: https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress
+[kb-operator-l3-egress-proxygroup]: https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress#configure-an-egress-service-using-proxygroup
+[kb-operator-connector]: https://scaletail.com/kb/1441/kubernetes-operator-connector
+[kb-operator-app-connector]: https://scaletail.com/kb/1517/kubernetes-operator-app-connector
+[kb-operator-recorder]: https://scaletail.com/kb/1484/kubernetes-operator-deploying-tsrecorder
+[kb-ha]: https://scaletail.com/kb/1115/high-availability
 [k8s-impersonation]: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#user-impersonation

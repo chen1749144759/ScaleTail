@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"tailscale.com/tstest"
-	"tailscale.com/util/cmpver"
+	"scaletail.com/tstest"
+	"scaletail.com/util/cmpver"
 )
 
 func TestLinuxDNSMode(t *testing.T) {

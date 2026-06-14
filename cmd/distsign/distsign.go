@@ -12,11 +12,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"tailscale.com/clientupdate/distsign"
+	"scaletail.com/clientupdate/distsign"
 )
 
 var (
-	pkgsURL = flag.String("pkgs-url", "https://pkgs.tailscale.com/", "URL of the packages server")
+	pkgsURL = flag.String("pkgs-url", "https://pkgs.scaletail.com/", "URL of the packages server")
 	pkgName = flag.String("pkg-name", "", "name of the package on the packages server, including the stable/unstable track prefix")
 )
 

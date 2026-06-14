@@ -21,21 +21,21 @@ import (
 	qt "github.com/frankban/quicktest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/envknob"
-	"tailscale.com/health/healthmsg"
-	"tailscale.com/internal/client/tailscale"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/deptest"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
-	"tailscale.com/util/set"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/health/healthmsg"
+	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/deptest"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/preftype"
+	"scaletail.com/util/set"
+	"scaletail.com/version/distro"
 )
 
 func TestPanicIfAnyEnvCheckedInInit(t *testing.T) {
@@ -62,7 +62,7 @@ func TestShortUsage(t *testing.T) {
 		if prefix, help := trimPrefixes(c.ShortHelp, "HIDDEN: ", "[ALPHA] ", "[BETA] "); help != "" {
 			if 'a' <= help[0] && help[0] <= 'z' {
 				if len(help) > 20 {
-					help = help[:20] + "…"
+					help = help[:20] + "..."
 				}
 				caphelp := string(help[0]-'a'+'A') + help[1:]
 				t.Errorf("command: %s: ShortHelp %q should start with a capital letter %q", strings.Join(words, " "), prefix+help, prefix+caphelp)
@@ -566,9 +566,9 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 		},
 		{
 			name:  "ignore_login_server_synonym",
-			flags: []string{"--login-server=https://controlplane.tailscale.com"},
+			flags: []string{"--login-server=https://controlplane.scaletail.com"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
 				NoStatefulFiltering: opt.NewBool(true),
@@ -579,7 +579,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 			name:  "ignore_login_server_synonym_on_other_change",
 			flags: []string{"--netfilter-mode=off"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             false,
 				NetfilterMode:       preftype.NetfilterOn,
 				NoStatefulFiltering: opt.NewBool(true),
@@ -592,7 +592,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 			name:  "synology_permit_omit_accept_routes",
 			flags: []string{"--hostname=foo"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				RouteAll:            true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -608,7 +608,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 			name:  "not_synology_dont_permit_omit_accept_routes",
 			flags: []string{"--hostname=foo"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				RouteAll:            true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -622,7 +622,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 			name:  "profile_name_ignored_in_up",
 			flags: []string{"--hostname=foo"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
 				ProfileName:         "foo",
@@ -1062,7 +1062,7 @@ func TestUpdatePrefs(t *testing.T) {
 		curPrefs *ipn.Prefs
 		env      upCheckEnv // empty goos means "linux"
 
-		// sshOverTailscale specifies if the cmd being run over SSH over Tailscale.
+		// sshOverTailscale specifies if the cmd being run over SSH over ScaleTail.
 		// It is used to test the --accept-risks flag.
 		sshOverTailscale bool
 
@@ -1162,7 +1162,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "control_synonym",
 			flags: []string{},
 			curPrefs: &ipn.Prefs{
-				ControlURL: "https://login.tailscale.com",
+				ControlURL: "https://login.scaletail.com",
 				Persist:    &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 			},
 			env:            upCheckEnv{backendState: "Running"},
@@ -1173,7 +1173,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "change_login_server",
 			flags: []string{"--login-server=https://localhost:1000"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1188,7 +1188,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "change_tags",
 			flags: []string{"--advertise-tags=tag:foo"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1201,7 +1201,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "explicit_empty_operator",
 			flags: []string{"--operator="},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
 				OperatorUser:        "somebody",
@@ -1222,7 +1222,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "enable_ssh",
 			flags: []string{"--ssh"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1243,7 +1243,7 @@ func TestUpdatePrefs(t *testing.T) {
 			name:  "disable_ssh",
 			flags: []string{"--ssh=false"},
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				RunSSH:              true,
@@ -1268,7 +1268,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--ssh=false"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1292,7 +1292,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--ssh=true"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1315,7 +1315,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--ssh=true", "--accept-risk=lose-ssh"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
@@ -1337,7 +1337,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--ssh=false", "--accept-risk=lose-ssh"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				Persist:             &persist.Persist{UserProfile: tailcfg.UserProfile{LoginName: "crawshaw.github"}},
 				CorpDNS:             true,
 				RunSSH:              true,
@@ -1360,7 +1360,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--force-reauth"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
 				NoStatefulFiltering: opt.NewBool(true),
@@ -1373,7 +1373,7 @@ func TestUpdatePrefs(t *testing.T) {
 			flags:            []string{"--force-reauth", "--accept-risk=lose-ssh"},
 			sshOverTailscale: true,
 			curPrefs: &ipn.Prefs{
-				ControlURL:          "https://login.tailscale.com",
+				ControlURL:          "https://login.scaletail.com",
 				CorpDNS:             true,
 				NetfilterMode:       preftype.NetfilterOn,
 				NoStatefulFiltering: opt.NewBool(true),
@@ -1734,7 +1734,7 @@ func TestDocs(t *testing.T) {
 
 func TestUpResolves(t *testing.T) {
 	const testARN = "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter"
-	undo := tailscale.HookResolveValueFromParameterStore.SetForTest(func(_ context.Context, valueOrARN string) (string, error) {
+	undo := scaletail.HookResolveValueFromParameterStore.SetForTest(func(_ context.Context, valueOrARN string) (string, error) {
 		if valueOrARN == testARN {
 			return "resolved-value", nil
 		}
@@ -1809,12 +1809,12 @@ func TestDeps(t *testing.T) {
 		GOOS:   "linux",
 		GOARCH: "arm64",
 		WantDeps: set.Of(
-			"tailscale.com/feature/capture/dissector", // want the Lua by default
+			"scaletail.com/feature/capture/dissector", // want the Lua by default
 		),
 		BadDeps: map[string]string{
-			"tailscale.com/feature/capture": "don't link capture code",
-			"tailscale.com/net/packet":      "why we passing packets in the CLI?",
-			"tailscale.com/net/flowtrack":   "why we tracking flows in the CLI?",
+			"scaletail.com/feature/capture": "don't link capture code",
+			"scaletail.com/net/packet":      "why we passing packets in the CLI?",
+			"scaletail.com/net/flowtrack":   "why we tracking flows in the CLI?",
 		},
 	}.Check(t)
 }
@@ -1825,8 +1825,8 @@ func TestDepsNoCapture(t *testing.T) {
 		GOARCH: "arm64",
 		Tags:   "ts_omit_capture",
 		BadDeps: map[string]string{
-			"tailscale.com/feature/capture":           "don't link capture code",
-			"tailscale.com/feature/capture/dissector": "don't like the Lua",
+			"scaletail.com/feature/capture":           "don't link capture code",
+			"scaletail.com/feature/capture/dissector": "don't like the Lua",
 		},
 	}.Check(t)
 

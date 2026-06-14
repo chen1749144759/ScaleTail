@@ -139,7 +139,7 @@ if [[ "$gocross_ok" == "0" ]]; then
     unset GO111MODULE
     unset GOROOT
     export CGO_ENABLED=0
-    "$toolchain/bin/go" build -o "$gocross_path" -ldflags "-X tailscale.com/version.gitCommitStamp=$wantver" tailscale.com/tool/gocross
+    "$toolchain/bin/go" build -o "$gocross_path" -ldflags "-X scaletail.com/version.gitCommitStamp=$wantver" scaletail.com/tool/gocross
 fi
 ) # End of the subshell execution.
 

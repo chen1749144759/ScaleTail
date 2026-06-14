@@ -17,14 +17,14 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/web"
-	"tailscale.com/net/netutil"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsconst"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/mak"
+	"scaletail.com/client/local"
+	"scaletail.com/client/web"
+	"scaletail.com/net/netutil"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsconst"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/mak"
 )
 
 const webClientPort = tsconst.WebListenPort

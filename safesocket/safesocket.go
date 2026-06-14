@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"time"
 
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
 )
 
 type closeable interface {

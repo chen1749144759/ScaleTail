@@ -27,24 +27,24 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/drive"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/udprelay/status"
-	"tailscale.com/paths"
-	"tailscale.com/safesocket"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/key"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/drive"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/udprelay/status"
+	"scaletail.com/paths"
+	"scaletail.com/safesocket"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/key"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
 )
 
 // defaultClient is the default Client when using the legacy
@@ -512,7 +512,7 @@ type BugReportOpts struct {
 	Diagnose bool
 
 	// Record specifies, if non-nil, whether to perform a bugreport
-	// "recording"–generating an initial log marker, then waiting for
+	// "recording": generating an initial log marker, then waiting for
 	// this channel to be closed before finishing the request, which
 	// generates another log marker.
 	Record <-chan struct{}
@@ -839,7 +839,7 @@ func (lc *Client) CheckUDPGROForwarding(ctx context.Context) error {
 // SetUDPGROForwarding enables UDP GRO forwarding for the main interface of this
 // node. This can be done to improve performance of tailnet nodes acting as exit
 // nodes or subnet routers.
-// See https://tailscale.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
+// See https://scaletail.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
 func (lc *Client) SetUDPGROForwarding(ctx context.Context) error {
 	body, err := lc.get200(ctx, "/localapi/v0/set-udp-gro-forwarding")
 	if err != nil {
@@ -947,7 +947,7 @@ func (lc *Client) Logout(ctx context.Context) error {
 	return err
 }
 
-// DialTCP connects to the host's port via Tailscale.
+// DialTCP connects to the host's port via ScaleTail.
 //
 // The host may be a base DNS name (resolved from the netmap inside
 // scaletaild), a FQDN, or an IP address.

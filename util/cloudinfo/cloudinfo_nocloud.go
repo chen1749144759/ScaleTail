@@ -9,7 +9,7 @@ import (
 	"context"
 	"net/netip"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // CloudInfo is not available in mobile and JS targets.

@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"go4.org/netipx"
-	"tailscale.com/util/must"
+	"scaletail.com/util/must"
 )
 
 func TestV4ToNum(t *testing.T) {

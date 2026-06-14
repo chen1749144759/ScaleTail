@@ -11,10 +11,10 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/types/views"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=true -type=Share
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=true -type=Share
 
 // View returns a read-only view of Share.
 func (p *Share) View() ShareView {

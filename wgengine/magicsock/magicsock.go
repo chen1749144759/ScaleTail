@@ -29,48 +29,48 @@ import (
 	"github.com/tailscale/wireguard-go/device"
 	"go4.org/mem"
 	"golang.org/x/net/ipv6"
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/disco"
-	"tailscale.com/envknob"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/feature/condlite/expvar"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/batching"
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/neterror"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/ping"
-	"tailscale.com/net/portmapper/portmappertype"
-	"tailscale.com/net/sockopts"
-	"tailscale.com/net/sockstats"
-	"tailscale.com/net/stun"
-	"tailscale.com/net/tstun"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/tstime/mono"
-	"tailscale.com/types/key"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netlogfunc"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/nettype"
-	"tailscale.com/types/views"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/cloudinfo"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/ringlog"
-	"tailscale.com/util/set"
-	"tailscale.com/util/testenv"
-	"tailscale.com/util/usermetric"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/router"
-	"tailscale.com/wgengine/wgint"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/disco"
+	"scaletail.com/envknob"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/feature/condlite/expvar"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/batching"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/neterror"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/ping"
+	"scaletail.com/net/portmapper/portmappertype"
+	"scaletail.com/net/sockopts"
+	"scaletail.com/net/sockstats"
+	"scaletail.com/net/stun"
+	"scaletail.com/net/tstun"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/tstime/mono"
+	"scaletail.com/types/key"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netlogfunc"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/nettype"
+	"scaletail.com/types/views"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/cloudinfo"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/ringlog"
+	"scaletail.com/util/set"
+	"scaletail.com/util/testenv"
+	"scaletail.com/util/usermetric"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/router"
+	"scaletail.com/wgengine/wgint"
 )
 
 const (
@@ -334,7 +334,7 @@ type Conn struct {
 	peerMap peerMap
 
 	// relayManager manages allocation and handshaking of
-	// [tailscale.com/net/udprelay.Server] endpoints.
+	// [scaletail.com/net/udprelay.Server] endpoints.
 	relayManager relayManager
 
 	// discoInfo is the state for an active peer DiscoKey.
@@ -2127,7 +2127,7 @@ func packetLooksLike(msg []byte) (t packetLooksLikeType, isGeneveEncap bool) {
 //   - magic             [6]byte
 //   - senderDiscoPubKey [32]byte
 //   - nonce             [24]byte
-//   - naclbox of payload (see tailscale.com/disco package for inner payload format)
+//   - naclbox of payload (see scaletail.com/disco package for inner payload format)
 //
 // For messages received over DERP, the src.ap.Addr() will be derpMagicIP (with
 // src.ap.Port() being the region ID) and the derpNodeSrc will be the node key

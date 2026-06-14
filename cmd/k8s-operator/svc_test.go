@@ -17,10 +17,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
 )
 
 func TestService_DefaultProxyClassInitiallyNotReady(t *testing.T) {

@@ -14,9 +14,9 @@ import (
 
 	"github.com/hashicorp/raft"
 	"go4.org/netipx"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsconsensus"
-	"tailscale.com/util/must"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsconsensus"
+	"scaletail.com/util/must"
 )
 
 func makeSetFromPrefix(pfx netip.Prefix) *netipx.IPSet {

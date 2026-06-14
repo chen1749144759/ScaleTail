@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"time"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // Authentication METHODs described in RFC 1928, section 3.

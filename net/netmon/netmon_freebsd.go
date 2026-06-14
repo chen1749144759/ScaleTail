@@ -9,8 +9,8 @@ import (
 	"net"
 	"strings"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
 )
 
 // unspecifiedMessage is a minimal message implementation that should not

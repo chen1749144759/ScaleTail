@@ -11,8 +11,8 @@ import (
 	"strings"
 	"syscall"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/version/distro"
+	"scaletail.com/types/logger"
+	"scaletail.com/version/distro"
 )
 
 func init() {

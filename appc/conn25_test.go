@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/opt"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/opt"
 )
 
 func TestPickSplitDNSPeers(t *testing.T) {

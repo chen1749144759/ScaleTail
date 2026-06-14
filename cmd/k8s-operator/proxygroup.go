@@ -34,19 +34,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/egressservices"
-	"tailscale.com/kube/k8s-proxy/conf"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
+	"scaletail.com/ipn"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/egressservices"
+	"scaletail.com/kube/k8s-proxy/conf"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
 )
 
 const (
@@ -66,7 +66,7 @@ const (
 	// If the controller needs to depend on newer client behaviour, it should
 	// maintain backwards compatible logic for older capability versions for 3
 	// stable releases, as per documentation on supported version drift:
-	// https://tailscale.com/kb/1236/kubernetes-operator#supported-versions
+	// https://scaletail.com/kb/1236/kubernetes-operator#supported-versions
 	//
 	// tailcfg.CurrentCapabilityVersion was 106 when the ProxyGroup controller was
 	// first introduced.

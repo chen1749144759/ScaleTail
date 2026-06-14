@@ -8,14 +8,14 @@ import (
 	"net/http"
 	"time"
 
-	"tailscale.com/tstime"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/tstime"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/eventbus"
 )
 
 // DefaultHost is the default host name to upload logs to when
 // Config.BaseURL isn't provided.
-const DefaultHost = "log.tailscale.com"
+const DefaultHost = "log.scaletail.com"
 
 const defaultFlushDelay = 2 * time.Second
 
@@ -29,7 +29,7 @@ type Config struct {
 	Collection     string          // collection name, a domain name
 	PrivateID      logid.PrivateID // private ID for the primary log stream
 	CopyPrivateID  logid.PrivateID // private ID for a log stream that is a superset of this log stream
-	BaseURL        string          // if empty defaults to "https://log.tailscale.com"
+	BaseURL        string          // if empty defaults to "https://log.scaletail.com"
 	HTTPC          *http.Client    // if empty defaults to http.DefaultClient
 	SkipClientTime bool            // if true, client_time is not written to logs
 	LowMemory      bool            // if true, logtail minimizes memory use

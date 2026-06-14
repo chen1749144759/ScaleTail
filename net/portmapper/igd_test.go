@@ -14,13 +14,13 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/netmon"
-	"tailscale.com/syncs"
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/testenv"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/netmon"
+	"scaletail.com/syncs"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/testenv"
 )
 
 // TestIGD is an IGD (Internet Gateway Device) for testing. It supports fake

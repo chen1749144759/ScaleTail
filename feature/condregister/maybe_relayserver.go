@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/relayserver"
+import _ "scaletail.com/feature/relayserver"

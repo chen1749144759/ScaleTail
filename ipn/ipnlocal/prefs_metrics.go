@@ -6,10 +6,10 @@ package ipnlocal
 import (
 	"errors"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/clientmetric"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/clientmetric"
 )
 
 // Counter metrics for edit/change events

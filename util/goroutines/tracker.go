@@ -6,8 +6,8 @@ package goroutines
 import (
 	"sync/atomic"
 
-	"tailscale.com/syncs"
-	"tailscale.com/util/set"
+	"scaletail.com/syncs"
+	"scaletail.com/util/set"
 )
 
 // Tracker tracks a set of goroutines.

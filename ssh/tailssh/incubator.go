@@ -39,11 +39,11 @@ import (
 	"github.com/u-root/u-root/pkg/termios"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/sys/unix"
-	"tailscale.com/cmd/scaletaild/childproc"
-	"tailscale.com/hostinfo"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/version/distro"
+	"scaletail.com/cmd/scaletaild/childproc"
+	"scaletail.com/hostinfo"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/version/distro"
 )
 
 const (

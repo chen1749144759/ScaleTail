@@ -18,7 +18,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"tailscale.com/util/must"
+	"scaletail.com/util/must"
 )
 
 const (

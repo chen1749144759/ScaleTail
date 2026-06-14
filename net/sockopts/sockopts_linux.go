@@ -9,7 +9,7 @@ import (
 	"net"
 	"syscall"
 
-	"tailscale.com/types/nettype"
+	"scaletail.com/types/nettype"
 )
 
 // SetBufferSize sets pconn's buffer to size for direction. It attempts

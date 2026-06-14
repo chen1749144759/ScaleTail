@@ -12,7 +12,7 @@ import (
 
 	"github.com/dblohm7/wingoes"
 	"golang.org/x/sys/windows"
-	"tailscale.com/util/winutil"
+	"scaletail.com/util/winutil"
 )
 
 var (

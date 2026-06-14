@@ -27,11 +27,11 @@ import (
 
 	"golang.org/x/mod/modfile"
 	"golang.org/x/sync/errgroup"
-	"tailscale.com/client/tailscale"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest/natlab/vnet"
+	"scaletail.com/client/scaletail"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest/natlab/vnet"
 )
 
 var (
@@ -613,7 +613,7 @@ func ping(ctx context.Context, t testing.TB, c *vnet.NodeAgentClient, target net
 	for n := range 10 {
 		t.Logf("ping attempt %d to %v ...", n+1, target)
 		pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
-		pr, err := c.PingWithOpts(pingCtx, target, pType, tailscale.PingOpts{})
+		pr, err := c.PingWithOpts(pingCtx, target, pType, scaletail.PingOpts{})
 		cancel()
 		if err != nil {
 			t.Logf("ping attempt %d error: %v", n+1, err)

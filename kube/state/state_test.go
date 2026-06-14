@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store"
-	klc "tailscale.com/kube/localclient"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store"
+	klc "scaletail.com/kube/localclient"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
 )
 
 func TestSetInitialStateKeys(t *testing.T) {

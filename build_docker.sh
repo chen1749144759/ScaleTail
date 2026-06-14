@@ -50,13 +50,13 @@ case "$TARGET" in
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
       --gopaths="\
-        tailscale.com/cmd/scaletail:/usr/local/bin/tailscale, \
-        tailscale.com/cmd/scaletaild:/usr/local/bin/scaletaild, \
-        tailscale.com/cmd/containerboot:/usr/local/bin/containerboot" \
+        scaletail.com/cmd/scaletail:/usr/local/bin/tailscale, \
+        scaletail.com/cmd/scaletaild:/usr/local/bin/scaletaild, \
+        scaletail.com/cmd/containerboot:/usr/local/bin/containerboot" \
       --ldflags="\
-        -X tailscale.com/version.longStamp=${VERSION_LONG} \
-        -X tailscale.com/version.shortStamp=${VERSION_SHORT} \
-        -X tailscale.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
+        -X scaletail.com/version.longStamp=${VERSION_LONG} \
+        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
+        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
       --gotags="ts_kube,ts_package_container" \
@@ -72,11 +72,11 @@ case "$TARGET" in
     DEFAULT_REPOS="tailscale/k8s-operator"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
-      --gopaths="tailscale.com/cmd/k8s-operator:/usr/local/bin/operator" \
+      --gopaths="scaletail.com/cmd/k8s-operator:/usr/local/bin/operator" \
       --ldflags="\
-        -X tailscale.com/version.longStamp=${VERSION_LONG} \
-        -X tailscale.com/version.shortStamp=${VERSION_SHORT} \
-        -X tailscale.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
+        -X scaletail.com/version.longStamp=${VERSION_LONG} \
+        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
+        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
       --gotags="ts_kube,ts_package_container" \
@@ -92,11 +92,11 @@ case "$TARGET" in
     DEFAULT_REPOS="tailscale/k8s-nameserver"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
-      --gopaths="tailscale.com/cmd/k8s-nameserver:/usr/local/bin/k8s-nameserver" \
+      --gopaths="scaletail.com/cmd/k8s-nameserver:/usr/local/bin/k8s-nameserver" \
       --ldflags=" \
-        -X tailscale.com/version.longStamp=${VERSION_LONG} \
-        -X tailscale.com/version.shortStamp=${VERSION_SHORT} \
-        -X tailscale.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
+        -X scaletail.com/version.longStamp=${VERSION_LONG} \
+        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
+        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
       --gotags="ts_kube,ts_package_container" \
@@ -112,11 +112,11 @@ case "$TARGET" in
     DEFAULT_REPOS="tailscale/tsidp"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
-      --gopaths="tailscale.com/cmd/tsidp:/usr/local/bin/tsidp" \
+      --gopaths="scaletail.com/cmd/tsidp:/usr/local/bin/tsidp" \
       --ldflags=" \
-        -X tailscale.com/version.longStamp=${VERSION_LONG} \
-        -X tailscale.com/version.shortStamp=${VERSION_SHORT} \
-        -X tailscale.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
+        -X scaletail.com/version.longStamp=${VERSION_LONG} \
+        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
+        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
       --gotags="ts_package_container" \
@@ -132,11 +132,11 @@ case "$TARGET" in
     DEFAULT_REPOS="tailscale/k8s-proxy"
     REPOS="${REPOS:-${DEFAULT_REPOS}}"
     go run github.com/tailscale/mkctr \
-      --gopaths="tailscale.com/cmd/k8s-proxy:/usr/local/bin/k8s-proxy" \
+      --gopaths="scaletail.com/cmd/k8s-proxy:/usr/local/bin/k8s-proxy" \
       --ldflags=" \
-        -X tailscale.com/version.longStamp=${VERSION_LONG} \
-        -X tailscale.com/version.shortStamp=${VERSION_SHORT} \
-        -X tailscale.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
+        -X scaletail.com/version.longStamp=${VERSION_LONG} \
+        -X scaletail.com/version.shortStamp=${VERSION_SHORT} \
+        -X scaletail.com/version.gitCommitStamp=${VERSION_GIT_HASH}" \
       --base="${BASE}" \
       --tags="${TAGS}" \
       --gotags="ts_kube,ts_package_container" \

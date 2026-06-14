@@ -15,9 +15,9 @@ import (
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
-	"tailscale.com/cmd/scaletaild/scaletaildhooks"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/backoff"
+	"scaletail.com/cmd/scaletaild/scaletaildhooks"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/backoff"
 )
 
 func init() {

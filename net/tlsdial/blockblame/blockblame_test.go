@@ -36,7 +36,7 @@ Z98JY7/PCA==
 func TestVerifyCertificateOurControlPlane(t *testing.T) {
 	p, _ := pem.Decode([]byte(controlplaneDotTailscaleDotComPEM))
 	if p == nil {
-		t.Fatalf("failed to extract certificate bytes for controlplane.tailscale.com")
+		t.Fatalf("failed to extract certificate bytes for controlplane.scaletail.com")
 		return
 	}
 	cert, err := x509.ParseCertificate(p.Bytes)
@@ -46,9 +46,9 @@ func TestVerifyCertificateOurControlPlane(t *testing.T) {
 	}
 	m, found := VerifyCertificate(cert)
 	if found {
-		t.Fatalf("expected to not get a result for the controlplane.tailscale.com certificate")
+		t.Fatalf("expected to not get a result for the controlplane.scaletail.com certificate")
 	}
 	if m != nil {
-		t.Fatalf("expected nil manufacturer for controlplane.tailscale.com certificate")
+		t.Fatalf("expected nil manufacturer for controlplane.scaletail.com certificate")
 	}
 }

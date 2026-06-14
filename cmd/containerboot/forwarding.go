@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"tailscale.com/util/linuxfw"
+	"scaletail.com/util/linuxfw"
 )
 
 // ensureIPForwarding enables IPv4/IPv6 forwarding for the container.
@@ -114,13 +114,13 @@ func installEgressForwardingRule(_ context.Context, dstStr string, tsIPs []netip
 	if !local.IsValid() {
 		return fmt.Errorf("no scaletail IP matching family of %s found in %v", dstStr, tsIPs)
 	}
-	if err := nfr.DNATNonTailscaleTraffic("tailscale0", dst); err != nil {
+	if err := nfr.DNATNonTailscaleTraffic("scaletail0", dst); err != nil {
 		return fmt.Errorf("installing egress proxy rules: %w", err)
 	}
 	if err := nfr.EnsureSNATForDst(local, dst); err != nil {
 		return fmt.Errorf("installing egress proxy rules: %w", err)
 	}
-	if err := nfr.ClampMSSToPMTU("tailscale0", dst); err != nil {
+	if err := nfr.ClampMSSToPMTU("scaletail0", dst); err != nil {
 		return fmt.Errorf("installing egress proxy rules: %w", err)
 	}
 	return nil
@@ -184,7 +184,7 @@ func installIngressForwardingRule(_ context.Context, dstStr string, tsIPs []neti
 	if err := nfr.AddDNATRule(local, dst); err != nil {
 		return fmt.Errorf("installing ingress proxy rules: %w", err)
 	}
-	if err := nfr.ClampMSSToPMTU("tailscale0", dst); err != nil {
+	if err := nfr.ClampMSSToPMTU("scaletail0", dst); err != nil {
 		return fmt.Errorf("installing ingress proxy rules: %w", err)
 	}
 	return nil
@@ -234,10 +234,10 @@ func installIngressForwardingRuleForDNSTarget(_ context.Context, backendAddrs []
 		}
 		// The backend might advertize MSS higher than that of the
 		// scaletail interfaces. Clamp MSS of packets going out via
-		// tailscale0 interface to its MTU to prevent broken connections
+		// scaletail0 interface to its MTU to prevent broken connections
 		// in environments where path MTU discovery is not working.
-		if err := nfr.ClampMSSToPMTU("tailscale0", dst); err != nil {
-			return fmt.Errorf("adding rule to clamp traffic via tailscale0: %v", err)
+		if err := nfr.ClampMSSToPMTU("scaletail0", dst); err != nil {
+			return fmt.Errorf("adding rule to clamp traffic via scaletail0: %v", err)
 		}
 		return nil
 	}

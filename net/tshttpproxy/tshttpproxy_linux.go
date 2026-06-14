@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/version/distro"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/version/distro"
 )
 
 func init() {

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"sync"
 
-	tailscaleroot "tailscale.com"
-	"tailscale.com/types/lazy"
+	tailscaleroot "scaletail.com"
+	"scaletail.com/types/lazy"
 )
 
 // Stamp vars can have their value set at build time by linker flags (see

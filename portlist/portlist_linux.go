@@ -21,8 +21,8 @@ import (
 
 	"go4.org/mem"
 	"golang.org/x/sys/unix"
-	"tailscale.com/util/dirwalk"
-	"tailscale.com/util/mak"
+	"scaletail.com/util/dirwalk"
+	"scaletail.com/util/mak"
 )
 
 func init() {

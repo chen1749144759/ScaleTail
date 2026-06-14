@@ -11,11 +11,11 @@ import (
 
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
-	"tailscale.com/util/set"
-	"tailscale.com/util/syspolicy/internal/loggerx"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/winutil/gp"
+	"scaletail.com/util/set"
+	"scaletail.com/util/syspolicy/internal/loggerx"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/winutil/gp"
 )
 
 const (

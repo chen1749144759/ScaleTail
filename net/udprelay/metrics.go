@@ -6,8 +6,8 @@ package udprelay
 import (
 	"expvar"
 
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/usermetric"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/usermetric"
 )
 
 var (

@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=true -type SliceContainer,InterfaceContainer,MapWithPointers,DeeplyNestedMap,NamedMapContainer,MapSlicePointerContainer
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=true -type SliceContainer,InterfaceContainer,MapWithPointers,DeeplyNestedMap,NamedMapContainer,MapSlicePointerContainer
 
 // Package clonerex is an example package for the cloner tool.
 package clonerex

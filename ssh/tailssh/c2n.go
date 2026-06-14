@@ -14,9 +14,9 @@ import (
 	"slices"
 
 	"go4.org/mem"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/lineiter"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/lineiter"
 )
 
 func handleC2NSSHUsernames(b *ipnlocal.LocalBackend, w http.ResponseWriter, r *http.Request) {

@@ -16,16 +16,16 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"tailscale.com/feature"
-	"tailscale.com/internal/client/tailscale"
-	"tailscale.com/ipn"
-	"tailscale.com/wif"
+	"scaletail.com/feature"
+	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/ipn"
+	"scaletail.com/wif"
 )
 
 func init() {
 	feature.Register("identityfederation")
-	tailscale.HookResolveAuthKeyViaWIF.Set(resolveAuthKey)
-	tailscale.HookExchangeJWTForTokenViaWIF.Set(exchangeJWTForToken)
+	scaletail.HookResolveAuthKeyViaWIF.Set(resolveAuthKey)
+	scaletail.HookExchangeJWTForTokenViaWIF.Set(exchangeJWTForToken)
 }
 
 // resolveAuthKey uses OIDC identity federation to exchange the provided ID token and client ID for an authkey.
@@ -64,13 +64,13 @@ func resolveAuthKey(ctx context.Context, baseURL, clientID, idToken, audience st
 		return "", errors.New("received empty access token from Tailscale")
 	}
 
-	tsClient := tailscale.NewClient("-", tailscale.APIKey(accessToken))
+	tsClient := scaletail.NewClient("-", scaletail.APIKey(accessToken))
 	tsClient.UserAgent = "tailscale-cli-identity-federation"
 	tsClient.BaseURL = baseURL
 
-	authkey, _, err := tsClient.CreateKey(ctx, tailscale.KeyCapabilities{
-		Devices: tailscale.KeyDeviceCapabilities{
-			Create: tailscale.KeyDeviceCreateCapabilities{
+	authkey, _, err := tsClient.CreateKey(ctx, scaletail.KeyCapabilities{
+		Devices: scaletail.KeyDeviceCapabilities{
+			Create: scaletail.KeyDeviceCreateCapabilities{
 				Reusable:      false,
 				Ephemeral:     ephemeral,
 				Preauthorized: preauth,

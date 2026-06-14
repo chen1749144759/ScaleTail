@@ -15,8 +15,8 @@ import (
 	"io"
 	"sync"
 
-	"tailscale.com/control/controlbase"
-	"tailscale.com/tailcfg"
+	"scaletail.com/control/controlbase"
+	"scaletail.com/tailcfg"
 )
 
 // Conn is a wrapper around controlbase.Conn.

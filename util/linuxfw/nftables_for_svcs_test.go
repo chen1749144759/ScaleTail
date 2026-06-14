@@ -25,47 +25,47 @@ func Test_nftablesRunner_EnsurePortMapRuleForSvc(t *testing.T) {
 	pmTCP1 := PortMap{MatchPort: 4004, TargetPort: 443, Protocol: "TCP"}
 
 	// Create a rule for service 'svc:foo' to forward TCP traffic to IPv4 endpoint
-	runner.EnsurePortMapRuleForSvc("svc:foo", "tailscale0", ipv4, pmTCP)
+	runner.EnsurePortMapRuleForSvc("svc:foo", "scaletail0", ipv4, pmTCP)
 	svcChains(t, 1, conn)
 	chainRuleCount(t, "svc:foo", 1, conn, nftables.TableFamilyIPv4)
 	checkPortMapRule(t, "svc:foo", ipv4, pmTCP, runner, nftables.TableFamilyIPv4)
 
 	// Create another rule for service 'svc:foo' to forward TCP traffic to the
 	// same IPv4 endpoint, but to a different port.
-	runner.EnsurePortMapRuleForSvc("svc:foo", "tailscale0", ipv4, pmTCP1)
+	runner.EnsurePortMapRuleForSvc("svc:foo", "scaletail0", ipv4, pmTCP1)
 	svcChains(t, 1, conn)
 	chainRuleCount(t, "svc:foo", 2, conn, nftables.TableFamilyIPv4)
 	checkPortMapRule(t, "svc:foo", ipv4, pmTCP1, runner, nftables.TableFamilyIPv4)
 
 	// Create a rule for service 'svc:foo' to forward TCP traffic to an IPv6 endpoint
-	runner.EnsurePortMapRuleForSvc("svc:foo", "tailscale0", ipv6, pmTCP)
+	runner.EnsurePortMapRuleForSvc("svc:foo", "scaletail0", ipv6, pmTCP)
 	svcChains(t, 2, conn)
 	chainRuleCount(t, "svc:foo", 1, conn, nftables.TableFamilyIPv6)
 	checkPortMapRule(t, "svc:foo", ipv6, pmTCP, runner, nftables.TableFamilyIPv6)
 
 	// Create a rule for service 'svc:bar' to forward TCP traffic to IPv4 endpoint
-	runner.EnsurePortMapRuleForSvc("svc:bar", "tailscale0", ipv4, pmTCP)
+	runner.EnsurePortMapRuleForSvc("svc:bar", "scaletail0", ipv4, pmTCP)
 	svcChains(t, 3, conn)
 	chainRuleCount(t, "svc:bar", 1, conn, nftables.TableFamilyIPv4)
 	checkPortMapRule(t, "svc:bar", ipv4, pmTCP, runner, nftables.TableFamilyIPv4)
 
 	// Create a rule for service 'svc:bar' to forward TCP traffic to an IPv6 endpoint
-	runner.EnsurePortMapRuleForSvc("svc:bar", "tailscale0", ipv6, pmTCP)
+	runner.EnsurePortMapRuleForSvc("svc:bar", "scaletail0", ipv6, pmTCP)
 	svcChains(t, 4, conn)
 	chainRuleCount(t, "svc:bar", 1, conn, nftables.TableFamilyIPv6)
 	checkPortMapRule(t, "svc:bar", ipv6, pmTCP, runner, nftables.TableFamilyIPv6)
 
 	// Delete service svc:bar
-	runner.DeleteSvc("svc:bar", "tailscale0", []netip.Addr{ipv4, ipv6}, []PortMap{pmTCP})
+	runner.DeleteSvc("svc:bar", "scaletail0", []netip.Addr{ipv4, ipv6}, []PortMap{pmTCP})
 	svcChains(t, 2, conn)
 
 	// Delete a rule from service svc:foo
-	runner.DeletePortMapRuleForSvc("svc:foo", "tailscale0", ipv4, pmTCP)
+	runner.DeletePortMapRuleForSvc("svc:foo", "scaletail0", ipv4, pmTCP)
 	svcChains(t, 2, conn)
 	chainRuleCount(t, "svc:foo", 1, conn, nftables.TableFamilyIPv4)
 
 	// Delete service svc:foo
-	runner.DeleteSvc("svc:foo", "tailscale0", []netip.Addr{ipv4, ipv6}, []PortMap{pmTCP, pmTCP1})
+	runner.DeleteSvc("svc:foo", "scaletail0", []netip.Addr{ipv4, ipv6}, []PortMap{pmTCP, pmTCP1})
 	svcChains(t, 0, conn)
 }
 
@@ -300,7 +300,7 @@ func checkPortMapRule(t *testing.T, svc string, targetIP netip.Addr, pm PortMap,
 	if err != nil {
 		t.Fatalf("error converting protocol: %v", err)
 	}
-	wantsRule := portMapRule(chain.Table, chain, "tailscale0", targetIP, pm.MatchPort, pm.TargetPort, p, meta)
+	wantsRule := portMapRule(chain.Table, chain, "scaletail0", targetIP, pm.MatchPort, pm.TargetPort, p, meta)
 	checkRule(t, wantsRule, runner.conn)
 }
 

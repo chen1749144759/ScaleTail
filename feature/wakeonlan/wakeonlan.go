@@ -15,12 +15,12 @@ import (
 	"unicode"
 
 	"github.com/kortschak/wol"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/clientmetric"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/clientmetric"
 )
 
 func init() {

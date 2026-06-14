@@ -22,12 +22,12 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
+	"scaletail.com/wgengine/filter"
 )
 
 var (

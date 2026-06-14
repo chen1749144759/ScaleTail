@@ -22,17 +22,17 @@ import (
 	"github.com/tailscale/netlink"
 	"github.com/tailscale/wireguard-go/tun"
 	"go4.org/netipx"
-	"tailscale.com/health"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tsconst"
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/linuxfw"
-	"tailscale.com/version/distro"
-	"tailscale.com/wgengine/router"
+	"scaletail.com/health"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tsconst"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/linuxfw"
+	"scaletail.com/version/distro"
+	"scaletail.com/wgengine/router"
 )
 
 type Config = router.Config
@@ -67,7 +67,7 @@ up` + basic,
 			},
 			want: `
 up
-ip addr add 100.101.102.103/10 dev tailscale0` + basic,
+ip addr add 100.101.102.103/10 dev scaletail0` + basic,
 		},
 
 		{
@@ -79,9 +79,9 @@ ip addr add 100.101.102.103/10 dev tailscale0` + basic,
 			},
 			want: `
 up
-ip addr add 100.101.102.103/10 dev tailscale0
-ip route add 100.100.100.100/32 dev tailscale0 table 52
-ip route add 192.168.16.0/24 dev tailscale0 table 52` + basic,
+ip addr add 100.101.102.103/10 dev scaletail0
+ip route add 100.100.100.100/32 dev scaletail0 table 52
+ip route add 192.168.16.0/24 dev scaletail0 table 52` + basic,
 		},
 
 		{
@@ -94,9 +94,9 @@ ip route add 192.168.16.0/24 dev tailscale0 table 52` + basic,
 			},
 			want: `
 up
-ip addr add 100.101.102.103/10 dev tailscale0
-ip route add 100.100.100.100/32 dev tailscale0 table 52
-ip route add 192.168.16.0/24 dev tailscale0 table 52` + basic,
+ip addr add 100.101.102.103/10 dev scaletail0
+ip route add 100.100.100.100/32 dev scaletail0 table 52
+ip route add 192.168.16.0/24 dev scaletail0 table 52` + basic,
 		},
 
 		{
@@ -111,29 +111,29 @@ ip route add 192.168.16.0/24 dev tailscale0 table 52` + basic,
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v4/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -152,27 +152,27 @@ v6/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v4/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -188,26 +188,26 @@ v6/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -225,26 +225,26 @@ v6/nat/POSTROUTING -j ts-postrouting
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -259,26 +259,26 @@ v6/nat/POSTROUTING -j ts-postrouting
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -294,19 +294,19 @@ v6/nat/POSTROUTING -j ts-postrouting
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
-				`v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
+				`v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 `,
 		},
 		{
@@ -318,26 +318,26 @@ v6/filter/ts-forward -o tailscale0 -j ACCEPT
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 10.0.0.0/8 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 10.0.0.0/8 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -353,27 +353,27 @@ v6/nat/POSTROUTING -j ts-postrouting
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 0.0.0.0/0 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 0.0.0.0/0 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52
 ip route add throw 10.0.0.0/8 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -389,9 +389,9 @@ v6/nat/POSTROUTING -j ts-postrouting
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 0.0.0.0/0 dev tailscale0 table 52
-ip route add 100.100.100.100/32 dev tailscale0 table 52
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 0.0.0.0/0 dev scaletail0 table 52
+ip route add 100.100.100.100/32 dev scaletail0 table 52
 ip route add throw 10.0.0.0/8 table 52
 ip route add throw 192.168.0.0/24 table 52` + basic,
 		},
@@ -406,26 +406,26 @@ ip route add throw 192.168.0.0/24 table 52` + basic,
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v4/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -443,26 +443,26 @@ v6/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v4/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -481,28 +481,28 @@ v6/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 			},
 			want: `
 up
-ip addr add 100.101.102.104/10 dev tailscale0
-ip route add 100.100.100.100/32 dev tailscale0 table 52` + basic +
+ip addr add 100.101.102.104/10 dev scaletail0
+ip route add 100.100.100.100/32 dev scaletail0 table 52` + basic +
 				`v4/filter/FORWARD -j ts-forward
 v4/filter/INPUT -j ts-input
-v4/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v4/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v4/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v4/filter/ts-forward -o tailscale0 -s 100.64.0.0/10 -j DROP
-v4/filter/ts-forward -o tailscale0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
-v4/filter/ts-forward -o tailscale0 -j ACCEPT
+v4/filter/ts-forward -o scaletail0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-forward -o scaletail0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
+v4/filter/ts-forward -o scaletail0 -j ACCEPT
 v4/filter/ts-input -i lo -s 100.101.102.104 -j ACCEPT
-v4/filter/ts-input ! -i tailscale0 -s 100.115.92.0/23 -j RETURN
-v4/filter/ts-input ! -i tailscale0 -s 100.64.0.0/10 -j DROP
+v4/filter/ts-input ! -i scaletail0 -s 100.115.92.0/23 -j RETURN
+v4/filter/ts-input ! -i scaletail0 -s 100.64.0.0/10 -j DROP
 v4/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v4/nat/POSTROUTING -j ts-postrouting
 v4/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 v6/filter/FORWARD -j ts-forward
 v6/filter/INPUT -j ts-input
-v6/filter/ts-forward -i tailscale0 -j MARK --set-mark 0x40000/0xff0000
+v6/filter/ts-forward -i scaletail0 -j MARK --set-mark 0x40000/0xff0000
 v6/filter/ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
-v6/filter/ts-forward -o tailscale0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
-v6/filter/ts-forward -o tailscale0 -j ACCEPT
+v6/filter/ts-forward -o scaletail0 -m conntrack ! --ctstate ESTABLISHED,RELATED -j DROP
+v6/filter/ts-forward -o scaletail0 -j ACCEPT
 v6/mangle/OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/mangle/PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
 v6/nat/POSTROUTING -j ts-postrouting
@@ -522,7 +522,7 @@ v6/nat/ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
 
 	fake := NewFakeOS(t)
 	ht := health.NewTracker(bus)
-	router, err := newUserspaceRouterAdvanced(t.Logf, "tailscale0", mon, fake, ht, bus)
+	router, err := newUserspaceRouterAdvanced(t.Logf, "scaletail0", mon, fake, ht, bus)
 	router.(*linuxRouter).nfr = fake.nfr
 	if err != nil {
 		t.Fatalf("failed to create router: %v", err)
@@ -1095,9 +1095,9 @@ func (o *fakeOS) run(args ...string) error {
 	case "link":
 		got := strings.Join(args[2:], " ")
 		switch got {
-		case "set dev tailscale0 up":
+		case "set dev scaletail0 up":
 			o.up = true
-		case "set dev tailscale0 down":
+		case "set dev scaletail0 down":
 			o.up = false
 		default:
 			return unexpected()

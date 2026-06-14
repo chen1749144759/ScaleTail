@@ -1,11 +1,11 @@
 {
 	".url": {
-		"SYNO.SDS.Tailscale": {
+		"SYNO.SDS.ScaleTail": {
 			"type": "url",
-			"title": "Tailscale",
+			"title": "ScaleTail",
 			"icon": "PACKAGE_ICON_256.PNG",
-			"url": "webman/3rdparty/Tailscale/index.cgi/",
-			"urlTarget": "_syno_tailscale"
+			"url": "webman/3rdparty/ScaleTail/index.cgi/",
+			"urlTarget": "_syno_scaletail"
 		}
 	}
 }

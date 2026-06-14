@@ -15,15 +15,15 @@ import (
 	"time"
 
 	"go4.org/mem"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/key"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/key"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/preftype"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 func fieldsOf(t reflect.Type) (fields []string) {
@@ -122,13 +122,13 @@ func TestPrefsEqual(t *testing.T) {
 		},
 
 		{
-			&Prefs{ControlURL: "https://controlplane.tailscale.com"},
+			&Prefs{ControlURL: "https://controlplane.scaletail.com"},
 			&Prefs{ControlURL: "https://login.private.co"},
 			false,
 		},
 		{
-			&Prefs{ControlURL: "https://controlplane.tailscale.com"},
-			&Prefs{ControlURL: "https://controlplane.tailscale.com"},
+			&Prefs{ControlURL: "https://controlplane.scaletail.com"},
+			&Prefs{ControlURL: "https://controlplane.scaletail.com"},
 			true,
 		},
 
@@ -482,7 +482,7 @@ func TestBasicPrefs(t *testing.T) {
 	tstest.PanicOnLog()
 
 	p := Prefs{
-		ControlURL: "https://controlplane.tailscale.com",
+		ControlURL: "https://controlplane.scaletail.com",
 	}
 	checkPrefs(t, p)
 }
@@ -496,7 +496,7 @@ func TestPrefsPersist(t *testing.T) {
 		},
 	}
 	p := Prefs{
-		ControlURL: "https://controlplane.tailscale.com",
+		ControlURL: "https://controlplane.scaletail.com",
 		CorpDNS:    true,
 		Persist:    &c,
 	}
@@ -1137,7 +1137,7 @@ func TestControlURLOrDefault(t *testing.T) {
 	if got, want := p.ControlURLOrDefault(polc), "http://foo.bar"; got != want {
 		t.Errorf("got %q; want %q", got, want)
 	}
-	p.ControlURL = "https://login.tailscale.com"
+	p.ControlURL = "https://login.scaletail.com"
 	if got, want := p.ControlURLOrDefault(polc), DefaultControlURL; got != want {
 		t.Errorf("got %q; want %q", got, want)
 	}

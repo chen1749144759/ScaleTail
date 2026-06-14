@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/httphdr"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/httphdr"
 )
 
 func init() {

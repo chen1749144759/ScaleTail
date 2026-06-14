@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/tstest"
+	"scaletail.com/tstest"
 )
 
 var parentPath = "/parent with spaces"

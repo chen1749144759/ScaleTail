@@ -9,16 +9,16 @@ import (
 	"net/netip"
 	"time"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/dns"
-	"tailscale.com/net/packet"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/router"
-	"tailscale.com/wgengine/wgcfg"
-	"tailscale.com/wgengine/wgint"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/dns"
+	"scaletail.com/net/packet"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/router"
+	"scaletail.com/wgengine/wgcfg"
+	"scaletail.com/wgengine/wgint"
 )
 
 // Status is the Engine status.

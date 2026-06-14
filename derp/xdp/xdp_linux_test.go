@@ -17,8 +17,8 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/checksum"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
-	"tailscale.com/net/stun"
-	"tailscale.com/tstest"
+	"scaletail.com/net/stun"
+	"scaletail.com/tstest"
 )
 
 type xdpAction uint32

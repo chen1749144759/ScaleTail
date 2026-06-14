@@ -10,15 +10,15 @@ import (
 	"slices"
 	"testing"
 
-	"tailscale.com/ipn"
-	"tailscale.com/net/udprelay/endpoint"
-	"tailscale.com/net/udprelay/status"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsd"
-	"tailscale.com/tstime"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
+	"scaletail.com/ipn"
+	"scaletail.com/net/udprelay/endpoint"
+	"scaletail.com/net/udprelay/status"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsd"
+	"scaletail.com/tstime"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
 )
 
 func Test_extension_profileStateChanged(t *testing.T) {

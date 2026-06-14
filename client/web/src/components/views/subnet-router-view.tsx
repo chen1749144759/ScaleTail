@@ -47,7 +47,7 @@ export default function SubnetRouterView({
       <p className="description mb-5">
         Add devices to your tailnet without installing Tailscale.{" "}
         <a
-          href="https://tailscale.com/kb/1019/subnets/"
+          href="https://scaletail.com/kb/1019/subnets/"
           className="text-blue-700"
           target="_blank"
           rel="noreferrer"

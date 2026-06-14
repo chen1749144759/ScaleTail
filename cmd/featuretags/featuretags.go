@@ -13,8 +13,8 @@ import (
 	"slices"
 	"strings"
 
-	"tailscale.com/feature/featuretags"
-	"tailscale.com/util/set"
+	"scaletail.com/feature/featuretags"
+	"scaletail.com/util/set"
 )
 
 var (

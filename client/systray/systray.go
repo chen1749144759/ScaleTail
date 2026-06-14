@@ -29,12 +29,12 @@ import (
 	"github.com/atotto/clipboard"
 	dbus "github.com/godbus/dbus/v5"
 	"github.com/toqueteos/webbrowser"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/util/stringsx"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/util/stringsx"
 )
 
 var (
@@ -171,7 +171,7 @@ This usually means that you should run the application like:
 
 tailscale systray
 
-See https://tailscale.com/kb/1597/linux-systray for more information.`)
+See https://scaletail.com/kb/1597/linux-systray for more information.`)
 	}
 	setAppIcon(disconnected)
 
@@ -193,7 +193,7 @@ No permission to manage ScaleTail. Set operator by running:
 
 sudo tailscale set --operator=$USER
 
-See https://tailscale.com/s/cli-operator for more information.`)
+See https://scaletail.com/s/cli-operator for more information.`)
 	}
 	menu.mu.Unlock()
 }
@@ -265,10 +265,10 @@ func (menu *Menu) rebuild() {
 	systray.ResetMenu()
 
 	if menu.readonly {
-		const readonlyMsg = "没有权限管理 ScaleTail。\n请查看 tailscale.com/s/cli-operator"
+		const readonlyMsg = "没有权限管理 ScaleTail。\n请查看 scaletail.com/s/cli-operator"
 		m := systray.AddMenuItem(readonlyMsg, "")
 		onClick(ctx, m, func(_ context.Context) {
-			webbrowser.Open("https://tailscale.com/s/cli-operator")
+			webbrowser.Open("https://scaletail.com/s/cli-operator")
 		})
 		systray.AddSeparator()
 	}

@@ -21,16 +21,16 @@ import (
 	"github.com/creachadair/mds/mtest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/ipn/ipnlocal/netmapcache"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/views"
-	"tailscale.com/util/set"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/filter/filtertype"
+	"scaletail.com/ipn/ipnlocal/netmapcache"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/views"
+	"scaletail.com/util/set"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/filter/filtertype"
 )
 
 // Input values for valid-looking placeholder values for keys, hashes, etc.
@@ -83,7 +83,7 @@ func init() {
 			CapGrant: []tailcfg.CapGrant{{
 				Dsts: []netip.Prefix{netip.MustParsePrefix("192.168.4.0/24")},
 				CapMap: tailcfg.PeerCapMap{
-					"tailscale.com/testcap": []tailcfg.RawMessage{`"apple"`, `"pear"`},
+					"scaletail.com/testcap": []tailcfg.RawMessage{`"apple"`, `"pear"`},
 				},
 			}},
 		},

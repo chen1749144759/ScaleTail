@@ -29,25 +29,25 @@ import (
 	"time"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/control/ts2021"
-	"tailscale.com/feature"
-	_ "tailscale.com/feature/condregister/useproxy"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/net/ace"
-	"tailscale.com/net/dnscache"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/paths"
-	"tailscale.com/safesocket"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/must"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/control/ts2021"
+	"scaletail.com/feature"
+	_ "scaletail.com/feature/condregister/useproxy"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/net/ace"
+	"scaletail.com/net/dnscache"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/paths"
+	"scaletail.com/safesocket"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/must"
 )
 
 var (
@@ -299,7 +299,7 @@ func debugCmd() *ffcli.Command {
 				ShortHelp:  "Debug ts2021 protocol connectivity",
 				FlagSet: (func() *flag.FlagSet {
 					fs := newFlagSet("ts2021")
-					fs.StringVar(&ts2021Args.host, "host", "controlplane.tailscale.com", "hostname of control plane")
+					fs.StringVar(&ts2021Args.host, "host", "controlplane.scaletail.com", "hostname of control plane")
 					fs.IntVar(&ts2021Args.version, "version", int(tailcfg.CurrentCapabilityVersion), "protocol version")
 					fs.BoolVar(&ts2021Args.verbose, "verbose", false, "be extra verbose")
 					fs.StringVar(&ts2021Args.aceHost, "ace", "", "if non-empty, use this ACE server IP/hostname as a candidate path")
@@ -977,7 +977,7 @@ func runVia(ctx context.Context, args []string) error {
 }
 
 var ts2021Args struct {
-	host    string // "controlplane.tailscale.com"
+	host    string // "controlplane.scaletail.com"
 	version int    // 27 or whatever
 	verbose bool
 	aceHost string // if non-empty, FQDN of https ACE server to use ("ace.example.com")

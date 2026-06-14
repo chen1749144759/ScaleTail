@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/lazy"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/lazy"
 )
 
 func init() {

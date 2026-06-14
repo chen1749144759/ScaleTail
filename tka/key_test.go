@@ -10,8 +10,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
 )
 
 // returns a random source based on the test name + extraSeed.

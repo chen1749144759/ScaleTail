@@ -5,4 +5,4 @@
 
 package oauthkey
 
-import _ "tailscale.com/feature/oauthkey"
+import _ "scaletail.com/feature/oauthkey"

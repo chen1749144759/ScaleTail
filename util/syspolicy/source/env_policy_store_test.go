@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"testing"
 
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 func TestKeyToEnvVarName(t *testing.T) {

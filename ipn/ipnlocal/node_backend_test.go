@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/eventbus"
 )
 
 func TestNodeBackendReadiness(t *testing.T) {

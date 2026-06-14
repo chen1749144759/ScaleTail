@@ -72,7 +72,7 @@
 //     check endpoints if enabled via TS_ENABLE_METRICS and/or TS_ENABLE_HEALTH_CHECK.
 //     Defaults to [::]:9002, serving on all available interfaces.
 //   - TS_ENABLE_METRICS: if true, a metrics endpoint will be served at /metrics on
-//     the address specified by TS_LOCAL_ADDR_PORT. See https://tailscale.com/kb/1482/client-metrics
+//     the address specified by TS_LOCAL_ADDR_PORT. See https://scaletail.com/kb/1482/client-metrics
 //     for more information on the metrics exposed.
 //   - TS_ENABLE_HEALTH_CHECK: if true, a health check endpoint will be served at /healthz on
 //     the address specified by TS_LOCAL_ADDR_PORT. The health endpoint will return 200
@@ -90,7 +90,7 @@
 //     TS_EXPERIMENTAL_ENABLE_FORWARDING_OPTIMIZATIONS: set to true to
 //     autoconfigure the default network interface for optimal performance for
 //     Tailscale subnet router/exit node.
-//     https://tailscale.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
+//     https://scaletail.com/kb/1320/performance-best-practices#linux-optimizations-for-subnet-routers-and-exit-nodes
 //     NB: This env var is currently experimental and the logic will likely change!
 //   - EXPERIMENTAL_ALLOW_PROXYING_CLUSTER_TRAFFIC_VIA_INGRESS: if set to true
 //     and if this containerboot instance is an L7 ingress proxy (created by
@@ -107,7 +107,7 @@
 //     to `true`, but can be disabled to allow user specific advertisement configuration.
 //
 // When running on Kubernetes, containerboot defaults to storing state in the
-// "tailscale" kube secret. To store state on local disk instead, set
+// "scaletail" kube secret. To store state on local disk instead, set
 // TS_KUBE_SECRET="" and TS_STATE_DIR=/path/to/storage/dir. The state dir should
 // be persistent storage.
 //
@@ -137,22 +137,22 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"tailscale.com/client/local"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	kubeutils "tailscale.com/k8s-operator"
-	"tailscale.com/kube/authkey"
-	healthz "tailscale.com/kube/health"
-	"tailscale.com/kube/kubetypes"
-	klc "tailscale.com/kube/localclient"
-	"tailscale.com/kube/metrics"
-	"tailscale.com/kube/services"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/deephash"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/linuxfw"
+	"scaletail.com/client/local"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	kubeutils "scaletail.com/k8s-operator"
+	"scaletail.com/kube/authkey"
+	healthz "scaletail.com/kube/health"
+	"scaletail.com/kube/kubetypes"
+	klc "scaletail.com/kube/localclient"
+	"scaletail.com/kube/metrics"
+	"scaletail.com/kube/services"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/deephash"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/linuxfw"
 )
 
 func newNetfilterRunner(logf logger.Logf) (linuxfw.NetfilterRunner, error) {
@@ -234,7 +234,7 @@ func run() error {
 
 	client, daemonProcess, err := startScaleTaild(bootCtx, cfg)
 	if err != nil {
-		return fmt.Errorf("failed to bring up tailscale: %w", err)
+		return fmt.Errorf("failed to bring up scaletail: %w", err)
 	}
 	killScaleTaild := func() {
 		// The default termination grace period for a Pod is 30s. We wait 25s at
@@ -313,7 +313,7 @@ func run() error {
 
 	// Now that we've started scaletaild, we can symlink the socket to the
 	// default location if needed.
-	const defaultScaleTaildSocketPath = "/var/run/tailscale/scaletaild.sock"
+	const defaultScaleTaildSocketPath = "/var/run/scaletail/scaletaild.sock"
 	if cfg.Socket != "" && cfg.Socket != defaultScaleTaildSocketPath {
 		// If we were given a socket path, symlink it to the default location so
 		// that the CLI can find it without any extra flags.
@@ -343,8 +343,8 @@ func run() error {
 		}
 		didLogin = true
 		w.Close()
-		if err := tailscaleUp(bootCtx, cfg); err != nil {
-			return fmt.Errorf("failed to auth tailscale: %w", err)
+		if err := scaletailUp(bootCtx, cfg); err != nil {
+			return fmt.Errorf("failed to auth scaletail: %w", err)
 		}
 		w, err = client.WatchIPNBus(bootCtx, ipn.NotifyInitialNetMap|ipn.NotifyInitialState|ipn.NotifyRateLimit)
 		if err != nil {
@@ -355,7 +355,7 @@ func run() error {
 
 	if isTwoStepConfigAlwaysAuth(cfg) {
 		if err := authTailscale(); err != nil {
-			return fmt.Errorf("failed to auth tailscale: %w", err)
+			return fmt.Errorf("failed to auth scaletail: %w", err)
 		}
 	}
 
@@ -390,7 +390,7 @@ authLoop:
 				}
 
 				if err := authTailscale(); err != nil {
-					return fmt.Errorf("failed to auth tailscale: %w", err)
+					return fmt.Errorf("failed to auth scaletail: %w", err)
 				}
 			case ipn.NeedsMachineAuth:
 				log.Printf("machine authorization required, please visit the admin panel")
@@ -434,8 +434,8 @@ authLoop:
 	if isTwoStepConfigAuthOnce(cfg) {
 		// Now that we are authenticated, we can set/reset any of the
 		// settings that we need to.
-		if err := tailscaleSet(ctx, cfg); err != nil {
-			return fmt.Errorf("failed to auth tailscale: %w", err)
+		if err := scaletailSet(ctx, cfg); err != nil {
+			return fmt.Errorf("failed to auth scaletail: %w", err)
 		}
 	}
 
@@ -989,7 +989,7 @@ func runHTTPServer(mux *http.ServeMux, addr string) (close func() error) {
 // "current-netmap" localapi debug action. The debug action's payload
 // shape is intentionally not part of any stable API; containerboot
 // reads its own internal-package types out of it. New external consumers
-// should not rely on this — see [local.Client.Status] and friends.
+// should not rely on this; see [local.Client.Status] and friends.
 func fetchNetMap(ctx context.Context, lc *local.Client) (*netmap.NetworkMap, error) {
 	return local.GetDebugResultJSON[*netmap.NetworkMap](ctx, lc, "current-netmap")
 }

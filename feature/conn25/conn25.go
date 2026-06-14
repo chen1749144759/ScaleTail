@@ -24,26 +24,26 @@ import (
 
 	"go4.org/netipx"
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/appc"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tstun"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
-	"tailscale.com/util/testenv"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/appc"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tstun"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
+	"scaletail.com/util/testenv"
+	"scaletail.com/wgengine/filter"
 )
 
 // featureName is the name of the feature implemented by this package.
@@ -546,7 +546,7 @@ type ConnectorTransitIPResponse struct {
 	TransitIPs []TransitIPResponse `json:"transitIPs,omitempty"`
 }
 
-const AppConnectorsExperimentalAttrName = "tailscale.com/app-connectors-experimental"
+const AppConnectorsExperimentalAttrName = "scaletail.com/app-connectors-experimental"
 
 // ipSets wraps all the IPSets the config needs.
 type ipSets struct {

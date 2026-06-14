@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-//go:generate go run tailscale.com/cmd/viewer --type=Config --clonefunc
+//go:generate go run scaletail.com/cmd/viewer --type=Config --clonefunc
 
 // Package dns contains code to configure and manage DNS settings.
 package dns
@@ -14,14 +14,14 @@ import (
 	"slices"
 	"sort"
 
-	"tailscale.com/control/controlknobs"
-	"tailscale.com/envknob"
-	"tailscale.com/net/dns/publicdns"
-	"tailscale.com/net/dns/resolver"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/set"
+	"scaletail.com/control/controlknobs"
+	"scaletail.com/envknob"
+	"scaletail.com/net/dns/publicdns"
+	"scaletail.com/net/dns/resolver"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/set"
 )
 
 // Config is a DNS configuration.

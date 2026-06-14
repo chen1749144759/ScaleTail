@@ -21,7 +21,7 @@ import (
 // it will store recordings in a local ephemeral volume. If you want to persist
 // recordings, you can configure an S3-compatible API for storage.
 //
-// More info: https://tailscale.com/kb/1484/kubernetes-operator-deploying-tsrecorder
+// More info: https://scaletail.com/kb/1484/kubernetes-operator-deploying-tsrecorder
 type Recorder struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -55,7 +55,7 @@ type RecorderSpec struct {
 	// Tags that the Tailscale device will be tagged with. Defaults to [tag:k8s].
 	// If you specify custom tags here, make sure you also make the operator
 	// an owner of these tags.
-	// See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+	// See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
 	// Tags cannot be changed once a Recorder node has been created.
 	// Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
 	// +optional
@@ -66,7 +66,7 @@ type RecorderSpec struct {
 
 	// Set to true to enable the Recorder UI. The UI lists and plays recorded sessions.
 	// The UI will be served at <MagicDNS name of the recorder>:443. Defaults to false.
-	// Corresponds to --ui tsrecorder flag https://tailscale.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.
+	// Corresponds to --ui tsrecorder flag https://scaletail.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.
 	// Required if S3 storage is not set up, to ensure that recordings are accessible.
 	// +optional
 	EnableUI bool `json:"enableUI,omitempty"`

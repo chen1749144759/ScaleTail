@@ -11,11 +11,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/health"
-	"tailscale.com/kube/kubeapi"
-	"tailscale.com/kube/kubeclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
+	"scaletail.com/health"
+	"scaletail.com/kube/kubeapi"
+	"scaletail.com/kube/kubeclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
 )
 
 func TestResetState(t *testing.T) {

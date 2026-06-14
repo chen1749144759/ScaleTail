@@ -20,9 +20,9 @@ import (
 	"runtime"
 	"sync/atomic"
 
-	"tailscale.com/net/netknob"
-	"tailscale.com/net/netmon"
-	"tailscale.com/types/logger"
+	"scaletail.com/net/netknob"
+	"scaletail.com/net/netmon"
+	"scaletail.com/types/logger"
 )
 
 var disabled atomic.Bool

@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"io"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tka"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tka"
 )
 
 // PrintNetworkLockLogJSONV1 prints the stored TKA state as a JSON object to the CLI,

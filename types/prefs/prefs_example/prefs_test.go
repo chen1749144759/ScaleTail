@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/netip"
 
-	"tailscale.com/ipn"
-	"tailscale.com/types/prefs"
+	"scaletail.com/ipn"
+	"scaletail.com/types/prefs"
 )
 
 func ExamplePrefs_AdvertiseRoutes_setValue() {
@@ -50,7 +50,7 @@ func ExamplePrefs_AdvertiseRoutes_setValue() {
 
 	// In most contexts, preferences should only be read and never mutated.
 	// To make it easier to enforce this guarantee, a view type generated with
-	// [tailscale.com/cmd/viewer] can be used instead of the mutable Prefs struct.
+	// [scaletail.com/cmd/viewer] can be used instead of the mutable Prefs struct.
 	// Preferences accessed via a view have the same set of non-mutating
 	// methods as the underlying preferences but do not expose [prefs.Item.SetValue] or
 	// other methods that modify the preference's value or state.
@@ -98,9 +98,9 @@ func ExamplePrefs_ControlURL_setDefaultValue() {
 	fmt.Println("Reset to Default:", v.ControlURL().Value())
 
 	// Output:
-	// Default: https://controlplane.tailscale.com
+	// Default: https://controlplane.scaletail.com
 	// User Set: https://control.example.com
-	// Reset to Default: https://controlplane.tailscale.com
+	// Reset to Default: https://controlplane.scaletail.com
 }
 
 func ExamplePrefs_ExitNodeID_setManagedValue() {

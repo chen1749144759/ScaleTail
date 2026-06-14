@@ -17,12 +17,12 @@ import (
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/bools"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/netlogtype"
-	"tailscale.com/types/netmap"
-	"tailscale.com/wgengine/router"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/bools"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/netlogtype"
+	"scaletail.com/types/netmap"
+	"scaletail.com/wgengine/router"
 )
 
 func TestEmbedNodeInfo(t *testing.T) {

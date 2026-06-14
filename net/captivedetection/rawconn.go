@@ -8,7 +8,7 @@ package captivedetection
 import (
 	"syscall"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // setSocketInterfaceIndex sets the IP_BOUND_IF socket option on the given RawConn.

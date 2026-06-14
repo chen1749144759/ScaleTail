@@ -12,13 +12,13 @@ import (
 
 	"github.com/tailscale/wireguard-go/tun"
 	"go4.org/netipx"
-	"tailscale.com/health"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/set"
-	"tailscale.com/wgengine/router"
+	"scaletail.com/health"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/set"
+	"scaletail.com/wgengine/router"
 )
 
 func init() {

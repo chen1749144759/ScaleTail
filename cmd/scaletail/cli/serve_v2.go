@@ -28,18 +28,18 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/conffile"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/prompt"
-	"tailscale.com/util/set"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/version"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/conffile"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/prompt"
+	"scaletail.com/util/set"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/version"
 )
 
 type execFunc func(ctx context.Context, args []string) error
@@ -153,7 +153,7 @@ EXAMPLES
   - Expose a service listening on a Unix socket (Linux/macOS/BSD only):
     $ scaletail %[1]s unix:/var/run/myservice.sock
 
-For more examples and use cases visit our docs site https://tailscale.com/kb/1247/funnel-serve-use-cases
+For more examples and use cases visit our docs site https://scaletail.com/kb/1247/funnel-serve-use-cases
 `)
 
 type serveMode int
@@ -320,7 +320,7 @@ func newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {
 							"for either a single service, or for all services that this node is hosting. If --service is specified,\n" +
 							"all endpoint handlers for that service are overwritten. If --all is specified, all endpoint handlers for\n" +
 							"all services are overwritten.\n\n" +
-							"For information on the file format, see tailscale.com/kb/1589/tailscale-services-configuration-file",
+							"For information on the file format, see scaletail.com/kb/1589/tailscale-services-configuration-file",
 						Exec: e.runServeSetConfig,
 						FlagSet: e.newFlags("serve-set-config", func(fs *flag.FlagSet) {
 							fs.BoolVar(&e.allServices, "all", false, "apply config to all services")
@@ -341,7 +341,7 @@ func (e *serveEnv) validateArgs(subcmd serveMode, args []string) error {
 			fmt.Fprint(e.stderr(), " You can run the following command instead:\n")
 			fmt.Fprintf(e.stderr(), "\t- %s\n", translation)
 		}
-		fmt.Fprint(e.stderr(), "\nPlease see https://tailscale.com/kb/1242/tailscale-serve for more information.\n")
+		fmt.Fprint(e.stderr(), "\nPlease see https://scaletail.com/kb/1242/tailscale-serve for more information.\n")
 		return errHelpFunc(subcmd)
 	}
 	if len(args) == 0 && e.tun {
@@ -956,7 +956,7 @@ var (
 	msgDisableServiceProxy         = "To disable the proxy, run: scaletail serve --service=%s --%s=%d off"
 	msgDisableServiceTun           = "To disable the service in TUN mode, run: scaletail serve --service=%s --tun off"
 	msgDisableService              = "To remove config for the service, run: scaletail serve clear %s"
-	msgWarnRemoteDestCompatibility = "Warning: %s doesn't support connecting to remote destinations from non-default route, see tailscale.com/kb/1552/tailscale-services for detail."
+	msgWarnRemoteDestCompatibility = "Warning: %s doesn't support connecting to remote destinations from non-default route, see scaletail.com/kb/1552/tailscale-services for detail."
 	msgToExit                      = "Press Ctrl+C to exit."
 )
 
@@ -1166,7 +1166,7 @@ func (e *serveEnv) applyWebServe(sc *ipn.ServeConfig, dnsName string, srvPort ui
 	case filepath.IsAbs(target):
 		if version.IsMacAppStore() || version.IsMacSys() {
 			// The Tailscale network extension cannot serve arbitrary paths on macOS due to sandbox restrictions (2024-03-26)
-			return errors.New("Path serving is not supported on macOS due to sandbox restrictions. To use Tailscale Serve on macOS, switch to the open-source scaletaild distribution. See https://tailscale.com/kb/1065/macos-variants for more information.")
+			return errors.New("Path serving is not supported on macOS due to sandbox restrictions. To use Tailscale Serve on macOS, switch to the open-source scaletaild distribution. See https://scaletail.com/kb/1065/macos-variants for more information.")
 		}
 
 		target = filepath.Clean(target)

@@ -14,10 +14,10 @@ import (
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/types/views"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/viewer --tags=test --type=TestPrefs,TestBundle,TestValueStruct,TestGenericStruct,TestPrefsGroup
+//go:generate go run scaletail.com/cmd/viewer --tags=test --type=TestPrefs,TestBundle,TestValueStruct,TestGenericStruct,TestPrefsGroup
 
 var (
 	_ jsonv2.MarshalerTo     = (*ItemView[*TestBundle, TestBundleView])(nil)

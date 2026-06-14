@@ -12,10 +12,10 @@ import (
 	"net/http"
 	"runtime"
 
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/util/httpm"
-	"tailscale.com/version"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/util/httpm"
+	"scaletail.com/version"
 )
 
 func init() {

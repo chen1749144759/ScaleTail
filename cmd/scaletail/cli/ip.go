@@ -12,7 +12,7 @@ import (
 	"slices"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/ipn/ipnstate"
+	"scaletail.com/ipn/ipnstate"
 )
 
 var ipCmd = &ffcli.Command{

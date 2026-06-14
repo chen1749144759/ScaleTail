@@ -11,8 +11,8 @@ import (
 	"log"
 	"os"
 
-	"tailscale.com/logtail"
-	"tailscale.com/types/logid"
+	"scaletail.com/logtail"
+	"scaletail.com/types/logid"
 )
 
 func main() {

@@ -8,14 +8,14 @@ import (
 	"slices"
 	"strings"
 
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/appctype"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/appctype"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
 )
 
-const AppConnectorsExperimentalAttrName = "tailscale.com/app-connectors-experimental"
+const AppConnectorsExperimentalAttrName = "scaletail.com/app-connectors-experimental"
 
 func isPeerEligibleConnector(peer tailcfg.NodeView) bool {
 	if !peer.Valid() || !peer.Hostinfo().Valid() {

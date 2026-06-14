@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/types/ipproto"
-	"tailscale.com/util/vizerror"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/util/vizerror"
 )
 
 var (

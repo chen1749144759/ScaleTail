@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"tailscale.com/client/freedesktop"
+	"scaletail.com/client/freedesktop"
 )
 
 //go:embed scaletail-systray.service

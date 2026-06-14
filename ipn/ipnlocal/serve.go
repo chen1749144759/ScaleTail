@@ -35,20 +35,20 @@ import (
 
 	"github.com/pires/go-proxyproto"
 	"go4.org/mem"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netutil"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/slicesx"
-	"tailscale.com/version"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netutil"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/slicesx"
+	"scaletail.com/version"
 )
 
 func init() {
@@ -1071,7 +1071,7 @@ func (b *LocalBackend) addTailscaleIdentityHeaders(r *httputil.ProxyRequest) {
 	r.Out.Header.Set("Tailscale-User-Login", encTailscaleHeaderValue(user.LoginName))
 	r.Out.Header.Set("Tailscale-User-Name", encTailscaleHeaderValue(user.DisplayName))
 	r.Out.Header.Set("Tailscale-User-Profile-Pic", user.ProfilePicURL)
-	r.Out.Header.Set("Tailscale-Headers-Info", "https://tailscale.com/s/serve-headers")
+	r.Out.Header.Set("Tailscale-Headers-Info", "https://scaletail.com/s/serve-headers")
 }
 
 // encTailscaleHeaderValue cleans or encodes as necessary v, to be suitable in

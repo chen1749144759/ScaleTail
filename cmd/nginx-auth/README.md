@@ -1,6 +1,6 @@
 # nginx-auth
 
-[![status: experimental](https://img.shields.io/badge/status-experimental-blue)](https://tailscale.com/kb/1167/release-stages/#experimental)
+[![status: experimental](https://img.shields.io/badge/status-experimental-blue)](https://scaletail.com/kb/1167/release-stages/#experimental)
 
 This is a tool that allows users to use Tailscale Whois authentication with
 NGINX as a reverse proxy. This allows users that already have a bunch of
@@ -31,7 +31,7 @@ Create an authentication location with the `internal` flag set:
 location /auth {
   internal;
 
-  proxy_pass http://unix:/run/tailscale.nginx-auth.sock;
+  proxy_pass http://unix:/run/scaletail.nginx-auth.sock;
   proxy_pass_request_body off;
 
   proxy_set_header Host $http_host;
@@ -146,7 +146,7 @@ generic "forbidden" error page:
 </html>
 ```
 
-You can get the tailnet name from [the admin panel](https://login.tailscale.com/admin/dns).
+You can get the tailnet name from [the admin panel](https://login.scaletail.com/admin/dns).
 
 ## Building
 

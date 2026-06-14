@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"tailscale.com/cmd/scaletail/cli/jsonoutput"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn/ipnlocal"
+	"scaletail.com/cmd/scaletail/cli/jsonoutput"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn/ipnlocal"
 )
 
 func init() {

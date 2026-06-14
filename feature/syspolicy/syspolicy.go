@@ -4,4 +4,4 @@
 // Package syspolicy provides an interface for system-wide policy management.
 package syspolicy
 
-import _ "tailscale.com/util/syspolicy" // for its registration side effects
+import _ "scaletail.com/util/syspolicy" // for its registration side effects

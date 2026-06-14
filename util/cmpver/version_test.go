@@ -6,7 +6,7 @@ package cmpver_test
 import (
 	"testing"
 
-	"tailscale.com/util/cmpver"
+	"scaletail.com/util/cmpver"
 )
 
 func TestCompare(t *testing.T) {

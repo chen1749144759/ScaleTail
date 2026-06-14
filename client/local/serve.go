@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 // GetServeConfig return the current serve config.

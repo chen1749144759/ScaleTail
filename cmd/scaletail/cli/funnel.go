@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
 )
 
 func init() {

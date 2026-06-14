@@ -10,9 +10,9 @@ import (
 	"fmt"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/feature"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/version"
+	"scaletail.com/feature"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/version"
 )
 
 var versionCmd = &ffcli.Command{

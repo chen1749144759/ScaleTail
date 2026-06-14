@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/clientupdate"
+import _ "scaletail.com/feature/clientupdate"

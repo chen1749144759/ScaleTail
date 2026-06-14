@@ -1,10 +1,10 @@
-# Tailscale for Windows dependencies
+﻿# ScaleTail for Windows dependencies
 
-The following open source dependencies are used to build [Tailscale on
-Windows][].  See also the dependencies in the [Tailscale CLI][].
+The following open source dependencies are used to build [ScaleTail on
+Windows][].  See also the dependencies in the [ScaleTail CLI][].
 
-[Tailscale on Windows]: https://tailscale.com/kb/1022/install-windows/
-[Tailscale CLI]: ./tailscale.md
+[ScaleTail on Windows]: https://github.com/chen1749144759/ScaleTail
+[ScaleTail CLI]: ./scaletail.md
 
 ## Go Packages
 

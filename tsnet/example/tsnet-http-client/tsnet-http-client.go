@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"tailscale.com/tsnet"
+	"scaletail.com/tsnet"
 )
 
 func main() {

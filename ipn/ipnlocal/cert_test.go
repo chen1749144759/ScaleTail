@@ -22,14 +22,14 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/envknob"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
 )
 
 func TestCertRequest(t *testing.T) {

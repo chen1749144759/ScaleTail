@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/sys/cpu"
 	"golang.org/x/sys/windows"
-	"tailscale.com/net/netaddr"
+	"scaletail.com/net/netaddr"
 )
 
 // OSMetadata includes any additional OS-specific information that may be

@@ -55,9 +55,9 @@ import (
 	"strings"
 	"sync"
 
-	"tailscale.com/syncs"
-	"tailscale.com/util/must"
-	"tailscale.com/util/safediff"
+	"scaletail.com/syncs"
+	"scaletail.com/util/must"
+	"scaletail.com/util/safediff"
 )
 
 func main() {
@@ -118,7 +118,7 @@ func main() {
 	if numDiffs > 0 && !*update {
 		fmt.Printf(`%d files with "json" imports that need formatting`+"\n", numDiffs)
 		fmt.Println("Please run:")
-		fmt.Println("\t./tool/go run tailscale.com/cmd/jsonimports -update")
+		fmt.Println("\t./tool/go run scaletail.com/cmd/jsonimports -update")
 		os.Exit(1)
 	}
 }

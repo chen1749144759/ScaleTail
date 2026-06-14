@@ -9,7 +9,7 @@ import (
 	"context"
 	"sync"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 // Check is the interface defining a singular check.

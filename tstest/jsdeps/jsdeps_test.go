@@ -6,7 +6,7 @@ package jsdeps
 import (
 	"testing"
 
-	"tailscale.com/tstest/deptest"
+	"scaletail.com/tstest/deptest"
 )
 
 func TestDeps(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
 )
 
 func TestRecorderSpecs(t *testing.T) {

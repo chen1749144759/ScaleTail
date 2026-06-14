@@ -8,7 +8,7 @@ package v1alpha1
 import (
 	"fmt"
 
-	"tailscale.com/k8s-operator/apis"
+	"scaletail.com/k8s-operator/apis"
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,9 +44,9 @@ func init() {
 	if err := scheme.AddToScheme(GlobalScheme); err != nil {
 		panic(fmt.Sprintf("failed to add k8s.io scheme: %s", err))
 	}
-	// Add tailscale.com types
+	// Add scaletail.com types
 	if err := AddToScheme(GlobalScheme); err != nil {
-		panic(fmt.Sprintf("failed to add tailscale.com scheme: %s", err))
+		panic(fmt.Sprintf("failed to add scaletail.com scheme: %s", err))
 	}
 	// Add apiextensions types (CustomResourceDefinitions/CustomResourceDefinitionLists)
 	if err := apiextensionsv1.AddToScheme(GlobalScheme); err != nil {

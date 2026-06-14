@@ -18,14 +18,14 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/derp"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/disco"
-	"tailscale.com/metrics"
-	"tailscale.com/net/memnet"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/must"
+	"scaletail.com/derp"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/disco"
+	"scaletail.com/metrics"
+	"scaletail.com/net/memnet"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/must"
 )
 
 type (

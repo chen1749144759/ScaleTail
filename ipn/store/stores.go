@@ -18,13 +18,13 @@ import (
 	"strings"
 	"sync"
 
-	"tailscale.com/atomicfile"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/paths"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/testenv"
+	"scaletail.com/atomicfile"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/paths"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/testenv"
 )
 
 // Provider returns a StateStore for the provided path.

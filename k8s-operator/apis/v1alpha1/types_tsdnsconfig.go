@@ -44,7 +44,7 @@ var DNSConfigKind = "DNSConfig"
 // DNSConfig is a singleton - you must not create more than one.
 // NB: if you want cluster workloads to be able to refer to Tailscale Ingress
 // using its MagicDNS name, you must also annotate the Ingress resource with
-// tailscale.com/experimental-forward-cluster-traffic-via-ingress annotation to
+// scaletail.com/experimental-forward-cluster-traffic-via-ingress annotation to
 // ensure that the proxy created for the Ingress listens on its Pod IP address.
 type DNSConfig struct {
 	metav1.TypeMeta   `json:",inline"`

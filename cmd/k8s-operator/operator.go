@@ -48,32 +48,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/client/local"
-	"tailscale.com/envknob"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store/kubestore"
-	apiproxy "tailscale.com/k8s-operator/api-proxy"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/reconciler/proxygrouppolicy"
-	"tailscale.com/k8s-operator/reconciler/tailnet"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstime"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/set"
-	"tailscale.com/version"
+	"scaletail.com/client/local"
+	"scaletail.com/envknob"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store/kubestore"
+	apiproxy "scaletail.com/k8s-operator/api-proxy"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/reconciler/proxygrouppolicy"
+	"scaletail.com/k8s-operator/reconciler/tailnet"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstime"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/set"
+	"scaletail.com/version"
 )
 
 // Generate Connector and ProxyClass CustomResourceDefinition yamls from their Go types.
 //go:generate go run sigs.k8s.io/controller-tools/cmd/controller-gen crd schemapatch:manifests=./deploy/crds output:dir=./deploy/crds paths=../../k8s-operator/apis/...
 
 // Generate static manifests for deploying Tailscale operator on Kubernetes from the operator's Helm chart.
-//go:generate go run tailscale.com/cmd/k8s-operator/generate staticmanifests
+//go:generate go run scaletail.com/cmd/k8s-operator/generate staticmanifests
 
 // Generate the helm chart's CRDs (which are ignored from git).
-//go:generate go run tailscale.com/cmd/k8s-operator/generate helmcrd
+//go:generate go run scaletail.com/cmd/k8s-operator/generate helmcrd
 
 // Generate CRD API docs.
 //go:generate go run github.com/elastic/crd-ref-docs --renderer=markdown --source-path=../../k8s-operator/apis/ --config=../../k8s-operator/api-docs-config.yaml --output-path=../../k8s-operator/api.md
@@ -122,7 +122,7 @@ func main() {
 
 	// The operator can run either as a plain operator or it can
 	// additionally act as api-server proxy
-	// https://tailscale.com/kb/1236/kubernetes-operator/?q=kubernetes#accessing-the-kubernetes-control-plane-using-an-api-server-proxy.
+	// https://scaletail.com/kb/1236/kubernetes-operator/?q=kubernetes#accessing-the-kubernetes-control-plane-using-an-api-server-proxy.
 	mode := parseAPIProxyMode()
 	if mode == nil {
 		hostinfo.SetApp(kubetypes.AppOperator)
@@ -416,7 +416,7 @@ func runReconcilers(opts reconcilerOpts) {
 	if opts.defaultProxyClass != "" {
 		// If a default ProxyClass is specified, we'll need to list all objects
 		// that could be affected. For L3 ingress, this is Services with the
-		// "tailscale.com/expose" annotation and LoadBalancer services (either
+		// "scaletail.com/expose" annotation and LoadBalancer services (either
 		// with the loadBalancerClass "tailscale", or unset if we're the default).
 		if err := mgr.GetFieldIndexer().IndexField(context.Background(), new(corev1.Service), indexServiceExposed, indexExposed); err != nil {
 			startlog.Fatalf("failed setting up exposed indexer for Services: %v", err)
@@ -790,7 +790,7 @@ type reconcilerOpts struct {
 	// proxyTags are ACL tags to tag proxy auth keys. Multiple tags should
 	// be provided as a string with comma-separated tag values. Proxy tags
 	// default to tag:k8s.
-	// https://tailscale.com/kb/1085/auth-keys
+	// https://scaletail.com/kb/1085/auth-keys
 	proxyTags string
 	// proxyActAsDefaultLoadBalancer determines whether this operator
 	// instance should act as the default ingress controller when looking at
@@ -966,7 +966,7 @@ func indexType(o client.Object) []string {
 
 // proxyClassHandlerForSvc returns a handler that, for a given ProxyClass,
 // returns a list of reconcile requests for all Services labeled with
-// tailscale.com/proxy-class: <proxy class name>.
+// scaletail.com/proxy-class: <proxy class name>.
 func proxyClassHandlerForSvc(cl client.Client, logger *zap.SugaredLogger, defaultProxyClass string, isDefaultLoadBalancer bool) handler.MapFunc {
 	return func(ctx context.Context, o client.Object) []reconcile.Request {
 		svcList := new(corev1.ServiceList)
@@ -1037,7 +1037,7 @@ func proxyClassHandlerForSvc(cl client.Client, logger *zap.SugaredLogger, defaul
 
 // proxyClassHandlerForIngress returns a handler that, for a given ProxyClass,
 // returns a list of reconcile requests for all Ingresses labeled with
-// tailscale.com/proxy-class: <proxy class name>.
+// scaletail.com/proxy-class: <proxy class name>.
 func proxyClassHandlerForIngress(cl client.Client, logger *zap.SugaredLogger) handler.MapFunc {
 	return func(ctx context.Context, o client.Object) []reconcile.Request {
 		ingList := new(networkingv1.IngressList)

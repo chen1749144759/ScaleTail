@@ -9,15 +9,15 @@ import (
 	"fmt"
 	"time"
 
-	"tailscale.com/control/controlclient"
-	"tailscale.com/feature"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/feature"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
 )
 
 // featureName is the name of the feature implemented by this package.

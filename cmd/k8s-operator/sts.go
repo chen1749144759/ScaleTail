@@ -31,46 +31,46 @@ import (
 	"sigs.k8s.io/yaml"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/net/netutil"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/mak"
+	"scaletail.com/ipn"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/net/netutil"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/mak"
 )
 
 const (
 	// Labels that the operator sets on StatefulSets and Pods. If you add a
 	// new label here, do also add it to tailscaleManagedLabels var to
 	// ensure that it does not get overwritten by ProxyClass configuration.
-	LabelParentType      = "tailscale.com/parent-resource-type"
-	LabelParentName      = "tailscale.com/parent-resource"
-	LabelParentNamespace = "tailscale.com/parent-resource-ns"
+	LabelParentType      = "scaletail.com/parent-resource-type"
+	LabelParentName      = "scaletail.com/parent-resource"
+	LabelParentNamespace = "scaletail.com/parent-resource-ns"
 
 	// LabelProxyClass can be set by users on scaletail Ingresses and Services that define cluster ingress or
 	// cluster egress, to specify that configuration in this ProxyClass should be applied to resources created for
 	// the Ingress or Service.
-	LabelAnnotationProxyClass = "tailscale.com/proxy-class"
+	LabelAnnotationProxyClass = "scaletail.com/proxy-class"
 
-	FinalizerName = "tailscale.com/finalizer"
+	FinalizerName = "scaletail.com/finalizer"
 
 	// Annotations settable by users on services.
-	AnnotationExpose             = "tailscale.com/expose"
-	AnnotationTags               = "tailscale.com/tags"
-	AnnotationHostname           = "tailscale.com/hostname"
-	annotationTailnetTargetIPOld = "tailscale.com/ts-tailnet-target-ip"
-	AnnotationTailnetTargetIP    = "tailscale.com/tailnet-ip"
+	AnnotationExpose             = "scaletail.com/expose"
+	AnnotationTags               = "scaletail.com/tags"
+	AnnotationHostname           = "scaletail.com/hostname"
+	annotationTailnetTargetIPOld = "scaletail.com/ts-tailnet-target-ip"
+	AnnotationTailnetTargetIP    = "scaletail.com/tailnet-ip"
 	// MagicDNS name of tailnet node.
-	AnnotationTailnetTargetFQDN = "tailscale.com/tailnet-fqdn"
+	AnnotationTailnetTargetFQDN = "scaletail.com/tailnet-fqdn"
 
-	AnnotationProxyGroup = "tailscale.com/proxy-group"
+	AnnotationProxyGroup = "scaletail.com/proxy-group"
 
 	// Annotations settable by users on ingresses.
-	AnnotationFunnel       = "tailscale.com/funnel"
-	AnnotationHTTPRedirect = "tailscale.com/http-redirect"
+	AnnotationFunnel       = "scaletail.com/funnel"
+	AnnotationHTTPRedirect = "scaletail.com/http-redirect"
 
 	// If set to true, set up iptables/nftables rules in the proxy forward
 	// cluster traffic to the tailnet IP of that proxy. This can only be set
@@ -83,17 +83,17 @@ const (
 	// container and will also run a privileged init container that enables
 	// forwarding.
 	// Eventually this behaviour might become the default.
-	AnnotationExperimentalForwardClusterTrafficViaL7IngresProxy = "tailscale.com/experimental-forward-cluster-traffic-via-ingress"
+	AnnotationExperimentalForwardClusterTrafficViaL7IngresProxy = "scaletail.com/experimental-forward-cluster-traffic-via-ingress"
 
 	// Annotations set by the operator on pods to trigger restarts when the
 	// hostname, IP, FQDN or scaletaild config changes. If you add a new
 	// annotation here, also add it to tailscaleManagedAnnotations var to
 	// ensure that it does not get removed when a ProxyClass configuration
 	// is applied.
-	podAnnotationLastSetClusterIP         = "tailscale.com/operator-last-set-cluster-ip"
-	podAnnotationLastSetClusterDNSName    = "tailscale.com/operator-last-set-cluster-dns-name"
-	podAnnotationLastSetTailnetTargetIP   = "tailscale.com/operator-last-set-ts-tailnet-target-ip"
-	podAnnotationLastSetTailnetTargetFQDN = "tailscale.com/operator-last-set-ts-tailnet-target-fqdn"
+	podAnnotationLastSetClusterIP         = "scaletail.com/operator-last-set-cluster-ip"
+	podAnnotationLastSetClusterDNSName    = "scaletail.com/operator-last-set-cluster-dns-name"
+	podAnnotationLastSetTailnetTargetIP   = "scaletail.com/operator-last-set-ts-tailnet-target-ip"
+	podAnnotationLastSetTailnetTargetFQDN = "scaletail.com/operator-last-set-ts-tailnet-target-fqdn"
 
 	proxyTypeEgress          = "egress_service"
 	proxyTypeIngressService  = "ingress_service"
@@ -866,7 +866,7 @@ func applyProxyClassToStatefulSet(pc *tsapi.ProxyClass, ss *appsv1.StatefulSet, 
 		if isEgress {
 			// TODO (irbekrm): fix this
 			// For Ingress proxies that have been configured with
-			// tailscale.com/experimental-forward-cluster-traffic-via-ingress
+			// scaletail.com/experimental-forward-cluster-traffic-via-ingress
 			// annotation, all cluster traffic is forwarded to the
 			// Ingress backend(s).
 			logger.Info("ProxyClass specifies that metrics should be enabled, but this is currently not supported for egress proxies.")

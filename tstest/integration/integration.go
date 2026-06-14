@@ -33,25 +33,25 @@ import (
 	"time"
 
 	"go4.org/mem"
-	"tailscale.com/client/local"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/ipn/store"
-	"tailscale.com/net/stun/stuntest"
-	"tailscale.com/safesocket"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/types/nettype"
-	"tailscale.com/util/rands"
-	"tailscale.com/util/zstdframe"
-	"tailscale.com/version"
+	"scaletail.com/client/local"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/ipn/store"
+	"scaletail.com/net/stun/stuntest"
+	"scaletail.com/safesocket"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/types/nettype"
+	"scaletail.com/util/rands"
+	"scaletail.com/util/zstdframe"
+	"scaletail.com/version"
 )
 
 var (
@@ -204,7 +204,7 @@ func buildTestBinaries(dir string) error {
 		}
 		return bi, nil
 	}
-	err := build(dir, "tailscale.com/cmd/scaletaild", "tailscale.com/cmd/scaletail")
+	err := build(dir, "scaletail.com/cmd/scaletaild", "scaletail.com/cmd/scaletail")
 	if err != nil {
 		return err
 	}

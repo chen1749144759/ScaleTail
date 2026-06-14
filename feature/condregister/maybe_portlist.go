@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/portlist"
+import _ "scaletail.com/feature/portlist"

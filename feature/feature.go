@@ -8,7 +8,7 @@ import (
 	"errors"
 	"reflect"
 
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/testenv"
 )
 
 var ErrUnavailable = errors.New("feature not included in this build")

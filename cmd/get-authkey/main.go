@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 // get-authkey allocates an authkey using an OAuth API client
-// https://tailscale.com/s/oauth-clients and prints it
+// https://scaletail.com/s/oauth-clients and prints it
 // to stdout for scripts to capture and use.
 package main
 
@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"golang.org/x/oauth2/clientcredentials"
-	"tailscale.com/internal/client/tailscale"
+	"scaletail.com/internal/client/scaletail"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 		log.Fatal("at least one tag must be specified")
 	}
 
-	baseURL := cmp.Or(os.Getenv("TS_BASE_URL"), "https://api.tailscale.com")
+	baseURL := cmp.Or(os.Getenv("TS_BASE_URL"), "https://api.scaletail.com")
 
 	credentials := clientcredentials.Config{
 		ClientID:     clientID,
@@ -45,14 +45,14 @@ func main() {
 	}
 
 	ctx := context.Background()
-	tsClient := tailscale.NewClient("-", nil)
+	tsClient := scaletail.NewClient("-", nil)
 	tsClient.UserAgent = "tailscale-get-authkey"
 	tsClient.HTTPClient = credentials.Client(ctx)
 	tsClient.BaseURL = baseURL
 
-	caps := tailscale.KeyCapabilities{
-		Devices: tailscale.KeyDeviceCapabilities{
-			Create: tailscale.KeyDeviceCreateCapabilities{
+	caps := scaletail.KeyCapabilities{
+		Devices: scaletail.KeyDeviceCapabilities{
+			Create: scaletail.KeyDeviceCreateCapabilities{
 				Reusable:      *reusable,
 				Ephemeral:     *ephemeral,
 				Preauthorized: *preauth,

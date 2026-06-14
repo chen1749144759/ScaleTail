@@ -11,15 +11,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"tailscale.com/health"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/posture"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/ptype"
+	"scaletail.com/health"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/posture"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/ptype"
 )
 
 func init() {

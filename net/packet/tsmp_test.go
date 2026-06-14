@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"go4.org/mem"
-	"tailscale.com/types/key"
+	"scaletail.com/types/key"
 )
 
 func TestTailscaleRejectedHeader(t *testing.T) {

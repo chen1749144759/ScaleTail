@@ -15,11 +15,11 @@ import (
 
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/winutil"
-	"tailscale.com/util/winutil/gp"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/winutil"
+	"scaletail.com/util/winutil/gp"
 )
 
 const testGPRuleID = "{7B1B6151-84E6-41A3-8967-62F7F7B45687}"

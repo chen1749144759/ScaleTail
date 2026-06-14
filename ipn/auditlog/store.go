@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"tailscale.com/ipn/store"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/must"
+	"scaletail.com/ipn/store"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/must"
 )
 
 var storeFilePath lazy.SyncValue[string]

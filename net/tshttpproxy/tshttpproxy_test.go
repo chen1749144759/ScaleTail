@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/util/must"
+	"scaletail.com/util/must"
 )
 
 func TestGetAuthHeaderNoResult(t *testing.T) {

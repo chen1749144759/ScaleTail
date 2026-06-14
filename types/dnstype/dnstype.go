@@ -4,7 +4,7 @@
 // Package dnstype defines types for working with DNS.
 package dnstype
 
-//go:generate go run tailscale.com/cmd/viewer --type=Resolver --clonefunc=true
+//go:generate go run scaletail.com/cmd/viewer --type=Resolver --clonefunc=true
 
 import (
 	"net/netip"

@@ -19,15 +19,15 @@ import (
 	"time"
 
 	"go4.org/mem"
-	"tailscale.com/envknob"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/lazy"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/cloudenv"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/lineiter"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/lazy"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/cloudenv"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/lineiter"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 var started = time.Now()

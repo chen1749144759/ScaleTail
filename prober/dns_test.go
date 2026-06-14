@@ -11,7 +11,7 @@ import (
 	"sync"
 	"testing"
 
-	"tailscale.com/syncs"
+	"scaletail.com/syncs"
 )
 
 func TestForEachAddr(t *testing.T) {
@@ -63,7 +63,7 @@ func TestForEachAddr(t *testing.T) {
 		return []*Probe{probe}
 	}
 
-	fep := makeForEachAddr("tailscale.com", newProbe, opts)
+	fep := makeForEachAddr("scaletail.com", newProbe, opts)
 
 	// Mimic a call from the prober; we do this ourselves instead of
 	// calling it via p.Run so we know that the probe has actually run.

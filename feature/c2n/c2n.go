@@ -11,10 +11,10 @@ import (
 	"net/http"
 	"time"
 
-	"tailscale.com/control/controlclient"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tempfork/httprec"
-	"tailscale.com/types/logger"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tempfork/httprec"
+	"scaletail.com/types/logger"
 )
 
 func init() {

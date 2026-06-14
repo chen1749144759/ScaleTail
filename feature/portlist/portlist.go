@@ -9,16 +9,16 @@ import (
 	"context"
 	"sync/atomic"
 
-	"tailscale.com/envknob"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/policy"
-	"tailscale.com/portlist"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/version"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/policy"
+	"scaletail.com/portlist"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/version"
 )
 
 func init() {

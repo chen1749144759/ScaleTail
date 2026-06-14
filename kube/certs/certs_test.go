@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/ipn"
-	"tailscale.com/kube/localclient"
-	"tailscale.com/tailcfg"
+	"scaletail.com/ipn"
+	"scaletail.com/kube/localclient"
+	"scaletail.com/tailcfg"
 )
 
 // TestEnsureCertLoops tests that the certManager correctly starts and stops

@@ -15,8 +15,8 @@ import (
 	"os/signal"
 	"time"
 
-	"tailscale.com/prober"
-	"tailscale.com/types/logger"
+	"scaletail.com/prober"
+	"scaletail.com/types/logger"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	hostname = flag.String("hostname", "tailscale.com", "hostname to probe")
+	hostname = flag.String("hostname", "scaletail.com", "hostname to probe")
 	oneshot  = flag.Bool("oneshot", true, "run probes once and exit")
 	verbose  = flag.Bool("verbose", false, "enable verbose logging")
 )

@@ -13,10 +13,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/bools"
-	"tailscale.com/types/netlogtype"
-	"tailscale.com/util/set"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/bools"
+	"scaletail.com/types/netlogtype"
+	"scaletail.com/util/set"
 )
 
 // maxLogSize is the maximum number of bytes for a log message.

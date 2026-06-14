@@ -31,12 +31,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/syncs"
-	"tailscale.com/types/opt"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/syncs"
+	"scaletail.com/types/opt"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 var (

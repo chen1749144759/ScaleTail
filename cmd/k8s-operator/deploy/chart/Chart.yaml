@@ -20,7 +20,7 @@ type: application
 
 maintainers:
   - name: tailscale-maintainers
-    url: https://tailscale.com/
+    url: https://scaletail.com/
 
 # version will be set to Tailscale repo tag (without 'v') at release time.
 version: 0.1.0

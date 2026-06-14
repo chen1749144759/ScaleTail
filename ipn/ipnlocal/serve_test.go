@@ -26,22 +26,22 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/control/controlclient"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsd"
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/wgengine"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsd"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/wgengine"
+	"scaletail.com/wgengine/filter"
 )
 
 func TestExpandProxyArg(t *testing.T) {
@@ -748,7 +748,7 @@ func TestServeHTTPProxyHeaders(t *testing.T) {
 				{"Tailscale-User-Login", "someone@example.com"},
 				{"Tailscale-User-Name", "Some One"},
 				{"Tailscale-User-Profile-Pic", "https://example.com/photo.jpg"},
-				{"Tailscale-Headers-Info", "https://tailscale.com/s/serve-headers"},
+				{"Tailscale-Headers-Info", "https://scaletail.com/s/serve-headers"},
 			},
 		},
 		{
@@ -888,7 +888,7 @@ func TestServeHTTPProxyGrantHeader(t *testing.T) {
 				{"Tailscale-User-Login", "someone@example.com"},
 				{"Tailscale-User-Name", "Some One"},
 				{"Tailscale-User-Profile-Pic", "https://example.com/photo.jpg"},
-				{"Tailscale-Headers-Info", "https://tailscale.com/s/serve-headers"},
+				{"Tailscale-Headers-Info", "https://scaletail.com/s/serve-headers"},
 				{"Tailscale-App-Capabilities", `{"example.com/cap/interesting":[{"role":"🐿"}]}`},
 			},
 		},

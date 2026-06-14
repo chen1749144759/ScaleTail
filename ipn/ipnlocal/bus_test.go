@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/drive"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/views"
+	"scaletail.com/drive"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/views"
 )
 
 func TestIsNotableNotify(t *testing.T) {

@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/feature/taildrop"
+import _ "scaletail.com/feature/taildrop"

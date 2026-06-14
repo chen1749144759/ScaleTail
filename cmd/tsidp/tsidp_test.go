@@ -39,12 +39,12 @@ import (
 
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/views"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/views"
 )
 
 // normalizeMap recursively sorts []any values in a map[string]any to ensure

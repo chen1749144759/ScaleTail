@@ -11,9 +11,9 @@ import (
 	"slices"
 	"strings"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/dnsname"
 )
 
 // An OSConfigurator applies DNS settings to the operating system.

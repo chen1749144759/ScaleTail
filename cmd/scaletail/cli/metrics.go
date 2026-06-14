@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/atomicfile"
+	"scaletail.com/atomicfile"
 )
 
 var metricsCmd = &ffcli.Command{
@@ -22,7 +22,7 @@ The 'scaletail metrics' command shows Tailscale user-facing metrics (as opposed
 to internal metrics printed by 'scaletail debug metrics').
 
 For more information about Tailscale metrics, refer to
-https://tailscale.com/s/client-metrics
+https://scaletail.com/s/client-metrics
 
 `),
 	ShortUsage: "scaletail metrics <subcommand> [flags]",

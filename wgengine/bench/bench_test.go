@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/types/logger"
+	"scaletail.com/types/logger"
 )
 
 func BenchmarkTrivialNoAlloc(b *testing.B) {

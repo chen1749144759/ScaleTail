@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"tailscale.com/logtail"
+	"scaletail.com/logtail"
 )
 
 func resetLogTarget() {

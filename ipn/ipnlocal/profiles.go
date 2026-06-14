@@ -15,18 +15,18 @@ import (
 	"slices"
 	"strings"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/persist"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/testenv"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnext"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/persist"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/testenv"
 )
 
 var debug = envknob.RegisterBool("TS_DEBUG_PROFILES")
@@ -685,9 +685,9 @@ func (pm *profileManager) loadSavedPrefs(k ipn.StateKey) (ipn.PrefsView, error) 
 	}
 	pm.logf("using backend prefs for %q: %v", k, savedPrefs.Pretty())
 
-	// Ignore any old stored preferences for https://login.tailscale.com
+	// Ignore any old stored preferences for https://login.scaletail.com
 	// as the control server that would override the new default of
-	// controlplane.tailscale.com.
+	// controlplane.scaletail.com.
 	if savedPrefs.ControlURL != "" &&
 		savedPrefs.ControlURL != ipn.DefaultControlURL &&
 		ipn.IsLoginServerSynonym(savedPrefs.ControlURL) {

@@ -6,7 +6,7 @@
 package policy
 
 import (
-	"tailscale.com/tailcfg"
+	"scaletail.com/tailcfg"
 )
 
 // IsInterestingService reports whether service s on the given operating

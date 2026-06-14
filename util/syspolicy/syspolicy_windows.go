@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"os/user"
 
-	"tailscale.com/util/syspolicy/internal"
-	"tailscale.com/util/syspolicy/rsop"
-	"tailscale.com/util/syspolicy/setting"
-	"tailscale.com/util/syspolicy/source"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/syspolicy/internal"
+	"scaletail.com/util/syspolicy/rsop"
+	"scaletail.com/util/syspolicy/setting"
+	"scaletail.com/util/syspolicy/source"
+	"scaletail.com/util/testenv"
 )
 
 func init() {

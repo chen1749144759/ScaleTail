@@ -32,9 +32,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: connectors.tailscale.com
+    name: connectors.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: Connector
         listKind: ConnectorList
@@ -73,7 +73,7 @@ spec:
                     exit node.
                     Connector is a cluster-scoped resource.
                     More info:
-                    https://tailscale.com/kb/1441/kubernetes-operator-connector
+                    https://scaletail.com/kb/1441/kubernetes-operator-connector
                 properties:
                     apiVersion:
                         description: |-
@@ -113,7 +113,7 @@ spec:
                                     can be whitelisted, it is also your responsibility to ensure that cluster traffic from the connector flows
                                     via that predictable IP, for example by enforcing that cluster egress traffic is routed via an egress NAT
                                     device with a static IP address.
-                                    https://tailscale.com/kb/1281/app-connectors
+                                    https://scaletail.com/kb/1281/app-connectors
                                 properties:
                                     routes:
                                         description: |-
@@ -121,7 +121,7 @@ spec:
                                             If not set, routes for the domains will be discovered dynamically.
                                             If set, the app connector will immediately be able to route traffic using the preconfigured routes, but may
                                             also dynamically discover other routes.
-                                            https://tailscale.com/kb/1332/apps-best-practices#preconfiguration
+                                            https://scaletail.com/kb/1332/apps-best-practices#preconfiguration
                                         items:
                                             format: cidr
                                             type: string
@@ -132,7 +132,7 @@ spec:
                                 description: |-
                                     ExitNode defines whether the Connector device should act as a Tailscale exit node. Defaults to false.
                                     This field is mutually exclusive with the appConnector field.
-                                    https://tailscale.com/kb/1103/exit-nodes
+                                    https://scaletail.com/kb/1103/exit-nodes
                                 type: boolean
                             hostname:
                                 description: |-
@@ -164,7 +164,7 @@ spec:
                                 description: |-
                                     Replicas specifies how many devices to create. Set this to enable
                                     high availability for app connectors, subnet routers, or exit nodes.
-                                    https://tailscale.com/kb/1115/high-availability. Defaults to 1.
+                                    https://scaletail.com/kb/1115/high-availability. Defaults to 1.
                                 format: int32
                                 minimum: 0
                                 type: integer
@@ -172,7 +172,7 @@ spec:
                                 description: |-
                                     SubnetRouter defines subnet routes that the Connector device should
                                     expose to tailnet as a Tailscale subnet router.
-                                    https://tailscale.com/kb/1019/subnets/
+                                    https://scaletail.com/kb/1019/subnets/
                                     If this field is unset, the device does not get configured as a Tailscale subnet router.
                                     This field is mutually exclusive with the appConnector field.
                                 properties:
@@ -181,7 +181,7 @@ spec:
                                             AdvertiseRoutes refer to CIDRs that the subnet router should make
                                             available. Route values must be strings that represent a valid IPv4
                                             or IPv6 CIDR range. Values can be Tailscale 4via6 subnet routes.
-                                            https://tailscale.com/kb/1201/4via6-subnets/
+                                            https://scaletail.com/kb/1201/4via6-subnets/
                                         items:
                                             format: cidr
                                             type: string
@@ -197,9 +197,9 @@ spec:
                                     To autoapprove the subnet routes or exit node defined by a Connector,
                                     you can configure Tailscale ACLs to give these tags the necessary
                                     permissions.
-                                    See https://tailscale.com/kb/1337/acl-syntax#autoapprovers.
+                                    See https://scaletail.com/kb/1337/acl-syntax#autoapprovers.
                                     If you specify custom tags here, you must also make the operator an owner of these tags.
-                                    See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+                                    See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
                                     Tags cannot be changed once a Connector node has been created.
                                     Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
                                 items:
@@ -349,9 +349,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: dnsconfigs.tailscale.com
+    name: dnsconfigs.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: DNSConfig
         listKind: DNSConfigList
@@ -396,7 +396,7 @@ spec:
                     DNSConfig is a singleton - you must not create more than one.
                     NB: if you want cluster workloads to be able to refer to Tailscale Ingress
                     using its MagicDNS name, you must also annotate the Ingress resource with
-                    tailscale.com/experimental-forward-cluster-traffic-via-ingress annotation to
+                    scaletail.com/experimental-forward-cluster-traffic-via-ingress annotation to
                     ensure that the proxy created for the Ingress listens on its Pod IP address.
                 properties:
                     apiVersion:
@@ -1466,9 +1466,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: proxyclasses.tailscale.com
+    name: proxyclasses.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: ProxyClass
         listKind: ProxyClassList
@@ -1491,12 +1491,12 @@ spec:
                     ProxyClass describes a set of configuration parameters that can be applied to
                     proxy resources created by the Tailscale Kubernetes operator.
                     To apply a given ProxyClass to resources created for a tailscale Ingress or
-                    Service, use tailscale.com/proxy-class=<proxyclass-name> label. To apply a
+                    Service, use scaletail.com/proxy-class=<proxyclass-name> label. To apply a
                     given ProxyClass to resources created for a Connector, use
                     connector.spec.proxyClass field.
                     ProxyClass is a cluster scoped resource.
                     More info:
-                    https://tailscale.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
+                    https://scaletail.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
                 properties:
                     apiVersion:
                         description: |-
@@ -1524,7 +1524,7 @@ spec:
                                 description: |-
                                     Configuration for proxy metrics. Metrics are currently not supported
                                     for egress proxies and for Ingress proxies that have been configured
-                                    with tailscale.com/experimental-forward-cluster-traffic-via-ingress
+                                    with scaletail.com/experimental-forward-cluster-traffic-via-ingress
                                     annotation. Note that the metrics are currently considered unstable
                                     and will likely change in breaking ways in the future - we only
                                     recommend that you use those for debugging purposes.
@@ -3738,7 +3738,7 @@ spec:
                                 description: |-
                                     Configuration for 'static endpoints' on proxies in order to facilitate
                                     direct connections from other devices on the tailnet.
-                                    See https://tailscale.com/kb/1445/kubernetes-operator-customization#static-endpoints.
+                                    See https://scaletail.com/kb/1445/kubernetes-operator-customization#static-endpoints.
                                 properties:
                                     nodePort:
                                         description: The configuration for static endpoints using NodePort Services.
@@ -3790,7 +3790,7 @@ spec:
                                             routes advertized by other nodes on the tailnet, such as subnet
                                             routes.
                                             This is equivalent of passing --accept-routes flag to a tailscale Linux client.
-                                            https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices
+                                            https://scaletail.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices
                                             Defaults to false.
                                         type: boolean
                                 type: object
@@ -3891,9 +3891,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: proxygroups.tailscale.com
+    name: proxygroups.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: ProxyGroup
         listKind: ProxyGroupList
@@ -3929,13 +3929,13 @@ spec:
                     and egress ProxyGroups also allow for serving many annotated Services from a
                     single set of proxies to minimise resource consumption.
 
-                    For ingress and egress, use the tailscale.com/proxy-group annotation on a
+                    For ingress and egress, use the scaletail.com/proxy-group annotation on a
                     Service to specify that the proxy should be implemented by a ProxyGroup
                     instead of a single dedicated proxy.
 
                     More info:
-                    * https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress
-                    * https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress
+                    * https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress
+                    * https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress
 
                     For kube-apiserver, the ProxyGroup is a standalone resource. Use the
                     spec.kubeAPIServer field to configure options specific to the kube-apiserver
@@ -4014,7 +4014,7 @@ spec:
                                     Tags that the Tailscale devices will be tagged with. Defaults to [tag:k8s].
                                     If you specify custom tags here, make sure you also make the operator
                                     an owner of these tags.
-                                    See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+                                    See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
                                     Tags cannot be changed once a ProxyGroup device has been created.
                                     Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
                                 items:
@@ -4171,9 +4171,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: proxygrouppolicies.tailscale.com
+    name: proxygrouppolicies.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: ProxyGroupPolicy
         listKind: ProxyGroupPolicyList
@@ -4307,9 +4307,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: recorders.tailscale.com
+    name: recorders.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: Recorder
         listKind: RecorderList
@@ -4339,7 +4339,7 @@ spec:
                     it will store recordings in a local ephemeral volume. If you want to persist
                     recordings, you can configure an S3-compatible API for storage.
 
-                    More info: https://tailscale.com/kb/1484/kubernetes-operator-deploying-tsrecorder
+                    More info: https://scaletail.com/kb/1484/kubernetes-operator-deploying-tsrecorder
                 properties:
                     apiVersion:
                         description: |-
@@ -4365,7 +4365,7 @@ spec:
                                 description: |-
                                     Set to true to enable the Recorder UI. The UI lists and plays recorded sessions.
                                     The UI will be served at <MagicDNS name of the recorder>:443. Defaults to false.
-                                    Corresponds to --ui tsrecorder flag https://tailscale.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.
+                                    Corresponds to --ui tsrecorder flag https://scaletail.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.
                                     Required if S3 storage is not set up, to ensure that recordings are accessible.
                                 type: boolean
                             replicas:
@@ -5974,7 +5974,7 @@ spec:
                                     Tags that the Tailscale device will be tagged with. Defaults to [tag:k8s].
                                     If you specify custom tags here, make sure you also make the operator
                                     an owner of these tags.
-                                    See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
+                                    See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.
                                     Tags cannot be changed once a Recorder node has been created.
                                     Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$.
                                 items:
@@ -6103,9 +6103,9 @@ kind: CustomResourceDefinition
 metadata:
     annotations:
         controller-gen.kubebuilder.io/version: v0.17.0
-    name: tailnets.tailscale.com
+    name: tailnets.scaletail.com
 spec:
-    group: tailscale.com
+    group: scaletail.com
     names:
         kind: Tailnet
         listKind: TailnetList
@@ -6605,4 +6605,4 @@ metadata:
     annotations: {}
     name: tailscale
 spec:
-    controller: tailscale.com/ts-ingress
+    controller: scaletail.com/ts-ingress

@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tsnet"
-	"tailscale.com/types/views"
-	"tailscale.com/util/set"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tsnet"
+	"scaletail.com/types/views"
+	"scaletail.com/util/set"
 )
 
 // defaultStatusCacheTimeout is the duration after which cached status will be

@@ -11,13 +11,13 @@ import (
 	"sync"
 	"testing"
 
-	"tailscale.com/client/local"
-	"tailscale.com/envknob"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/lapitest"
-	"tailscale.com/tsd"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policytest"
+	"scaletail.com/client/local"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/lapitest"
+	"scaletail.com/tsd"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policytest"
 )
 
 func TestUserConnectDisconnectNonWindows(t *testing.T) {

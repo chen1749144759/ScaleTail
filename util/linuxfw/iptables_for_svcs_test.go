@@ -19,7 +19,7 @@ func Test_iptablesRunner_EnsurePortMapRuleForSvc(t *testing.T) {
 	v6Addr := netip.MustParseAddr("fd7a:115c:a1e0::701:b62a")
 	testPM := PortMap{Protocol: "tcp", MatchPort: 4003, TargetPort: 80}
 	testPM2 := PortMap{Protocol: "udp", MatchPort: 4004, TargetPort: 53}
-	v4Rule := argsForPortMapRule("test-svc", "tailscale0", v4Addr, testPM)
+	v4Rule := argsForPortMapRule("test-svc", "scaletail0", v4Addr, testPM)
 	tests := []struct {
 		name              string
 		targetIP          netip.Addr
@@ -54,10 +54,10 @@ func Test_iptablesRunner_EnsurePortMapRuleForSvc(t *testing.T) {
 			for _, ruleset := range tt.precreateSvcRules {
 				mustPrecreatePortMapRule(t, ruleset, table)
 			}
-			if err := iptr.EnsurePortMapRuleForSvc(tt.svc, "tailscale0", tt.targetIP, tt.pm); err != nil {
+			if err := iptr.EnsurePortMapRuleForSvc(tt.svc, "scaletail0", tt.targetIP, tt.pm); err != nil {
 				t.Errorf("[unexpected error] iptablesRunner.EnsurePortMapRuleForSvc() = %v", err)
 			}
-			args := argsForPortMapRule(tt.svc, "tailscale0", tt.targetIP, tt.pm)
+			args := argsForPortMapRule(tt.svc, "scaletail0", tt.targetIP, tt.pm)
 			exists, err := table.Exists("nat", "PREROUTING", args...)
 			if err != nil {
 				t.Fatalf("error checking if rule exists: %v", err)
@@ -73,8 +73,8 @@ func Test_iptablesRunner_DeletePortMapRuleForSvc(t *testing.T) {
 	v4Addr := netip.MustParseAddr("10.0.0.4")
 	v6Addr := netip.MustParseAddr("fd7a:115c:a1e0::701:b62a")
 	testPM := PortMap{Protocol: "tcp", MatchPort: 4003, TargetPort: 80}
-	v4Rule := argsForPortMapRule("test", "tailscale0", v4Addr, testPM)
-	v6Rule := argsForPortMapRule("test", "tailscale0", v6Addr, testPM)
+	v4Rule := argsForPortMapRule("test", "scaletail0", v4Addr, testPM)
+	v6Rule := argsForPortMapRule("test", "scaletail0", v6Addr, testPM)
 
 	tests := []struct {
 		name              string
@@ -112,10 +112,10 @@ func Test_iptablesRunner_DeletePortMapRuleForSvc(t *testing.T) {
 			for _, ruleset := range tt.precreateSvcRules {
 				mustPrecreatePortMapRule(t, ruleset, table)
 			}
-			if err := iptr.DeletePortMapRuleForSvc(tt.svc, "tailscale0", tt.targetIP, tt.pm); err != nil {
+			if err := iptr.DeletePortMapRuleForSvc(tt.svc, "scaletail0", tt.targetIP, tt.pm); err != nil {
 				t.Errorf("iptablesRunner.DeletePortMapRuleForSvc() errored: %v ", err)
 			}
-			deletedRule := argsForPortMapRule(tt.svc, "tailscale0", tt.targetIP, tt.pm)
+			deletedRule := argsForPortMapRule(tt.svc, "scaletail0", tt.targetIP, tt.pm)
 			exists, err := table.Exists("nat", "PREROUTING", deletedRule...)
 			if err != nil {
 				t.Fatalf("error verifying that rule does not exist after deletion: %v", err)
@@ -134,19 +134,19 @@ func Test_iptablesRunner_DeleteSvc(t *testing.T) {
 	iptr := newFakeIPTablesRunner()
 
 	// create two rules that will consitute svc1
-	s1R1 := argsForPortMapRule("svc1", "tailscale0", v4Addr, testPM)
+	s1R1 := argsForPortMapRule("svc1", "scaletail0", v4Addr, testPM)
 	mustPrecreatePortMapRule(t, s1R1, iptr.getIPTByAddr(v4Addr))
-	s1R2 := argsForPortMapRule("svc1", "tailscale0", v6Addr, testPM)
+	s1R2 := argsForPortMapRule("svc1", "scaletail0", v6Addr, testPM)
 	mustPrecreatePortMapRule(t, s1R2, iptr.getIPTByAddr(v6Addr))
 
 	// create two rules that will consitute svc2
-	s2R1 := argsForPortMapRule("svc2", "tailscale0", v4Addr, testPM)
+	s2R1 := argsForPortMapRule("svc2", "scaletail0", v4Addr, testPM)
 	mustPrecreatePortMapRule(t, s2R1, iptr.getIPTByAddr(v4Addr))
-	s2R2 := argsForPortMapRule("svc2", "tailscale0", v6Addr, testPM)
+	s2R2 := argsForPortMapRule("svc2", "scaletail0", v6Addr, testPM)
 	mustPrecreatePortMapRule(t, s2R2, iptr.getIPTByAddr(v6Addr))
 
 	// delete svc1
-	if err := iptr.DeleteSvc("svc1", "tailscale0", []netip.Addr{v4Addr, v6Addr}, []PortMap{testPM}); err != nil {
+	if err := iptr.DeleteSvc("svc1", "scaletail0", []netip.Addr{v4Addr, v6Addr}, []PortMap{testPM}); err != nil {
 		t.Fatalf("error deleting service: %v", err)
 	}
 

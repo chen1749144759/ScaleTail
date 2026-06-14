@@ -21,13 +21,13 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/httpm"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/httpm"
 )
 
 func init() {

@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/eventbus"
 )
 
 var (

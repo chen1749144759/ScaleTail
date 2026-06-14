@@ -3,7 +3,7 @@
 
 //go:build go1.19
 
-package main // import "tailscale.com/cmd/scaletaild"
+package main // import "scaletail.com/cmd/scaletaild"
 
 // TODO: check if administrator, like tswin does.
 //
@@ -42,24 +42,24 @@ import (
 	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.zx2c4.com/wintun"
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
-	"tailscale.com/drive/driveimpl"
-	"tailscale.com/envknob"
-	_ "tailscale.com/ipn/auditlog"
-	"tailscale.com/logpolicy"
-	"tailscale.com/net/dns"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tstun"
-	"tailscale.com/tsd"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/backoff"
-	"tailscale.com/util/osdiag"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/util/winutil"
-	"tailscale.com/util/winutil/gp"
-	"tailscale.com/version"
-	"tailscale.com/wf"
+	"scaletail.com/drive/driveimpl"
+	"scaletail.com/envknob"
+	_ "scaletail.com/ipn/auditlog"
+	"scaletail.com/logpolicy"
+	"scaletail.com/net/dns"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tstun"
+	"scaletail.com/tsd"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/backoff"
+	"scaletail.com/util/osdiag"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/util/winutil"
+	"scaletail.com/util/winutil/gp"
+	"scaletail.com/version"
+	"scaletail.com/wf"
 )
 
 func init() {

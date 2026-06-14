@@ -9,12 +9,12 @@ import (
 	"errors"
 	"os/exec"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/hostinfo"
-	"tailscale.com/types/logger"
-	"tailscale.com/version/distro"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/hostinfo"
+	"scaletail.com/types/logger"
+	"scaletail.com/version/distro"
 )
 
 func detectFirewallMode(logf logger.Logf, prefHint string) FirewallMode {

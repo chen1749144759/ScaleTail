@@ -18,7 +18,7 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
+	"scaletail.com/ipn"
 )
 
 const (

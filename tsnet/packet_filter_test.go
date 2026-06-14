@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/must"
-	"tailscale.com/wgengine/filter"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/must"
+	"scaletail.com/wgengine/filter"
 )
 
 // waitFor blocks until a NetMap is seen on the IPN bus that satisfies the given

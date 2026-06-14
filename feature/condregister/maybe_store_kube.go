@@ -5,4 +5,4 @@
 
 package condregister
 
-import _ "tailscale.com/ipn/store/kubestore"
+import _ "scaletail.com/ipn/store/kubestore"

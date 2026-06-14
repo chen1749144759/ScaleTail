@@ -14,13 +14,13 @@ import (
 	"sort"
 	"strings"
 
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/hostinfo"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/util/mak"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/hostinfo"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/util/mak"
 )
 
 // forceAllIPv6Endpoints is a debug knob that when set forces the client to
@@ -30,7 +30,7 @@ var forceAllIPv6Endpoints = envknob.RegisterBool("TS_DEBUG_FORCE_ALL_IPV6_ENDPOI
 
 // LoginEndpointForProxyDetermination is the URL used for testing
 // which HTTP proxy the system should use.
-var LoginEndpointForProxyDetermination = "https://controlplane.tailscale.com/"
+var LoginEndpointForProxyDetermination = "https://controlplane.scaletail.com/"
 
 func isUp(nif *net.Interface) bool       { return nif.Flags&net.FlagUp != 0 }
 func isLoopback(nif *net.Interface) bool { return nif.Flags&net.FlagLoopback != 0 }

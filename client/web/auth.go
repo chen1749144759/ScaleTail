@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
 )
 
 const (
@@ -84,7 +84,7 @@ var (
 //
 // An error is returned in any of the following cases:
 //
-//   - (errNotUsingTailscale) The request was not made over tailscale.
+//   - (errNotUsingTailscale) The request was not made over scaletail.
 //
 //   - (errNoSession) The request does not have a session.
 //
@@ -105,7 +105,7 @@ var (
 // authorized by the user. Callers can use browserSession.isAuthorized.
 //
 // The WhoIsResponse is always populated, with a non-nil Node and UserProfile,
-// unless getTailscaleBrowserSession reports errNotUsingTailscale.
+// unless getTailscaleBrowserSession reports errNotUsingScaleTail.
 func (s *Server) getSession(r *http.Request) (*browserSession, *apitype.WhoIsResponse, *ipnstate.Status, error) {
 	whoIs, whoIsErr := s.lc.WhoIs(r.Context(), r.RemoteAddr)
 	status, statusErr := s.lc.StatusWithoutPeers(r.Context())
@@ -185,7 +185,7 @@ func (s *Server) newSession(ctx context.Context, src *apitype.WhoIsResponse) (*b
 }
 
 // controlSupportsCheckMode returns whether the current control server supports web client check mode, to verify a user's identity.
-// We assume that only "tailscale.com" control servers support check mode.
+// We assume that only "scaletail.com" control servers support check mode.
 // This allows the web client to be used with non-standard control servers.
 // If an error occurs getting the control URL, this method returns true to fail closed.
 //
@@ -199,7 +199,7 @@ func (s *Server) controlSupportsCheckMode(ctx context.Context) bool {
 	if err != nil {
 		return true
 	}
-	return strings.HasSuffix(controlURL.Host, ".tailscale.com")
+	return strings.HasSuffix(controlURL.Host, ".scaletail.com")
 }
 
 // awaitUserAuth blocks until the given session auth has been completed

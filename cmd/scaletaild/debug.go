@@ -21,17 +21,17 @@ import (
 	"os"
 	"time"
 
-	"tailscale.com/derp/derphttp"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netmon"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsweb/varz"
-	"tailscale.com/types/key"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/derp/derphttp"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netmon"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsweb/varz"
+	"scaletail.com/types/key"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
 )
 
 var debugArgs struct {
@@ -151,7 +151,7 @@ func changeDeltaWatcher(ec *eventbus.Client, ctx context.Context, dump func(st *
 
 func getURL(ctx context.Context, urlStr string) error {
 	if urlStr == "login" {
-		urlStr = "https://login.tailscale.com"
+		urlStr = "https://login.scaletail.com"
 	}
 	log.SetOutput(os.Stdout)
 	ctx = httptrace.WithClientTrace(ctx, &httptrace.ClientTrace{

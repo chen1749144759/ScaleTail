@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/ipn"
-	"tailscale.com/tailcfg"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/ipn"
+	"scaletail.com/tailcfg"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 type actorWithPolicyChecks struct{ Actor }

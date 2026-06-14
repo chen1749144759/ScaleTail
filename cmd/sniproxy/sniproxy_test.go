@@ -19,17 +19,17 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/net/netns"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsnet"
-	"tailscale.com/tstest/integration"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/tstest/nettest"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/net/netns"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsnet"
+	"scaletail.com/tstest/integration"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/tstest/nettest"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
 )
 
 func TestPortForwardingArguments(t *testing.T) {

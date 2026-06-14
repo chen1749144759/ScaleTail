@@ -11,7 +11,7 @@ import (
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/types/nettype"
+	"scaletail.com/types/nettype"
 )
 
 // SetICMPErrImmunity sets socket options on pconn to prevent ICMP reception,

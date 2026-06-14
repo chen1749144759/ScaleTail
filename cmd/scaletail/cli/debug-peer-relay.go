@@ -14,7 +14,7 @@ import (
 	"slices"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/net/udprelay/status"
+	"scaletail.com/net/udprelay/status"
 )
 
 func init() {

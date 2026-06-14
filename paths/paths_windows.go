@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"golang.org/x/sys/windows"
-	"tailscale.com/util/winutil"
+	"scaletail.com/util/winutil"
 )
 
 func init() {

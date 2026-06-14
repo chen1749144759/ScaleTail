@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"os"
 
-	"tailscale.com/types/key"
+	"scaletail.com/types/key"
 )
 
 // ServerInfo identifies a coordination server by its URL and Noise public key.
 type ServerInfo struct {
 	// URL is the base URL of the coordination server, without any path
-	// (e.g. "https://controlplane.tailscale.com").
+	// (e.g. "https://controlplane.scaletail.com").
 	//
 	// There is no default value; a URL must always be supplied.
 	URL string `json:"server_url"`
@@ -32,7 +32,7 @@ type ServerInfo struct {
 //	{
 //	  "node_key": "privkey:...",
 //	  "machine_key": "privkey:...",
-//	  "server_url": "https://controlplane.tailscale.com",
+//	  "server_url": "https://controlplane.scaletail.com",
 //	  "server_key": "mkey:..."
 //	}
 //

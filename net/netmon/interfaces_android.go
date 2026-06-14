@@ -12,9 +12,9 @@ import (
 
 	"go4.org/mem"
 	"golang.org/x/sys/unix"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/syncs"
-	"tailscale.com/util/lineiter"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/syncs"
+	"scaletail.com/util/lineiter"
 )
 
 var (

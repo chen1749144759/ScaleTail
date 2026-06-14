@@ -8,8 +8,8 @@ package health
 import (
 	"expvar"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/util/usermetric"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/util/usermetric"
 )
 
 const MetricLabelWarning = "warning"

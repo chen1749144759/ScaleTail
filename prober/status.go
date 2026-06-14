@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/tsweb"
-	"tailscale.com/util/mak"
+	"scaletail.com/tsweb"
+	"scaletail.com/util/mak"
 )
 
 //go:embed status.html

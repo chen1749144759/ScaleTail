@@ -1,10 +1,10 @@
 # API Reference
 
 ## Packages
-- [tailscale.com/v1alpha1](#tailscalecomv1alpha1)
+- [scaletail.com/v1alpha1](#tailscalecomv1alpha1)
 
 
-## tailscale.com/v1alpha1
+## scaletail.com/v1alpha1
 
 
 ### Resource Types
@@ -53,7 +53,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `routes` _[Routes](#routes)_ | Routes are optional preconfigured routes for the domains routed via the app connector.<br />If not set, routes for the domains will be discovered dynamically.<br />If set, the app connector will immediately be able to route traffic using the preconfigured routes, but may<br />also dynamically discover other routes.<br />https://tailscale.com/kb/1332/apps-best-practices#preconfiguration |  | Format: cidr <br />MinItems: 1 <br />Type: string <br /> |
+| `routes` _[Routes](#routes)_ | Routes are optional preconfigured routes for the domains routed via the app connector.<br />If not set, routes for the domains will be discovered dynamically.<br />If set, the app connector will immediately be able to route traffic using the preconfigured routes, but may<br />also dynamically discover other routes.<br />https://scaletail.com/kb/1332/apps-best-practices#preconfiguration |  | Format: cidr <br />MinItems: 1 <br />Type: string <br /> |
 
 
 
@@ -67,7 +67,7 @@ node can be configured to act as a Tailscale subnet router and/or a Tailscale
 exit node.
 Connector is a cluster-scoped resource.
 More info:
-https://tailscale.com/kb/1441/kubernetes-operator-connector
+https://scaletail.com/kb/1441/kubernetes-operator-connector
 
 
 
@@ -76,7 +76,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `Connector` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -114,7 +114,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ConnectorList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -135,14 +135,14 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `tags` _[Tags](#tags)_ | Tags that the Tailscale node will be tagged with.<br />Defaults to [tag:k8s].<br />To autoapprove the subnet routes or exit node defined by a Connector,<br />you can configure Tailscale ACLs to give these tags the necessary<br />permissions.<br />See https://tailscale.com/kb/1337/acl-syntax#autoapprovers.<br />If you specify custom tags here, you must also make the operator an owner of these tags.<br />See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a Connector node has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
+| `tags` _[Tags](#tags)_ | Tags that the Tailscale node will be tagged with.<br />Defaults to [tag:k8s].<br />To autoapprove the subnet routes or exit node defined by a Connector,<br />you can configure Tailscale ACLs to give these tags the necessary<br />permissions.<br />See https://scaletail.com/kb/1337/acl-syntax#autoapprovers.<br />If you specify custom tags here, you must also make the operator an owner of these tags.<br />See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a Connector node has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
 | `hostname` _[Hostname](#hostname)_ | Hostname is the tailnet hostname that should be assigned to the<br />Connector node. If unset, hostname defaults to <connector<br />name>-connector. Hostname can contain lower case letters, numbers and<br />dashes, it must not start or end with a dash and must be between 2<br />and 63 characters long. This field should only be used when creating a connector<br />with an unspecified number of replicas, or a single replica. |  | Pattern: `^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$` <br />Type: string <br /> |
 | `hostnamePrefix` _[HostnamePrefix](#hostnameprefix)_ | HostnamePrefix specifies the hostname prefix for each<br />replica. Each device will have the integer number<br />from its StatefulSet pod appended to this prefix to form the full hostname.<br />HostnamePrefix can contain lower case letters, numbers and dashes, it<br />must not start with a dash and must be between 1 and 62 characters long. |  | Pattern: `^[a-z0-9][a-z0-9-]{0,61}$` <br />Type: string <br /> |
 | `proxyClass` _string_ | ProxyClass is the name of the ProxyClass custom resource that<br />contains configuration options that should be applied to the<br />resources created for this Connector. If unset, the operator will<br />create resources with the default configuration. |  |  |
-| `subnetRouter` _[SubnetRouter](#subnetrouter)_ | SubnetRouter defines subnet routes that the Connector device should<br />expose to tailnet as a Tailscale subnet router.<br />https://tailscale.com/kb/1019/subnets/<br />If this field is unset, the device does not get configured as a Tailscale subnet router.<br />This field is mutually exclusive with the appConnector field. |  |  |
-| `appConnector` _[AppConnector](#appconnector)_ | AppConnector defines whether the Connector device should act as a Tailscale app connector. A Connector that is<br />configured as an app connector cannot be a subnet router or an exit node. If this field is unset, the<br />Connector does not act as an app connector.<br />Note that you will need to manually configure the permissions and the domains for the app connector via the<br />Admin panel.<br />Note also that the main tested and supported use case of this config option is to deploy an app connector on<br />Kubernetes to access SaaS applications available on the public internet. Using the app connector to expose<br />cluster workloads or other internal workloads to tailnet might work, but this is not a use case that we have<br />tested or optimised for.<br />If you are using the app connector to access SaaS applications because you need a predictable egress IP that<br />can be whitelisted, it is also your responsibility to ensure that cluster traffic from the connector flows<br />via that predictable IP, for example by enforcing that cluster egress traffic is routed via an egress NAT<br />device with a static IP address.<br />https://tailscale.com/kb/1281/app-connectors |  |  |
-| `exitNode` _boolean_ | ExitNode defines whether the Connector device should act as a Tailscale exit node. Defaults to false.<br />This field is mutually exclusive with the appConnector field.<br />https://tailscale.com/kb/1103/exit-nodes |  |  |
-| `replicas` _integer_ | Replicas specifies how many devices to create. Set this to enable<br />high availability for app connectors, subnet routers, or exit nodes.<br />https://tailscale.com/kb/1115/high-availability. Defaults to 1. |  | Minimum: 0 <br /> |
+| `subnetRouter` _[SubnetRouter](#subnetrouter)_ | SubnetRouter defines subnet routes that the Connector device should<br />expose to tailnet as a Tailscale subnet router.<br />https://scaletail.com/kb/1019/subnets/<br />If this field is unset, the device does not get configured as a Tailscale subnet router.<br />This field is mutually exclusive with the appConnector field. |  |  |
+| `appConnector` _[AppConnector](#appconnector)_ | AppConnector defines whether the Connector device should act as a Tailscale app connector. A Connector that is<br />configured as an app connector cannot be a subnet router or an exit node. If this field is unset, the<br />Connector does not act as an app connector.<br />Note that you will need to manually configure the permissions and the domains for the app connector via the<br />Admin panel.<br />Note also that the main tested and supported use case of this config option is to deploy an app connector on<br />Kubernetes to access SaaS applications available on the public internet. Using the app connector to expose<br />cluster workloads or other internal workloads to tailnet might work, but this is not a use case that we have<br />tested or optimised for.<br />If you are using the app connector to access SaaS applications because you need a predictable egress IP that<br />can be whitelisted, it is also your responsibility to ensure that cluster traffic from the connector flows<br />via that predictable IP, for example by enforcing that cluster egress traffic is routed via an egress NAT<br />device with a static IP address.<br />https://scaletail.com/kb/1281/app-connectors |  |  |
+| `exitNode` _boolean_ | ExitNode defines whether the Connector device should act as a Tailscale exit node. Defaults to false.<br />This field is mutually exclusive with the appConnector field.<br />https://scaletail.com/kb/1103/exit-nodes |  |  |
+| `replicas` _integer_ | Replicas specifies how many devices to create. Set this to enable<br />high availability for app connectors, subnet routers, or exit nodes.<br />https://scaletail.com/kb/1115/high-availability. Defaults to 1. |  | Minimum: 0 <br /> |
 | `tailnet` _string_ | Tailnet specifies the tailnet this Connector should join. If blank, the default tailnet is used. When set, this<br />name must match that of a valid Tailnet resource. This field is immutable and cannot be changed once set. |  |  |
 
 
@@ -216,7 +216,7 @@ the nameserver to dsnconfig.status.nameserver.ip.
 DNSConfig is a singleton - you must not create more than one.
 NB: if you want cluster workloads to be able to refer to Tailscale Ingress
 using its MagicDNS name, you must also annotate the Ingress resource with
-tailscale.com/experimental-forward-cluster-traffic-via-ingress annotation to
+scaletail.com/experimental-forward-cluster-traffic-via-ingress annotation to
 ensure that the proxy created for the Ingress listens on its Pod IP address.
 
 
@@ -226,7 +226,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `DNSConfig` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -247,7 +247,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `DNSConfigList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -592,12 +592,12 @@ _Appears in:_
 ProxyClass describes a set of configuration parameters that can be applied to
 proxy resources created by the Tailscale Kubernetes operator.
 To apply a given ProxyClass to resources created for a scaletail Ingress or
-Service, use tailscale.com/proxy-class=<proxyclass-name> label. To apply a
+Service, use scaletail.com/proxy-class=<proxyclass-name> label. To apply a
 given ProxyClass to resources created for a Connector, use
 connector.spec.proxyClass field.
 ProxyClass is a cluster scoped resource.
 More info:
-https://tailscale.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
+https://scaletail.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
 
 
 
@@ -606,7 +606,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyClass` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -627,7 +627,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyClassList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -649,10 +649,10 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `statefulSet` _[StatefulSet](#statefulset)_ | Configuration parameters for the proxy's StatefulSet. Tailscale<br />Kubernetes operator deploys a StatefulSet for each of the user<br />configured proxies (Tailscale Ingress, Tailscale Service, Connector). |  |  |
-| `metrics` _[Metrics](#metrics)_ | Configuration for proxy metrics. Metrics are currently not supported<br />for egress proxies and for Ingress proxies that have been configured<br />with tailscale.com/experimental-forward-cluster-traffic-via-ingress<br />annotation. Note that the metrics are currently considered unstable<br />and will likely change in breaking ways in the future - we only<br />recommend that you use those for debugging purposes. |  |  |
+| `metrics` _[Metrics](#metrics)_ | Configuration for proxy metrics. Metrics are currently not supported<br />for egress proxies and for Ingress proxies that have been configured<br />with scaletail.com/experimental-forward-cluster-traffic-via-ingress<br />annotation. Note that the metrics are currently considered unstable<br />and will likely change in breaking ways in the future - we only<br />recommend that you use those for debugging purposes. |  |  |
 | `tailscale` _[TailscaleConfig](#tailscaleconfig)_ | TailscaleConfig contains options to configure the tailscale-specific<br />parameters of proxies. |  |  |
 | `useLetsEncryptStagingEnvironment` _boolean_ | Set UseLetsEncryptStagingEnvironment to true to issue TLS<br />certificates for any HTTPS endpoints exposed to the tailnet from<br />LetsEncrypt's staging environment.<br />https://letsencrypt.org/docs/staging-environment/<br />This setting only affects Tailscale Ingress resources.<br />By default Ingress TLS certificates are issued from LetsEncrypt's<br />production environment.<br />Changing this setting true -> false, will result in any<br />existing certs being re-issued from the production environment.<br />Changing this setting false (default) -> true, when certs have already<br />been provisioned from production environment will NOT result in certs<br />being re-issued from the staging environment before they need to be<br />renewed. |  |  |
-| `staticEndpoints` _[StaticEndpointsConfig](#staticendpointsconfig)_ | Configuration for 'static endpoints' on proxies in order to facilitate<br />direct connections from other devices on the tailnet.<br />See https://tailscale.com/kb/1445/kubernetes-operator-customization#static-endpoints. |  |  |
+| `staticEndpoints` _[StaticEndpointsConfig](#staticendpointsconfig)_ | Configuration for 'static endpoints' on proxies in order to facilitate<br />direct connections from other devices on the tailnet.<br />See https://scaletail.com/kb/1445/kubernetes-operator-customization#static-endpoints. |  |  |
 
 
 #### ProxyClassStatus
@@ -681,13 +681,13 @@ proxies. In addition to running a highly available set of proxies, ingress
 and egress ProxyGroups also allow for serving many annotated Services from a
 single set of proxies to minimise resource consumption.
 
-For ingress and egress, use the tailscale.com/proxy-group annotation on a
+For ingress and egress, use the scaletail.com/proxy-group annotation on a
 Service to specify that the proxy should be implemented by a ProxyGroup
 instead of a single dedicated proxy.
 
 More info:
-* https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress
-* https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress
+* https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress
+* https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress
 
 For kube-apiserver, the ProxyGroup is a standalone resource. Use the
 spec.kubeAPIServer field to configure options specific to the kube-apiserver
@@ -700,7 +700,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyGroup` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -721,7 +721,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyGroupList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -742,7 +742,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyGroupPolicy` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -763,7 +763,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `ProxyGroupPolicyList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -818,7 +818,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `type` _[ProxyGroupType](#proxygrouptype)_ | Type of the ProxyGroup proxies. Supported types are egress, ingress, and kube-apiserver.<br />Type is immutable once a ProxyGroup is created. |  | Enum: [egress ingress kube-apiserver] <br />Type: string <br /> |
-| `tags` _[Tags](#tags)_ | Tags that the Tailscale devices will be tagged with. Defaults to [tag:k8s].<br />If you specify custom tags here, make sure you also make the operator<br />an owner of these tags.<br />See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a ProxyGroup device has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
+| `tags` _[Tags](#tags)_ | Tags that the Tailscale devices will be tagged with. Defaults to [tag:k8s].<br />If you specify custom tags here, make sure you also make the operator<br />an owner of these tags.<br />See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a ProxyGroup device has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
 | `replicas` _integer_ | Replicas specifies how many replicas to create the StatefulSet with.<br />Defaults to 2. |  | Minimum: 0 <br /> |
 | `hostnamePrefix` _[HostnamePrefix](#hostnameprefix)_ | HostnamePrefix is the hostname prefix to use for tailnet devices created<br />by the ProxyGroup. Each device will have the integer number from its<br />StatefulSet pod appended to this prefix to form the full hostname.<br />HostnamePrefix can contain lower case letters, numbers and dashes, it<br />must not start with a dash and must be between 1 and 62 characters long. |  | Pattern: `^[a-z0-9][a-z0-9-]{0,61}$` <br />Type: string <br /> |
 | `proxyClass` _string_ | ProxyClass is the name of the ProxyClass custom resource that contains<br />configuration options that should be applied to the resources created<br />for this ProxyGroup. If unset, and there is no default ProxyClass<br />configured, the operator will create resources with the default<br />configuration. |  |  |
@@ -867,7 +867,7 @@ Recorder defines a tsrecorder device for recording SSH sessions. By default,
 it will store recordings in a local ephemeral volume. If you want to persist
 recordings, you can configure an S3-compatible API for storage.
 
-More info: https://tailscale.com/kb/1484/kubernetes-operator-deploying-tsrecorder
+More info: https://scaletail.com/kb/1484/kubernetes-operator-deploying-tsrecorder
 
 
 
@@ -876,7 +876,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `Recorder` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -917,7 +917,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `RecorderList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -980,8 +980,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `statefulSet` _[RecorderStatefulSet](#recorderstatefulset)_ | Configuration parameters for the Recorder's StatefulSet. The operator<br />deploys a StatefulSet for each Recorder resource. |  |  |
-| `tags` _[Tags](#tags)_ | Tags that the Tailscale device will be tagged with. Defaults to [tag:k8s].<br />If you specify custom tags here, make sure you also make the operator<br />an owner of these tags.<br />See  https://tailscale.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a Recorder node has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
-| `enableUI` _boolean_ | Set to true to enable the Recorder UI. The UI lists and plays recorded sessions.<br />The UI will be served at <MagicDNS name of the recorder>:443. Defaults to false.<br />Corresponds to --ui tsrecorder flag https://tailscale.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.<br />Required if S3 storage is not set up, to ensure that recordings are accessible. |  |  |
+| `tags` _[Tags](#tags)_ | Tags that the Tailscale device will be tagged with. Defaults to [tag:k8s].<br />If you specify custom tags here, make sure you also make the operator<br />an owner of these tags.<br />See  https://scaletail.com/kb/1236/kubernetes-operator/#setting-up-the-kubernetes-operator.<br />Tags cannot be changed once a Recorder node has been created.<br />Tag values must be in form ^tag:[a-zA-Z][a-zA-Z0-9-]*$. |  | Pattern: `^tag:[a-zA-Z][a-zA-Z0-9-]*$` <br />Type: string <br /> |
+| `enableUI` _boolean_ | Set to true to enable the Recorder UI. The UI lists and plays recorded sessions.<br />The UI will be served at <MagicDNS name of the recorder>:443. Defaults to false.<br />Corresponds to --ui tsrecorder flag https://scaletail.com/kb/1246/tailscale-ssh-session-recording#deploy-a-recorder-node.<br />Required if S3 storage is not set up, to ensure that recordings are accessible. |  |  |
 | `storage` _[Storage](#storage)_ | Configure where to store session recordings. By default, recordings will<br />be stored in a local ephemeral volume, and will not be persisted past the<br />lifetime of a specific pod. |  |  |
 | `replicas` _integer_ | Replicas specifies how many instances of tsrecorder to run. Defaults to 1. | 1 | Minimum: 0 <br /> |
 | `tailnet` _string_ | Tailnet specifies the tailnet this Recorder should join. If blank, the default tailnet is used. When set, this<br />name must match that of a valid Tailnet resource. This field is immutable and cannot be changed once set. |  |  |
@@ -1203,7 +1203,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `advertiseRoutes` _[Routes](#routes)_ | AdvertiseRoutes refer to CIDRs that the subnet router should make<br />available. Route values must be strings that represent a valid IPv4<br />or IPv6 CIDR range. Values can be Tailscale 4via6 subnet routes.<br />https://tailscale.com/kb/1201/4via6-subnets/ |  | Format: cidr <br />MinItems: 1 <br />Type: string <br /> |
+| `advertiseRoutes` _[Routes](#routes)_ | AdvertiseRoutes refer to CIDRs that the subnet router should make<br />available. Route values must be strings that represent a valid IPv4<br />or IPv6 CIDR range. Values can be Tailscale 4via6 subnet routes.<br />https://scaletail.com/kb/1201/4via6-subnets/ |  | Format: cidr <br />MinItems: 1 <br />Type: string <br /> |
 
 
 #### Tag
@@ -1251,7 +1251,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `Tailnet` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -1306,7 +1306,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `apiVersion` _string_ | `tailscale.com/v1alpha1` | | |
+| `apiVersion` _string_ | `scaletail.com/v1alpha1` | | |
 | `kind` _string_ | `TailnetList` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
@@ -1360,6 +1360,6 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `acceptRoutes` _boolean_ | AcceptRoutes can be set to true to make the proxy instance accept<br />routes advertized by other nodes on the tailnet, such as subnet<br />routes.<br />This is equivalent of passing --accept-routes flag to a scaletail Linux client.<br />https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices<br />Defaults to false. |  |  |
+| `acceptRoutes` _boolean_ | AcceptRoutes can be set to true to make the proxy instance accept<br />routes advertized by other nodes on the tailnet, such as subnet<br />routes.<br />This is equivalent of passing --accept-routes flag to a scaletail Linux client.<br />https://scaletail.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices<br />Defaults to false. |  |  |
 
 

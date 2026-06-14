@@ -6,8 +6,8 @@ package posture
 import (
 	"testing"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/syspolicy/policyclient"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/syspolicy/policyclient"
 )
 
 func TestGetSerialNumber(t *testing.T) {

@@ -11,13 +11,13 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/structs"
-	"tailscale.com/types/views"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/structs"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=Persist
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=Persist
 
 // View returns a read-only view of Persist.
 func (p *Persist) View() PersistView {

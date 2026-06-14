@@ -5,4 +5,4 @@
 
 package awsparamstore
 
-import _ "tailscale.com/feature/awsparamstore"
+import _ "scaletail.com/feature/awsparamstore"

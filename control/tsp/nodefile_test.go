@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"tailscale.com/types/key"
+	"scaletail.com/types/key"
 )
 
 func TestNodeFileRoundTrip(t *testing.T) {
@@ -20,7 +20,7 @@ func TestNodeFileRoundTrip(t *testing.T) {
 		NodeKey:    key.NewNode(),
 		MachineKey: key.NewMachine(),
 		ServerInfo: ServerInfo{
-			URL: "https://controlplane.tailscale.com",
+			URL: "https://controlplane.scaletail.com",
 			Key: key.NewMachine().Public(),
 		},
 	}
@@ -53,7 +53,7 @@ func TestNodeFileFormat(t *testing.T) {
 	const fileContents = `{
   "node_key": "privkey:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   "machine_key": "privkey:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
-  "server_url": "https://controlplane.tailscale.com",
+  "server_url": "https://controlplane.scaletail.com",
   "server_key": "mkey:1111111111111111111111111111111111111111111111111111111111111111"
 }`
 	dir := t.TempDir()
@@ -72,7 +72,7 @@ func TestNodeFileFormat(t *testing.T) {
 	if nf.MachineKey.IsZero() {
 		t.Error("machine key is zero")
 	}
-	if nf.URL != "https://controlplane.tailscale.com" {
+	if nf.URL != "https://controlplane.scaletail.com" {
 		t.Errorf("server URL = %q", nf.URL)
 	}
 	if nf.ServerInfo.Key.IsZero() {

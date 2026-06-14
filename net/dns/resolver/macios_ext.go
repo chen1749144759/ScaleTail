@@ -9,8 +9,8 @@ import (
 	"errors"
 	"net"
 
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
 )
 
 func init() {

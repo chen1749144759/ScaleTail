@@ -6,9 +6,9 @@
 package main
 
 import (
-	"tailscale.com/client/local"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/paths"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/paths"
 )
 
 func init() {

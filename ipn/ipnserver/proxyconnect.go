@@ -10,13 +10,13 @@ import (
 	"net"
 	"net/http"
 
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/logpolicy"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/logpolicy"
 )
 
 // handleProxyConnectConn handles a CONNECT request to
-// log.tailscale.com (or whatever the configured log server is). This
+// log.scaletail.com (or whatever the configured log server is). This
 // is intended for use by the Windows GUI client to log via when an
 // exit node is in use, so the logs don't go out via the exit node and
 // instead go directly, like scaletaild's. The dialer tried to do that

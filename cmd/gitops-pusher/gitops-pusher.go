@@ -25,10 +25,10 @@ import (
 	"github.com/peterbourgon/ff/v3/ffcli"
 	"github.com/tailscale/hujson"
 	"golang.org/x/oauth2/clientcredentials"
-	tsclient "tailscale.com/client/tailscale"
-	_ "tailscale.com/feature/condregister/identityfederation"
-	"tailscale.com/internal/client/tailscale"
-	"tailscale.com/util/httpm"
+	tsclient "scaletail.com/client/scaletail"
+	_ "scaletail.com/feature/condregister/identityfederation"
+	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/util/httpm"
 )
 
 var (
@@ -37,7 +37,7 @@ var (
 	cacheFname        = rootFlagSet.String("cache-file", "./version-cache.json", "filename for the previous known version hash")
 	timeout           = rootFlagSet.Duration("timeout", 5*time.Minute, "timeout for the entire CI run")
 	githubSyntax      = rootFlagSet.Bool("github-syntax", true, "use GitHub Action error syntax (https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message)")
-	apiServer         = rootFlagSet.String("api-server", "api.tailscale.com", "API server to contact")
+	apiServer         = rootFlagSet.String("api-server", "api.scaletail.com", "API server to contact")
 	failOnManualEdits = rootFlagSet.Bool("fail-on-manual-edits", false, "fail if manual edits to the ACLs in the admin panel are detected; when set to false (the default) only a warning is printed")
 )
 
@@ -253,7 +253,7 @@ func getCredentials() (*http.Client, string) {
 			}
 			client = oauthConfig.Client(context.Background())
 		} else if idok && idToken != "" && oiok && oauthId != "" {
-			if exchangeJWTForToken, ok := tailscale.HookExchangeJWTForTokenViaWIF.GetOk(); ok {
+			if exchangeJWTForToken, ok := scaletail.HookExchangeJWTForTokenViaWIF.GetOk(); ok {
 				var err error
 				apiKeyEnv, err = exchangeJWTForToken(context.Background(), fmt.Sprintf("https://%s", *apiServer), oauthId, idToken)
 				if err != nil {

@@ -12,13 +12,13 @@ import (
 	"net/http"
 	"time"
 
-	"tailscale.com/doctor"
-	"tailscale.com/doctor/ethtool"
-	"tailscale.com/doctor/permissions"
-	"tailscale.com/doctor/routetable"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/types/logger"
+	"scaletail.com/doctor"
+	"scaletail.com/doctor/ethtool"
+	"scaletail.com/doctor/permissions"
+	"scaletail.com/doctor/routetable"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/types/logger"
 )
 
 func init() {

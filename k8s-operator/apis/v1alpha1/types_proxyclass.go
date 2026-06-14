@@ -25,12 +25,12 @@ var ProxyClassKind = "ProxyClass"
 // ProxyClass describes a set of configuration parameters that can be applied to
 // proxy resources created by the Tailscale Kubernetes operator.
 // To apply a given ProxyClass to resources created for a scaletail Ingress or
-// Service, use tailscale.com/proxy-class=<proxyclass-name> label. To apply a
+// Service, use scaletail.com/proxy-class=<proxyclass-name> label. To apply a
 // given ProxyClass to resources created for a Connector, use
 // connector.spec.proxyClass field.
 // ProxyClass is a cluster scoped resource.
 // More info:
-// https://tailscale.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
+// https://scaletail.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
 type ProxyClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -61,7 +61,7 @@ type ProxyClassSpec struct {
 	StatefulSet *StatefulSet `json:"statefulSet"`
 	// Configuration for proxy metrics. Metrics are currently not supported
 	// for egress proxies and for Ingress proxies that have been configured
-	// with tailscale.com/experimental-forward-cluster-traffic-via-ingress
+	// with scaletail.com/experimental-forward-cluster-traffic-via-ingress
 	// annotation. Note that the metrics are currently considered unstable
 	// and will likely change in breaking ways in the future - we only
 	// recommend that you use those for debugging purposes.
@@ -88,7 +88,7 @@ type ProxyClassSpec struct {
 	UseLetsEncryptStagingEnvironment bool `json:"useLetsEncryptStagingEnvironment,omitempty"`
 	// Configuration for 'static endpoints' on proxies in order to facilitate
 	// direct connections from other devices on the tailnet.
-	// See https://tailscale.com/kb/1445/kubernetes-operator-customization#static-endpoints.
+	// See https://scaletail.com/kb/1445/kubernetes-operator-customization#static-endpoints.
 	// +optional
 	StaticEndpoints *StaticEndpointsConfig `json:"staticEndpoints,omitempty"`
 }
@@ -211,7 +211,7 @@ type TailscaleConfig struct {
 	// routes advertized by other nodes on the tailnet, such as subnet
 	// routes.
 	// This is equivalent of passing --accept-routes flag to a scaletail Linux client.
-	// https://tailscale.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices
+	// https://scaletail.com/kb/1019/subnets#use-your-subnet-routes-from-other-devices
 	// Defaults to false.
 	AcceptRoutes bool `json:"acceptRoutes,omitempty"`
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/go-json-experiment/json/jsontext"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=TestPrefs,TestBundle,TestValueStruct,TestGenericStruct,TestPrefsGroup -tags=test
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=TestPrefs,TestBundle,TestValueStruct,TestGenericStruct,TestPrefsGroup -tags=test
 
 // View returns a read-only view of TestPrefs.
 func (p *TestPrefs) View() TestPrefsView {

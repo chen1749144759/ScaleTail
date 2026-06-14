@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/client/tailscale/apitype"
+	"scaletail.com/client/scaletail/apitype"
 )
 
 var logoutArgs struct {

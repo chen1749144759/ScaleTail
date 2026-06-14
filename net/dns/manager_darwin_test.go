@@ -12,8 +12,8 @@ import (
 	"slices"
 	"testing"
 
-	"tailscale.com/types/logger"
-	"tailscale.com/util/dnsname"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/dnsname"
 )
 
 func newTestConfigurator(t *testing.T) *darwinConfigurator {

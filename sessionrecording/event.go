@@ -6,7 +6,7 @@ package sessionrecording
 import (
 	"net/url"
 
-	"tailscale.com/tailcfg"
+	"scaletail.com/tailcfg"
 )
 
 const (

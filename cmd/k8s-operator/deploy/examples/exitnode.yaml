@@ -2,9 +2,9 @@
 # To use both subnet routing and exit node on the same cluster, deploy a separate
 # Connector resource for each.
 # See connector.yaml for a subnet router example.
-# See: https://tailscale.com/kb/1441/kubernetes-operator-connector
+# See: https://scaletail.com/kb/1441/kubernetes-operator-connector
 ---
-apiVersion: tailscale.com/v1alpha1
+apiVersion: scaletail.com/v1alpha1
 kind: Connector
 metadata:
   name: exit-node

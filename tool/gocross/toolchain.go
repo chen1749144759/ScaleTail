@@ -82,7 +82,7 @@ func getToolchain() (toolchainDir, gorootDir string, err error) {
 	// A bunch of our tests and build processes involve re-invoking 'go build'
 	// or other build-ish commands (install, run, ...). These typically use
 	// runtime.GOROOT + "bin/go" to get at the Go binary. Even more edge case-y,
-	// tailscale.com/cmd/tsconnect needs to fish a javascript glue file out of
+	// scaletail.com/cmd/tsconnect needs to fish a javascript glue file out of
 	// GOROOT in order to build the javascript bundle for serving.
 	//
 	// Gocross always does a -trimpath on builds for reproducibility, which

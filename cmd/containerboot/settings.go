@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/ipn/conffile"
-	"tailscale.com/kube/kubeclient"
+	"scaletail.com/ipn/conffile"
+	"scaletail.com/kube/kubeclient"
 )
 
 // settings is all the configuration for containerboot.
@@ -109,7 +109,7 @@ func configFromEnv() (*settings, error) {
 		AcceptDNS:          defaultEnvBoolPointer("TS_ACCEPT_DNS"),
 		KubeSecret: func() string {
 			if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
-				return defaultEnv("TS_KUBE_SECRET", "tailscale")
+				return defaultEnv("TS_KUBE_SECRET", "scaletail")
 			}
 			return defaultEnv("TS_KUBE_SECRET", "")
 		}(),

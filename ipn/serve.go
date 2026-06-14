@@ -15,12 +15,12 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/set"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/set"
 )
 
 // ServeConfigKey returns a StateKey that stores the
@@ -609,10 +609,10 @@ func CheckFunnelAccess(port uint16, node *ipnstate.PeerStatus) error {
 // for Tailscale Funnel usage.
 func NodeCanFunnel(node *ipnstate.PeerStatus) error {
 	if !node.HasCap(tailcfg.CapabilityHTTPS) {
-		return errors.New("Funnel not available; HTTPS must be enabled. See https://tailscale.com/s/https.")
+		return errors.New("Funnel not available; HTTPS must be enabled. See https://scaletail.com/s/https.")
 	}
 	if !node.HasCap(tailcfg.NodeAttrFunnel) {
-		return errors.New("Funnel not available; \"funnel\" node attribute not set. See https://tailscale.com/s/no-funnel.")
+		return errors.New("Funnel not available; \"funnel\" node attribute not set. See https://scaletail.com/s/no-funnel.")
 	}
 	return nil
 }

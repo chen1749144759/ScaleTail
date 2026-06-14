@@ -24,13 +24,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"tailscale.com/client/tailscale/v2"
 
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/ingressservices"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
-	"tailscale.com/util/mak"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/ingressservices"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
+	"scaletail.com/util/mak"
 )
 
 func TestServicePGReconciler(t *testing.T) {
@@ -220,8 +220,8 @@ func TestValidateService(t *testing.T) {
 			Namespace: "ns-1",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
-				"tailscale.com/hostname":    "my-app",
+				"scaletail.com/proxy-group": "test-pg",
+				"scaletail.com/hostname":    "my-app",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -237,8 +237,8 @@ func TestValidateService(t *testing.T) {
 			Namespace: "ns-2",
 			UID:       types.UID("1235-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
-				"tailscale.com/hostname":    "my-app",
+				"scaletail.com/proxy-group": "test-pg",
+				"scaletail.com/hostname":    "my-app",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -310,7 +310,7 @@ func TestIgnoreRegularService(t *testing.T) {
 			// on it being set.
 			UID: types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/expose": "true",
+				"scaletail.com/expose": "true",
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -376,7 +376,7 @@ func setupTestService(t *testing.T, svcName string, hostname string, clusterIP s
 			Namespace: "default",
 			UID:       types.UID(fmt.Sprintf("%d-UID", uid)),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: corev1.ServiceSpec{

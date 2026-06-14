@@ -13,10 +13,10 @@ import (
 	"log"
 	"net/http"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
 )
 
 func serverError(w http.ResponseWriter, format string, a ...any) error {

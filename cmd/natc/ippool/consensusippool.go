@@ -14,11 +14,11 @@ import (
 
 	"github.com/hashicorp/raft"
 	"go4.org/netipx"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsconsensus"
-	"tailscale.com/tsnet"
-	"tailscale.com/util/mak"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsconsensus"
+	"scaletail.com/tsnet"
+	"scaletail.com/util/mak"
 )
 
 // ConsensusIPPool implements an [IPPool] that is distributed among members of a cluster for high availability.

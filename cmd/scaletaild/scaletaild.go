@@ -8,7 +8,7 @@
 //
 // It primarily supports Linux, though other systems will likely be
 // supported in the future.
-package main // import "tailscale.com/cmd/scaletaild"
+package main // import "scaletail.com/cmd/scaletaild"
 
 import (
 	"context"
@@ -27,43 +27,43 @@ import (
 	"syscall"
 	"time"
 
-	"tailscale.com/cmd/scaletaild/childproc"
-	"tailscale.com/control/controlclient"
-	"tailscale.com/envknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	_ "tailscale.com/feature/condregister"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/conffile"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/ipnserver"
-	"tailscale.com/ipn/store"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/logpolicy"
-	"tailscale.com/logtail"
-	"tailscale.com/net/dns"
-	"tailscale.com/net/dnsfallback"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/net/tstun"
-	"tailscale.com/paths"
-	"tailscale.com/safesocket"
-	"tailscale.com/syncs"
-	"tailscale.com/tsd"
-	"tailscale.com/types/flagtype"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/osshare"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
-	"tailscale.com/wgengine"
-	"tailscale.com/wgengine/router"
+	"scaletail.com/cmd/scaletaild/childproc"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/envknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	_ "scaletail.com/feature/condregister"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/conffile"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/ipnserver"
+	"scaletail.com/ipn/store"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/logpolicy"
+	"scaletail.com/logtail"
+	"scaletail.com/net/dns"
+	"scaletail.com/net/dnsfallback"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/net/tstun"
+	"scaletail.com/paths"
+	"scaletail.com/safesocket"
+	"scaletail.com/syncs"
+	"scaletail.com/tsd"
+	"scaletail.com/types/flagtype"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/osshare"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
+	"scaletail.com/wgengine"
+	"scaletail.com/wgengine/router"
 )
 
 // defaultTunName returns the default tun device name for the platform.
@@ -85,10 +85,10 @@ func defaultTunName() string {
 		if buildfeatures.HasSynology && buildfeatures.HasNetstack && distro.Get() == distro.Synology {
 			// Try TUN, but fall back to userspace networking if needed.
 			// See https://github.com/tailscale/tailscale-synology/issues/35
-			return "tailscale0,userspace-networking"
+			return "scaletail0,userspace-networking"
 		}
 	}
-	return "tailscale0"
+	return "scaletail0"
 }
 
 // defaultPort returns the default UDP port to listen on for disco+wireguard.
@@ -109,7 +109,7 @@ func defaultPort() uint16 {
 }
 
 var args struct {
-	// tunname is a /dev/net/tun tunnel name ("tailscale0"), the
+	// tunname is a /dev/net/tun tunnel name ("scaletail0"), the
 	// string "userspace-networking", "tap:TAPNAME[:BRIDGENAME]"
 	// or comma-separated list thereof.
 	tunname string
@@ -148,17 +148,13 @@ var subCommands = map[string]*func([]string) error{
 
 var beCLI func() // non-nil if CLI is linked in with the "ts_include_cli" build tag
 
-// shouldRunCLI reports whether we should run the Tailscale CLI (cmd/scaletail)
+// shouldRunCLI reports whether we should run the ScaleTail CLI (cmd/scaletail)
 // instead of the daemon (cmd/scaletaild) in the case when the two are linked
 // together into one binary for space savings reasons.
 func shouldRunCLI() bool {
 	if beCLI == nil {
 		// Not linked in with the "ts_include_cli" build tag.
 		return false
-	}
-	if len(os.Args) > 0 && filepath.Base(os.Args[0]) == "tailscale" {
-		// The binary was named (or hardlinked) as "tailscale".
-		return true
 	}
 	if envknob.Bool("TS_BE_CLI") {
 		// The environment variable was set to force it.
@@ -373,7 +369,7 @@ func ipnServerOpts() (o serverOptions) {
 	// If an absolute --state is provided but not --statedir, try to derive
 	// a state directory.
 	if o.VarRoot == "" && filepath.IsAbs(args.statepath) {
-		if dir := filepath.Dir(args.statepath); strings.EqualFold(filepath.Base(dir), "tailscale") {
+		if dir := filepath.Dir(args.statepath); strings.EqualFold(filepath.Base(dir), "scaletail") {
 			o.VarRoot = dir
 		}
 	}

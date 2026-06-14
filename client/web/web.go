@@ -22,27 +22,27 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/envknob"
-	"tailscale.com/envknob/featureknob"
-	"tailscale.com/feature"
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/licenses"
-	"tailscale.com/net/netutil"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsweb"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/views"
-	"tailscale.com/util/ctxkey"
-	"tailscale.com/util/httpm"
-	"tailscale.com/util/syspolicy/policyclient"
-	"tailscale.com/version"
-	"tailscale.com/version/distro"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/envknob"
+	"scaletail.com/envknob/featureknob"
+	"scaletail.com/feature"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/licenses"
+	"scaletail.com/net/netutil"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsweb"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/views"
+	"scaletail.com/util/ctxkey"
+	"scaletail.com/util/httpm"
+	"scaletail.com/util/syspolicy/policyclient"
+	"scaletail.com/version"
+	"scaletail.com/version/distro"
 )
 
 // ListenPort is the static port used for the web client when run inside scaletaild.
@@ -76,7 +76,7 @@ type Server struct {
 	assetsCleanup func()       // called from Server.Shutdown
 
 	// browserSessions is an in-memory cache of browser sessions for the
-	// full management web client, which is only accessible over Tailscale.
+	// full management web client, which is only accessible over ScaleTail.
 	//
 	// Users obtain a valid browser session by connecting to the web client
 	// over Tailscale and verifying their identity by authenticating on the
@@ -475,7 +475,7 @@ func (s *Server) authorizeRequest(w http.ResponseWriter, r *http.Request) (ok bo
 		session, _, _, err := s.getSession(r)
 		switch {
 		case errors.Is(err, errNotUsingTailscale):
-			// All requests must be made over tailscale.
+			// All requests must be made over scaletail.
 			http.Error(w, "must access over tailscale", http.StatusUnauthorized)
 			return false
 		case r.URL.Path == "/api/data" && r.Method == httpm.GET:
@@ -753,7 +753,7 @@ func (s *Server) serveAPIAuth(w http.ResponseWriter, r *http.Request) {
 		resp.Authorized = !caps.isEmpty()
 	default:
 		if whois == nil || (whois.Node.StableID == status.Self.ID) {
-			// whois being nil implies local as the request did not come over Tailscale.
+			// whois being nil implies local as the request did not come over ScaleTail.
 			s.lc.IncrementCounter(r.Context(), "web_client_viewing_local", 1)
 		} else {
 			s.lc.IncrementCounter(r.Context(), "web_client_viewing_remote", 1)

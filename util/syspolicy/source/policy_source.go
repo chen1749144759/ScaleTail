@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"io"
 
-	"tailscale.com/types/lazy"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/setting"
+	"scaletail.com/types/lazy"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/setting"
 )
 
 // ErrStoreClosed is an error returned when attempting to use a [Store] after it

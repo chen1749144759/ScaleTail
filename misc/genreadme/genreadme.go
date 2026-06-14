@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/creachadair/taskgroup"
-	"tailscale.com/tempfork/pkgdoc"
+	"scaletail.com/tempfork/pkgdoc"
 )
 
 // modulePath is the current module's import path, read from go.mod at startup.

@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"testing"
 
-	"tailscale.com/net/socks5"
+	"scaletail.com/net/socks5"
 )
 
 func TestSplitSOCKSAndHTTP(t *testing.T) {

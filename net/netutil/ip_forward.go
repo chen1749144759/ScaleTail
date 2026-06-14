@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"tailscale.com/net/netmon"
+	"scaletail.com/net/netmon"
 )
 
 // protocolsRequiredForForwarding reports whether IPv4 and/or IPv6 protocols are
@@ -73,7 +73,7 @@ func CheckIPForwarding(routes []netip.Prefix, state *netmon.State) (warn, err er
 	if state == nil {
 		return nil, fmt.Errorf("Couldn't check system's IP forwarding configuration; no link state")
 	}
-	const kbLink = "\nSee https://tailscale.com/s/ip-forwarding"
+	const kbLink = "\nSee https://scaletail.com/s/ip-forwarding"
 	wantV4, wantV6 := protocolsRequiredForForwarding(routes, state)
 	if !wantV4 && !wantV6 {
 		return nil, nil

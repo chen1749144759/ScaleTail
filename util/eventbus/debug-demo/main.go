@@ -14,10 +14,10 @@ import (
 	"net/netip"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/tsweb"
-	"tailscale.com/types/key"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/tsweb"
+	"scaletail.com/types/key"
+	"scaletail.com/util/eventbus"
 )
 
 func main() {

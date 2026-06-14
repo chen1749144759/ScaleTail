@@ -29,53 +29,53 @@ import (
 	memro "go4.org/mem"
 	"go4.org/netipx"
 	"golang.org/x/net/dns/dnsmessage"
-	"tailscale.com/appc"
-	"tailscale.com/appc/appctest"
-	"tailscale.com/control/controlclient"
-	"tailscale.com/drive"
-	"tailscale.com/drive/driveimpl"
-	"tailscale.com/feature"
-	_ "tailscale.com/feature/condregister/portmapper"
-	"tailscale.com/health"
-	"tailscale.com/hostinfo"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/conffile"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/ipn/ipnlocal/netmapcache"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/netmon"
-	"tailscale.com/net/tsaddr"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tsd"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/deptest"
-	"tailscale.com/tstest/typewalk"
-	"tailscale.com/types/appctype"
-	"tailscale.com/types/dnstype"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/views"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/eventbus/eventbustest"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
-	"tailscale.com/util/set"
-	"tailscale.com/util/syspolicy"
-	"tailscale.com/util/syspolicy/pkey"
-	"tailscale.com/util/syspolicy/policytest"
-	"tailscale.com/util/syspolicy/source"
-	"tailscale.com/wgengine"
-	"tailscale.com/wgengine/filter"
-	"tailscale.com/wgengine/filter/filtertype"
-	"tailscale.com/wgengine/wgcfg"
+	"scaletail.com/appc"
+	"scaletail.com/appc/appctest"
+	"scaletail.com/control/controlclient"
+	"scaletail.com/drive"
+	"scaletail.com/drive/driveimpl"
+	"scaletail.com/feature"
+	_ "scaletail.com/feature/condregister/portmapper"
+	"scaletail.com/health"
+	"scaletail.com/hostinfo"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/conffile"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnlocal/netmapcache"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/netmon"
+	"scaletail.com/net/tsaddr"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tsd"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/deptest"
+	"scaletail.com/tstest/typewalk"
+	"scaletail.com/types/appctype"
+	"scaletail.com/types/dnstype"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/views"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/eventbus/eventbustest"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
+	"scaletail.com/util/set"
+	"scaletail.com/util/syspolicy"
+	"scaletail.com/util/syspolicy/pkey"
+	"scaletail.com/util/syspolicy/policytest"
+	"scaletail.com/util/syspolicy/source"
+	"scaletail.com/wgengine"
+	"scaletail.com/wgengine/filter"
+	"scaletail.com/wgengine/filter/filtertype"
+	"scaletail.com/wgengine/wgcfg"
 )
 
 func inRemove(ip netip.Addr) bool {
@@ -2853,7 +2853,7 @@ func TestReconfigureAppConnector(t *testing.T) {
 			Name: "example.ts.net",
 			Tags: []string{"tag:example"},
 			CapMap: (tailcfg.NodeCapMap)(map[tailcfg.NodeCapability][]tailcfg.RawMessage{
-				"tailscale.com/app-connectors": {tailcfg.RawMessage(appCfg)},
+				"scaletail.com/app-connectors": {tailcfg.RawMessage(appCfg)},
 			}),
 		}).View(),
 	}
@@ -4665,10 +4665,10 @@ func TestValidPopBrowserURL(t *testing.T) {
 		popBrowserURL string
 		want          bool
 	}{
-		{"saas_login", "https://login.tailscale.com", "https://login.tailscale.com/a/foo", true},
-		{"saas_controlplane", "https://controlplane.tailscale.com", "https://controlplane.tailscale.com/a/foo", true},
-		{"saas_root", "https://login.tailscale.com", "https://tailscale.com/", true},
-		{"saas_bad_hostname", "https://login.tailscale.com", "https://example.com/a/foo", false},
+		{"saas_login", "https://login.scaletail.com", "https://login.scaletail.com/a/foo", true},
+		{"saas_controlplane", "https://controlplane.scaletail.com", "https://controlplane.scaletail.com/a/foo", true},
+		{"saas_root", "https://login.scaletail.com", "https://scaletail.com/", true},
+		{"saas_bad_hostname", "https://login.scaletail.com", "https://example.com/a/foo", false},
 		{"localhost", "http://localhost", "http://localhost/a/foo", true},
 		{"custom_control_url_https", "https://example.com", "https://example.com/a/foo", true},
 		{"custom_control_url_https_diff_domain", "https://example.com", "https://other.com/a/foo", true},
@@ -7541,9 +7541,9 @@ func TestDeps(t *testing.T) {
 	deptest.DepChecker{
 		OnImport: func(pkg string) {
 			switch pkg {
-			case "tailscale.com/util/syspolicy",
-				"tailscale.com/util/syspolicy/setting",
-				"tailscale.com/util/syspolicy/rsop":
+			case "scaletail.com/util/syspolicy",
+				"scaletail.com/util/syspolicy/setting",
+				"scaletail.com/util/syspolicy/rsop":
 				t.Errorf("ipn/ipnlocal: importing syspolicy package %q is not allowed; only policyclient and its deps should be used by ipn/ipnlocal", pkg)
 			}
 		},

@@ -17,14 +17,14 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/client/local"
-	"tailscale.com/ipn"
-	"tailscale.com/net/netcheck"
-	"tailscale.com/net/netmon"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/dnsname"
-	"tailscale.com/util/eventbus"
+	"scaletail.com/client/local"
+	"scaletail.com/ipn"
+	"scaletail.com/net/netcheck"
+	"scaletail.com/net/netmon"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/dnsname"
+	"scaletail.com/util/eventbus"
 )
 
 var (

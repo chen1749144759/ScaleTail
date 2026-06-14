@@ -6,10 +6,10 @@ package metrics
 import (
 	"strings"
 
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/set"
-	"tailscale.com/util/syspolicy/internal"
-	"tailscale.com/util/testenv"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/set"
+	"scaletail.com/util/syspolicy/internal"
+	"scaletail.com/util/testenv"
 )
 
 // TestState represents a metric name and its expected value.

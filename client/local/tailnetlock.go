@@ -12,10 +12,10 @@ import (
 	"fmt"
 	"net/url"
 
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tka"
-	"tailscale.com/types/key"
-	"tailscale.com/types/tkatype"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tka"
+	"scaletail.com/types/key"
+	"scaletail.com/types/tkatype"
 )
 
 // NetworkLockStatus fetches information about the tailnet key authority, if one is configured.

@@ -17,12 +17,12 @@ import (
 	"sync"
 	"time"
 
-	"tailscale.com/feature/buildfeatures"
-	"tailscale.com/syncs"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/clientmetric"
-	"tailscale.com/util/eventbus"
-	"tailscale.com/util/set"
+	"scaletail.com/feature/buildfeatures"
+	"scaletail.com/syncs"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/eventbus"
+	"scaletail.com/util/set"
 )
 
 // pollWallTimeInterval is how often we check the time to check

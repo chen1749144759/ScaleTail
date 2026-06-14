@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/tstest"
-	"tailscale.com/tstime"
-	"tailscale.com/util/must"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/tstest"
+	"scaletail.com/tstime"
+	"scaletail.com/util/must"
 )
 
 func TestDeleter(t *testing.T) {

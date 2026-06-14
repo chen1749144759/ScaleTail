@@ -1,4 +1,4 @@
-module tailscale.com
+module scaletail.com
 
 go 1.26.2
 
@@ -503,6 +503,9 @@ require (
 	mvdan.cc/gofumpt v0.6.0 // indirect
 	mvdan.cc/unparam v0.0.0-20240104100049-c549a3470d14 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
+	tailscale.com v1.81.0-pre.0.20250303195457-5449aba94c51
 )
 
 tool github.com/stacklok/frizbee
+
+replace tailscale.com => .

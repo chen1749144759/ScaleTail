@@ -20,11 +20,11 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tstest"
-	"tailscale.com/util/mak"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tstest"
+	"scaletail.com/util/mak"
 )
 
 func TestConnector(t *testing.T) {
@@ -37,7 +37,7 @@ func TestConnector(t *testing.T) {
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       tsapi.ConnectorKind,
-			APIVersion: "tailscale.com/v1alpha1",
+			APIVersion: "scaletail.com/v1alpha1",
 		},
 		Spec: tsapi.ConnectorSpec{
 			Replicas: new(int32(1)),
@@ -97,7 +97,7 @@ func TestConnector(t *testing.T) {
 		mak.Set(&secret.Data, "device_ips", []byte(`["127.0.0.1", "::1"]`))
 	})
 	expectReconciled(t, cr, "", "test")
-	cn.Finalizers = append(cn.Finalizers, "tailscale.com/finalizer")
+	cn.Finalizers = append(cn.Finalizers, "scaletail.com/finalizer")
 	cn.Status.IsExitNode = cn.Spec.ExitNode
 	cn.Status.SubnetRoutes = cn.Spec.SubnetRouter.AdvertiseRoutes.Stringify()
 	cn.Status.Hostname = hostname
@@ -373,7 +373,7 @@ func TestConnectorWithAppConnector(t *testing.T) {
 	expectEqual(t, fc, expectedSTS(t, fc, opts), removeResourceReqs)
 	// Connector's ready condition should be set to true
 
-	cn.ObjectMeta.Finalizers = append(cn.ObjectMeta.Finalizers, "tailscale.com/finalizer")
+	cn.ObjectMeta.Finalizers = append(cn.ObjectMeta.Finalizers, "scaletail.com/finalizer")
 	cn.Status.IsAppConnector = true
 	cn.Status.Devices = []tsapi.ConnectorDevice{}
 	cn.Status.Conditions = []metav1.Condition{{

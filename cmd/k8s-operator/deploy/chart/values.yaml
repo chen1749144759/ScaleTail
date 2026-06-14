@@ -13,7 +13,7 @@ oauth:
   clientSecret: ""
   # The audience for oauth.clientId if using a workload identity federation
   # OAuth client. Mutually exclusive with oauth.clientSecret.
-  # See https://tailscale.com/kb/1581/workload-identity-federation.
+  # See https://scaletail.com/kb/1581/workload-identity-federation.
   audience: ""
 
 # URL of the control plane to be used by all resources managed by the operator.
@@ -42,7 +42,7 @@ installCRDs: true
 operatorConfig:
   # ACL tag that operator will be tagged with. Operator must be made owner of
   # these tags
-  # https://tailscale.com/kb/1236/kubernetes-operator/?q=operator#setting-up-the-kubernetes-operator
+  # https://scaletail.com/kb/1236/kubernetes-operator/?q=operator#setting-up-the-kubernetes-operator
   # Multiple tags are defined as array items and passed to the operator as a comma-separated string
   defaultTags:
     - "tag:k8s-operator"
@@ -94,12 +94,12 @@ ingressClass:
 
 # proxyConfig contains configuraton that will be applied to any ingress/egress
 # proxies created by the operator.
-# https://tailscale.com/kb/1439/kubernetes-operator-cluster-ingress
-# https://tailscale.com/kb/1438/kubernetes-operator-cluster-egress
+# https://scaletail.com/kb/1439/kubernetes-operator-cluster-ingress
+# https://scaletail.com/kb/1438/kubernetes-operator-cluster-egress
 # Note that this section contains only a few global configuration options and
 # will not be updated with more configuration options in the future.
 # If you need more configuration options, take a look at ProxyClass:
-# https://tailscale.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
+# https://scaletail.com/kb/1445/kubernetes-operator-customization#cluster-resource-customization-using-proxyclass-custom-resource
 proxyConfig:
   # Configure the proxy image to use instead of the default tailscale/tailscale:latest.
   # Applying a ProxyClass with `spec.statefulSet.pod.tailscaleContainer.image`
@@ -117,7 +117,7 @@ proxyConfig:
     digest: ""
   # ACL tag that operator will tag proxies with. Operator must be made owner of
   # these tags
-  # https://tailscale.com/kb/1236/kubernetes-operator/?q=operator#setting-up-the-kubernetes-operator
+  # https://scaletail.com/kb/1236/kubernetes-operator/?q=operator#setting-up-the-kubernetes-operator
   # Multiple tags can be passed as a comma-separated string i.e 'tag:k8s-proxies,tag:prod'.
   # Note that if you pass multiple tags to this field via `--set` flag to helm upgrade/install commands you must escape the comma (for example, "tag:k8s-proxies\,tag:prod"). See https://github.com/helm/helm/issues/1556
   defaultTags: "tag:k8s"
@@ -129,7 +129,7 @@ proxyConfig:
 
 # apiServerProxyConfig allows to configure whether the operator should expose
 # Kubernetes API server.
-# https://tailscale.com/kb/1437/kubernetes-operator-api-server-proxy
+# https://scaletail.com/kb/1437/kubernetes-operator-api-server-proxy
 apiServerProxyConfig:
   # Set to "true" to create the ClusterRole permissions required for the API
   # server proxy's auth mode. In auth mode, the API server proxy impersonates

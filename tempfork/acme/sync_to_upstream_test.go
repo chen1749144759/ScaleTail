@@ -14,7 +14,7 @@ import (
 // Verify that the files tempfork/acme/*.go (other than this test file) match the
 // files in "github.com/tailscale/golang-x-crypto/acme" which is where we develop
 // our fork of golang.org/x/crypto/acme and merge with upstream, but then we vendor
-// just its acme package into tailscale.com/tempfork/acme.
+// just its acme package into scaletail.com/tempfork/acme.
 //
 // Development workflow:
 //

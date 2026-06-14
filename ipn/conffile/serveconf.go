@@ -15,9 +15,9 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
-	"tailscale.com/util/mak"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
+	"scaletail.com/util/mak"
 )
 
 // ServicesConfigFile is the config file format for services configuration.

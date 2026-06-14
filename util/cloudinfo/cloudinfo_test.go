@@ -11,7 +11,7 @@ import (
 	"slices"
 	"testing"
 
-	"tailscale.com/util/cloudenv"
+	"scaletail.com/util/cloudenv"
 )
 
 func TestCloudInfo_AWS(t *testing.T) {

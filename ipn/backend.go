@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"tailscale.com/drive"
-	"tailscale.com/health"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/empty"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/structs"
-	"tailscale.com/types/views"
+	"scaletail.com/drive"
+	"scaletail.com/health"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/empty"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/structs"
+	"scaletail.com/types/views"
 )
 
 type State int

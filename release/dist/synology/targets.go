@@ -1,9 +1,9 @@
-// Copyright (c) Tailscale Inc & contributors
+// Copyright (c) ScaleTail Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package synology
 
-import "tailscale.com/release/dist"
+import "scaletail.com/release/dist"
 
 var v5Models = []string{
 	"armv5",

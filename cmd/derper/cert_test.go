@@ -22,11 +22,11 @@ import (
 	"testing"
 	"time"
 
-	"tailscale.com/derp/derphttp"
-	"tailscale.com/derp/derpserver"
-	"tailscale.com/net/netmon"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
+	"scaletail.com/derp/derphttp"
+	"scaletail.com/derp/derpserver"
+	"scaletail.com/net/netmon"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
 )
 
 // Verify that in --certmode=manual mode, we can use a bare IP address

@@ -18,14 +18,14 @@ import (
 	"strconv"
 	"sync"
 
-	"tailscale.com/control/ts2021"
-	"tailscale.com/health"
-	"tailscale.com/ipn"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/version"
+	"scaletail.com/control/ts2021"
+	"scaletail.com/health"
+	"scaletail.com/ipn"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/version"
 )
 
 // DefaultServerURL is the default coordination server base URL,
@@ -35,7 +35,7 @@ const DefaultServerURL = ipn.DefaultControlURL
 // ClientOpts contains options for creating a new Client.
 type ClientOpts struct {
 	// ServerURL is the base URL of the coordination server
-	// (e.g. "https://controlplane.tailscale.com").
+	// (e.g. "https://controlplane.scaletail.com").
 	// If empty, DefaultServerURL is used.
 	ServerURL string
 

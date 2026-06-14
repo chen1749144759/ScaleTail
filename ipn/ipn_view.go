@@ -12,15 +12,15 @@ import (
 
 	jsonv2 "github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
-	"tailscale.com/drive"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/opt"
-	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
-	"tailscale.com/types/views"
+	"scaletail.com/drive"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/opt"
+	"scaletail.com/types/persist"
+	"scaletail.com/types/preftype"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/cloner  -clonefunc=false -type=LoginProfile,Prefs,ServeConfig,ServiceConfig,TCPPortHandler,HTTPHandler,WebServerConfig
+//go:generate go run scaletail.com/cmd/cloner  -clonefunc=false -type=LoginProfile,Prefs,ServeConfig,ServiceConfig,TCPPortHandler,HTTPHandler,WebServerConfig
 
 // View returns a read-only view of LoginProfile.
 func (p *LoginProfile) View() LoginProfileView {

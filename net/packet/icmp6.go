@@ -6,7 +6,7 @@ package packet
 import (
 	"encoding/binary"
 
-	"tailscale.com/types/ipproto"
+	"scaletail.com/types/ipproto"
 )
 
 // icmp6HeaderLength is the size of the ICMPv6 packet header, not

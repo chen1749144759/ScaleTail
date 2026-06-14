@@ -27,12 +27,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"tailscale.com/client/tailscale/v2"
 
-	"tailscale.com/ipn"
-	tsoperator "tailscale.com/k8s-operator"
-	tsapi "tailscale.com/k8s-operator/apis/v1alpha1"
-	"tailscale.com/k8s-operator/tsclient"
-	"tailscale.com/kube/kubetypes"
-	"tailscale.com/tailcfg"
+	"scaletail.com/ipn"
+	tsoperator "scaletail.com/k8s-operator"
+	tsapi "scaletail.com/k8s-operator/apis/v1alpha1"
+	"scaletail.com/k8s-operator/tsclient"
+	"scaletail.com/kube/kubetypes"
+	"scaletail.com/tailcfg"
 )
 
 func TestIngressPGReconciler(t *testing.T) {
@@ -45,7 +45,7 @@ func TestIngressPGReconciler(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -84,7 +84,7 @@ func TestIngressPGReconciler(t *testing.T) {
 	expectEqual(t, fc, certSecretRoleBinding(pg, "operator-ns", "my-svc.ts.net"))
 
 	mustUpdate(t, fc, "default", "test-ingress", func(ing *networkingv1.Ingress) {
-		ing.Annotations["tailscale.com/tags"] = "tag:custom,tag:test"
+		ing.Annotations["scaletail.com/tags"] = "tag:custom,tag:test"
 	})
 	expectReconciled(t, ingPGR, "default", "test-ingress")
 
@@ -112,7 +112,7 @@ func TestIngressPGReconciler(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("5678-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -187,7 +187,7 @@ func TestIngressPGReconciler(t *testing.T) {
 	// Test Ingress ProxyGroup change
 	createPGResources(t, fc, "test-pg-second")
 	mustUpdate(t, fc, "default", "test-ingress", func(ing *networkingv1.Ingress) {
-		ing.Annotations["tailscale.com/proxy-group"] = "test-pg-second"
+		ing.Annotations["scaletail.com/proxy-group"] = "test-pg-second"
 	})
 	expectReconciled(t, ingPGR, "default", "test-ingress")
 	expectEqual(t, fc, certSecretRole("test-pg-second", "operator-ns", "my-svc.ts.net"))
@@ -237,7 +237,7 @@ func TestIngressPGReconciler(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("5678-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -281,7 +281,7 @@ func TestIngressPGReconciler_UpdateIngressHostname(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -516,8 +516,8 @@ func TestIngressPGReconciler_HTTPEndpoint(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group":   "test-pg",
-				"tailscale.com/http-endpoint": "enabled",
+				"scaletail.com/proxy-group":   "test-pg",
+				"scaletail.com/http-endpoint": "enabled",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -593,7 +593,7 @@ func TestIngressPGReconciler_HTTPEndpoint(t *testing.T) {
 
 	// Remove HTTP endpoint annotation
 	mustUpdate(t, fc, "default", "test-ingress", func(ing *networkingv1.Ingress) {
-		delete(ing.Annotations, "tailscale.com/http-endpoint")
+		delete(ing.Annotations, "scaletail.com/http-endpoint")
 	})
 
 	// Verify reconciliation after removing HTTP
@@ -647,8 +647,8 @@ func TestIngressPGReconciler_HTTPRedirect(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group":   "test-pg",
-				"tailscale.com/http-redirect": "true",
+				"scaletail.com/proxy-group":   "test-pg",
+				"scaletail.com/http-redirect": "true",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -719,7 +719,7 @@ func TestIngressPGReconciler_HTTPRedirect(t *testing.T) {
 
 	// Remove HTTP redirect annotation
 	mustUpdate(t, fc, "default", "test-ingress", func(ing *networkingv1.Ingress) {
-		delete(ing.Annotations, "tailscale.com/http-redirect")
+		delete(ing.Annotations, "scaletail.com/http-redirect")
 	})
 
 	// Verify reconciliation after removing HTTP redirect
@@ -772,9 +772,9 @@ func TestIngressPGReconciler_HTTPEndpointAndRedirectConflict(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group":   "test-pg",
-				"tailscale.com/http-endpoint": "enabled",
-				"tailscale.com/http-redirect": "true",
+				"scaletail.com/proxy-group":   "test-pg",
+				"scaletail.com/http-endpoint": "enabled",
+				"scaletail.com/http-redirect": "true",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -865,7 +865,7 @@ func TestIngressPGReconciler_MultiCluster(t *testing.T) {
 			Namespace: "default",
 			UID:       types.UID("1234-UID"),
 			Annotations: map[string]string{
-				"tailscale.com/proxy-group": "test-pg",
+				"scaletail.com/proxy-group": "test-pg",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -1189,7 +1189,7 @@ func createPGResources(t *testing.T, fc client.Client, pgName string) {
 func setupIngressTest(t *testing.T) (*HAIngressReconciler, client.Client, *fakeTSClient) {
 	tsIngressClass := &networkingv1.IngressClass{
 		ObjectMeta: metav1.ObjectMeta{Name: "tailscale"},
-		Spec:       networkingv1.IngressClassSpec{Controller: "tailscale.com/ts-ingress"},
+		Spec:       networkingv1.IngressClassSpec{Controller: "scaletail.com/ts-ingress"},
 	}
 
 	fc := fake.NewClientBuilder().

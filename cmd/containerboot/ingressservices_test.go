@@ -9,8 +9,8 @@ import (
 	"net/netip"
 	"testing"
 
-	"tailscale.com/kube/ingressservices"
-	"tailscale.com/util/linuxfw"
+	"scaletail.com/kube/ingressservices"
+	"scaletail.com/util/linuxfw"
 )
 
 func TestSyncIngressConfigs(t *testing.T) {

@@ -43,26 +43,26 @@ import (
 	"github.com/tailscale/wireguard-go/tun"
 	"golang.org/x/net/proxy"
 
-	"tailscale.com/client/local"
-	"tailscale.com/cmd/testwrapper/flakytest"
-	"tailscale.com/internal/client/tailscale"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/store/mem"
-	"tailscale.com/net/netns"
-	"tailscale.com/net/packet"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest"
-	"tailscale.com/tstest/deptest"
-	"tailscale.com/tstest/integration"
-	"tailscale.com/tstest/integration/testcontrol"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/netmap"
-	"tailscale.com/types/views"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/must"
+	"scaletail.com/client/local"
+	"scaletail.com/cmd/testwrapper/flakytest"
+	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/store/mem"
+	"scaletail.com/net/netns"
+	"scaletail.com/net/packet"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest"
+	"scaletail.com/tstest/deptest"
+	"scaletail.com/tstest/integration"
+	"scaletail.com/tstest/integration/testcontrol"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/netmap"
+	"scaletail.com/types/views"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/must"
 )
 
 // TestListener_Server ensures that the listener type always keeps the Server
@@ -2974,13 +2974,13 @@ func TestResolveAuthKey(t *testing.T) {
 		{
 			name:         "success-federated-audience",
 			clientID:     "client-id-123",
-			audience:     "api.tailscale.com",
+			audience:     "api.scaletail.com",
 			wifAvailable: true,
 			resolveViaWIF: func(ctx context.Context, baseURL, clientID, idToken, audience string, tags []string) (string, error) {
 				if clientID != "client-id-123" {
 					return "", fmt.Errorf("unexpected client ID: %s", clientID)
 				}
-				if audience != "api.tailscale.com" {
+				if audience != "api.scaletail.com" {
 					return "", fmt.Errorf("unexpected ID token: %s", idToken)
 				}
 				return "tskey-auth-via-wif", nil
@@ -3011,7 +3011,7 @@ func TestResolveAuthKey(t *testing.T) {
 		{
 			name:         "empty-client-id-with-audience",
 			clientID:     "",
-			audience:     "api.tailscale.com",
+			audience:     "api.scaletail.com",
 			wifAvailable: true,
 			resolveViaWIF: func(ctx context.Context, baseURL, clientID, idToken, audience string, tags []string) (string, error) {
 				return "", fmt.Errorf("should not be called")
@@ -3032,7 +3032,7 @@ func TestResolveAuthKey(t *testing.T) {
 			name:         "audience-with-id-token",
 			clientID:     "client-id-123",
 			idToken:      "id-token-456",
-			audience:     "api.tailscale.com",
+			audience:     "api.scaletail.com",
 			wifAvailable: true,
 			resolveViaWIF: func(ctx context.Context, baseURL, clientID, idToken, audience string, tags []string) (string, error) {
 				return "", fmt.Errorf("should not be called")
@@ -3112,11 +3112,11 @@ func TestResolveAuthKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.oauthAvailable {
-				t.Cleanup(tailscale.HookResolveAuthKey.SetForTest(tt.resolveViaOAuth))
+				t.Cleanup(scaletail.HookResolveAuthKey.SetForTest(tt.resolveViaOAuth))
 			}
 
 			if tt.wifAvailable {
-				t.Cleanup(tailscale.HookResolveAuthKeyViaWIF.SetForTest(tt.resolveViaWIF))
+				t.Cleanup(scaletail.HookResolveAuthKeyViaWIF.SetForTest(tt.resolveViaWIF))
 			}
 
 			s := &Server{

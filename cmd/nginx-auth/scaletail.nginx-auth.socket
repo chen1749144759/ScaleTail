@@ -1,0 +1,9 @@
+﻿[Unit]
+Description=Tailscale NGINX Authentication socket
+PartOf=scaletail.nginx-auth.service
+
+[Socket]
+ListenStream=/var/run/scaletail.nginx-auth.sock
+
+[Install]
+WantedBy=sockets.target

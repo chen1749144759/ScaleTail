@@ -9,12 +9,12 @@ import (
 	"net/netip"
 	"strings"
 
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/ipproto"
-	"tailscale.com/types/views"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/ipproto"
+	"scaletail.com/types/views"
 )
 
-//go:generate go run tailscale.com/cmd/cloner --type=Match,CapMatch
+//go:generate go run scaletail.com/cmd/cloner --type=Match,CapMatch
 
 // PortRange is a range of TCP and UDP ports.
 type PortRange struct {

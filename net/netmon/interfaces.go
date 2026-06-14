@@ -7,7 +7,7 @@ import (
 	"errors"
 	"net"
 
-	"tailscale.com/syncs"
+	"scaletail.com/syncs"
 )
 
 type ifProps struct {
@@ -40,7 +40,7 @@ func (p *ifProps) set(ifName string, ifIndex int) {
 }
 
 // TODO (barnstar): This doesn't need the Monitor receiver anymore but we're
-// keeping it for API compatibility to avoid a breaking change.  This can be
+// keeping it for API compatibility to avoid a breaking change. 聽This can be
 // removed when the various clients have switched to SetTailscaleInterfaceProps
 func (m *Monitor) SetTailscaleInterfaceName(ifName string) {
 	SetTailscaleInterfaceProps(ifName, 0)
@@ -77,7 +77,7 @@ func SetTailscaleInterfaceProps(ifName string, ifIndex int) {
 }
 
 // TailscaleInterfaceName returns the name of the Tailscale interface.
-// For example, "tailscale0", "tun0", "utun3", etc or an error if unset.
+// For example, "scaletail0", "tun0", "utun3", etc or an error if unset.
 //
 // Callers must handle errors, as the Tailscale interface
 // name may not be set in some environments.

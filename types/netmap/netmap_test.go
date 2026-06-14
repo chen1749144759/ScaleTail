@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	"go4.org/mem"
-	"tailscale.com/net/netaddr"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstest/typewalk"
-	"tailscale.com/types/key"
+	"scaletail.com/net/netaddr"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstest/typewalk"
+	"scaletail.com/types/key"
 )
 
 func testNodeKey(b byte) (ret key.NodePublic) {

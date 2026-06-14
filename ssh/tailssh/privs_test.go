@@ -20,8 +20,8 @@ import (
 	"syscall"
 	"testing"
 
-	"tailscale.com/tstest"
-	"tailscale.com/types/logger"
+	"scaletail.com/tstest"
+	"scaletail.com/types/logger"
 )
 
 func TestDoDropPrivileges(t *testing.T) {

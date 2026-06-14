@@ -22,19 +22,19 @@ import (
 
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
-	"tailscale.com/disco"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/net/packet"
-	"tailscale.com/net/stun"
-	"tailscale.com/net/tstun"
-	"tailscale.com/syncs"
-	"tailscale.com/tailcfg"
-	"tailscale.com/tstime/mono"
-	"tailscale.com/types/key"
-	"tailscale.com/types/logger"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/ringlog"
-	"tailscale.com/util/slicesx"
+	"scaletail.com/disco"
+	"scaletail.com/ipn/ipnstate"
+	"scaletail.com/net/packet"
+	"scaletail.com/net/stun"
+	"scaletail.com/net/tstun"
+	"scaletail.com/syncs"
+	"scaletail.com/tailcfg"
+	"scaletail.com/tstime/mono"
+	"scaletail.com/types/key"
+	"scaletail.com/types/logger"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/ringlog"
+	"scaletail.com/util/slicesx"
 )
 
 var mtuProbePingSizesV4 []int
@@ -103,7 +103,7 @@ type endpoint struct {
 
 	expired         bool // whether the node has expired
 	isWireguardOnly bool // whether the endpoint is WireGuard only
-	relayCapable    bool // whether the node is capable of speaking via a [tailscale.com/net/udprelay.Server]
+	relayCapable    bool // whether the node is capable of speaking via a [scaletail.com/net/udprelay.Server]
 }
 
 // udpRelayEndpointReady determines whether the given relay [addrQuality] should
@@ -1258,7 +1258,7 @@ func (de *endpoint) sendDiscoPing(ep epAddr, discoKey key.DiscoPublic, txid stun
 // discoPingPurpose is the reason why a discovery ping message was sent.
 type discoPingPurpose int
 
-//go:generate go run tailscale.com/cmd/addlicense -file discopingpurpose_string.go go run golang.org/x/tools/cmd/stringer -type=discoPingPurpose -trimprefix=ping
+//go:generate go run scaletail.com/cmd/addlicense -file discopingpurpose_string.go go run golang.org/x/tools/cmd/stringer -type=discoPingPurpose -trimprefix=ping
 const (
 	// pingDiscovery means that purpose of a ping was to see if a
 	// path was valid.

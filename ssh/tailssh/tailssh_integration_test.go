@@ -33,11 +33,11 @@ import (
 	gliderssh "github.com/tailscale/gliderssh"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"tailscale.com/net/tsdial"
-	"tailscale.com/tailcfg"
-	"tailscale.com/types/key"
-	"tailscale.com/types/netmap"
-	"tailscale.com/util/set"
+	"scaletail.com/net/tsdial"
+	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
+	"scaletail.com/types/netmap"
+	"scaletail.com/util/set"
 )
 
 // This file contains integration tests of the SSH functionality. These tests

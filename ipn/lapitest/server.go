@@ -13,17 +13,17 @@ import (
 	"sync"
 	"testing"
 
-	"tailscale.com/client/local"
-	"tailscale.com/client/tailscale/apitype"
-	"tailscale.com/envknob"
-	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnauth"
-	"tailscale.com/ipn/ipnlocal"
-	"tailscale.com/ipn/ipnserver"
-	"tailscale.com/types/logger"
-	"tailscale.com/types/logid"
-	"tailscale.com/util/mak"
-	"tailscale.com/util/rands"
+	"scaletail.com/client/local"
+	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/envknob"
+	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnauth"
+	"scaletail.com/ipn/ipnlocal"
+	"scaletail.com/ipn/ipnserver"
+	"scaletail.com/types/logger"
+	"scaletail.com/types/logid"
+	"scaletail.com/util/mak"
+	"scaletail.com/util/rands"
 )
 
 // A Server is an in-process LocalAPI server that can be used in end-to-end tests.
