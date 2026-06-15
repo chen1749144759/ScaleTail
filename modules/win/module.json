@@ -1,0 +1,39 @@
+{
+  "id": "win",
+  "displayName": "ScaleTail Windows",
+  "repoName": "ScaleTail-Win",
+  "description": "Windows 平台代码：Electron 仪表盘、托盘、Inno 安装包、Windows 服务、命名管道、策略、wintun 相关构建资产。",
+  "dependsOn": [
+    "common"
+  ],
+  "include": [
+    "client/electron/**",
+    "client/systray/**",
+    "installer/**",
+    "docs/windows/**",
+    "licenses/windows.md",
+    "scripts/build-windows-installer.ps1",
+    "scripts/ensure-wintun.ps1",
+    "**/*_windows.go",
+    "**/*_windows_test.go",
+    "cmd/scaletail/windows-manifest.xml",
+    "cmd/scaletail/manifest_windows_*.syso",
+    "cmd/scaletaild/windows-manifest.xml",
+    "cmd/scaletaild/manifest_windows_*.syso",
+    "cmd/scaletaild/install_windows.go",
+    "util/winutil/**",
+    "wgengine/winnet/**"
+  ],
+  "exclude": [
+    "client/electron/node_modules/**",
+    "client/electron/dist/**",
+    "dist/**"
+  ],
+  "verify": [
+    "go test ./cmd/scaletail/... ./cmd/scaletaild/... ./client/local ./client/systray ./ipn/localapi ./paths",
+    "npm --prefix client/electron run typecheck"
+  ],
+  "build": [
+    "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\build-windows-installer.ps1"
+  ]
+}

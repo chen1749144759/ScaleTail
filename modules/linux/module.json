@@ -1,0 +1,36 @@
+{
+  "id": "linux",
+  "displayName": "ScaleTail Linux",
+  "repoName": "ScaleTail-Linux",
+  "description": "Linux 平台代码：daemon/CLI、Linux 网络栈、DNS/路由/防火墙、deb/rpm/tgz 包和 WSL 打包脚本。",
+  "dependsOn": [
+    "common"
+  ],
+  "include": [
+    "docs/sysv/**",
+    "docs/bird/**",
+    "packages/deb/**",
+    "release/deb/**",
+    "release/rpm/**",
+    "scripts/build-linux-packages-wsl.ps1",
+    "scripts/installer.sh",
+    "**/*_linux.go",
+    "**/*_linux_test.go",
+    "**/*_unix.go",
+    "**/*_unix_test.go",
+    "**/*_notwindows.go",
+    "**/*_notmacos.go",
+    "**/*_notmacos_test.go"
+  ],
+  "exclude": [
+    "dist/**"
+  ],
+  "verify": [
+    "go list -mod=mod ./...",
+    "GOOS=linux GOARCH=amd64 go test -c ./cmd/scaletail",
+    "GOOS=linux GOARCH=amd64 go test -c ./cmd/scaletaild"
+  ],
+  "build": [
+    "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\build-linux-packages-wsl.ps1 -Distro Ubuntu-24.04"
+  ]
+}

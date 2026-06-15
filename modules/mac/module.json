@@ -1,0 +1,34 @@
+{
+  "id": "mac",
+  "displayName": "ScaleTail macOS",
+  "repoName": "ScaleTail-Mac",
+  "description": "macOS 平台代码：Darwin 网络/DNS/安装逻辑、macOS pkg 构建脚本和 Apple 授权说明。",
+  "dependsOn": [
+    "common"
+  ],
+  "include": [
+    "licenses/apple.md",
+    "scripts/build-macos-pkg.sh",
+    "tstest/tailmac/**",
+    "**/*_darwin.go",
+    "**/*_darwin_test.go",
+    "**/*_macos.go",
+    "**/*_macos_test.go",
+    "**/*_apple.go",
+    "**/*_unix.go",
+    "**/*_unix_test.go",
+    "**/*_notwindows.go",
+    "**/*_notlinux.go"
+  ],
+  "exclude": [
+    "dist/**"
+  ],
+  "verify": [
+    "go list -mod=mod ./...",
+    "GOOS=darwin GOARCH=amd64 go test -c ./cmd/scaletail",
+    "GOOS=darwin GOARCH=amd64 go test -c ./cmd/scaletaild"
+  ],
+  "build": [
+    "scripts/build-macos-pkg.sh"
+  ]
+}

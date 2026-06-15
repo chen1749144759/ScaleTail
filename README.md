@@ -48,6 +48,19 @@ Headscale or ScaleTail control server
 
 Electron 主进程直接调用 `scaletaild` LocalAPI。`netcheck` 已经提供 `/localapi/v0/netcheck`，不再依赖隐藏命令行执行。
 
+## 模块化
+
+项目已开始按 `common`、`win`、`linux`、`mac` 划分模块边界，清单位于 `modules/`。
+
+当前阶段采用清单式模块化，不直接搬动 Go 包目录，避免破坏 `scaletail.com/...` 包路径和平台 build tag。后续拆成多个 Git 仓库时，可以用模块脚本导出目标平台需要的文件集合：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\module.ps1 list
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\module.ps1 export -Module win -OutDir D:\exports\ScaleTail-Win -Clean
+```
+
+`win`、`linux`、`mac` 会自动带上 `common`。详细说明见 `modules/README.md`。
+
 ## Windows 构建
 
 推荐在 Windows 上构建：
