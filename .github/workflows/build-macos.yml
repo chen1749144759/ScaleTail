@@ -38,7 +38,7 @@ jobs:
             --out "dist/macos-${{ matrix.goarch }}"
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: scaletail-macos-${{ inputs.version }}-${{ matrix.goarch }}
           path: |
