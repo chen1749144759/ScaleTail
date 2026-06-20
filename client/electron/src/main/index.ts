@@ -13,8 +13,10 @@ import {
   validateHostname,
   watchIPNBus,
 } from "./localapi";
+import { readClientReportConfig, saveClientReportConfig } from "./report_config";
 import { getServiceOverview, startScaleTailService } from "./service";
-import { BackendState, ConnectRequest, Status } from "../shared/types";
+import { startTelemetryReporter } from "./telemetry";
+import { BackendState, ClientReportConfig, ConnectRequest, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
 
@@ -23,6 +25,7 @@ let tray: Tray | undefined;
 let isQuitting = false;
 let lastStatus: Status | undefined;
 let stopWatch: (() => void) | undefined;
+let stopTelemetry: (() => void) | undefined;
 let refreshTimer: NodeJS.Timeout | undefined;
 let authBrowserAllowedUntil = 0;
 let authBrowserSuppressedUntil = 0;
@@ -46,6 +49,7 @@ app.whenReady().then(async () => {
   createTray();
   registerIPC();
   startDaemonWatch();
+  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
   refreshTimer = setInterval(() => void refreshTrayStatus(), 8000);
   await refreshTrayStatus();
 
@@ -58,6 +62,7 @@ app.whenReady().then(async () => {
 app.on("before-quit", () => {
   isQuitting = true;
   stopWatch?.();
+  stopTelemetry?.();
   if (refreshTimer) {
     clearInterval(refreshTimer);
   }
@@ -234,11 +239,22 @@ function registerIPC(): void {
     await refreshTrayStatus();
     return overview;
   });
+  ipcMain.handle("api:getReportConfig", async () => readClientReportConfig());
+  ipcMain.handle("api:saveReportConfig", async (_event, config: ClientReportConfig) => {
+    const saved = saveClientReportConfig(config);
+    restartTelemetryReporter();
+    return saved;
+  });
   ipcMain.handle("window:dashboard", async () => openRoute("dashboard"));
   ipcMain.handle("window:connect", async () => openRoute("connect"));
   ipcMain.handle("window:close", async () => {
     mainWindow?.hide();
   });
+}
+
+function restartTelemetryReporter(): void {
+  stopTelemetry?.();
+  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
 }
 
 async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: string; message: string }> {
@@ -267,7 +283,7 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
     allowAuthBrowser();
   }
   await startWithPrefs(prefs, authKey);
-  if (state === "NeedsLogin" || !status.HaveNodeKey) {
+  if (!authKey && (state === "NeedsLogin" || !status.HaveNodeKey)) {
     await startLoginInteractive();
   }
   const nextStatus = await waitForConnectionProgress(authKey);

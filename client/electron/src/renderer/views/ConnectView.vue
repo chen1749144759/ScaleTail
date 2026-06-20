@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { Copy, LayoutDashboard, LogOut, PlugZap, PowerOff } from "lucide-vue-next";
 import StatusPill from "../components/StatusPill.vue";
-import type { Prefs, Status } from "../../shared/types";
+import type { ClientReportConfig, Prefs, Status } from "../../shared/types";
 
 const emit = defineEmits<{
   "open-dashboard": [];
@@ -17,6 +17,15 @@ const hostname = ref("");
 const authKey = ref("");
 const acceptRoutes = ref(true);
 const loading = ref(false);
+const reportConfig = ref<ClientReportConfig>({
+  enabled: false,
+  baseURL: "",
+  token: "",
+  intervalSeconds: 15,
+  flowEnabled: true,
+  quotaGuardEnabled: true,
+});
+const reportSaving = ref(false);
 const message = ref("");
 const error = ref("");
 const logoutConfirmOpen = ref(false);
@@ -55,12 +64,14 @@ async function load() {
   loading.value = true;
   error.value = "";
   try {
-    const [nextStatus, nextPrefs] = await Promise.all([
+    const [nextStatus, nextPrefs, nextReportConfig] = await Promise.all([
       window.scaletail.getStatus(false),
       window.scaletail.getPrefs(),
+      window.scaletail.getReportConfig(),
     ]);
     status.value = nextStatus;
     prefs.value = nextPrefs;
+    reportConfig.value = nextReportConfig;
     parseControlURL(nextPrefs.ControlURL || "");
     hostname.value = nextPrefs.Hostname || "";
     if (typeof nextPrefs.RouteAll === "boolean") {
@@ -76,6 +87,20 @@ async function load() {
     error.value = messageOf(err);
   } finally {
     loading.value = false;
+  }
+}
+
+async function saveReportConfig() {
+  reportSaving.value = true;
+  error.value = "";
+  message.value = "";
+  try {
+    reportConfig.value = await window.scaletail.saveReportConfig(reportConfig.value);
+    message.value = "平台上报配置已保存。";
+  } catch (err) {
+    error.value = messageOf(err);
+  } finally {
+    reportSaving.value = false;
   }
 }
 
@@ -260,6 +285,37 @@ function messageOf(err: unknown) {
       <label class="field">
         <span>预认证密钥，可选</span>
         <input v-model="authKey" :disabled="configLocked" type="password" placeholder="tskey-auth-... 或 hskey-auth-..." />
+      </label>
+
+      <div class="command-head">
+        <strong>平台上报</strong>
+        <button class="btn" :disabled="reportSaving" @click="saveReportConfig">保存</button>
+      </div>
+      <div class="checks">
+        <label>
+          <input v-model="reportConfig.enabled" type="checkbox" />
+          启用流量统计、策略领取与安全审计上报
+        </label>
+        <label>
+          <input v-model="reportConfig.flowEnabled" type="checkbox" />
+          启用连接/请求分析
+        </label>
+        <label>
+          <input v-model="reportConfig.quotaGuardEnabled" type="checkbox" />
+          启用本地配额守卫
+        </label>
+      </div>
+      <label class="field">
+        <span>管理平台地址</span>
+        <input v-model="reportConfig.baseURL" type="text" placeholder="http://192.168.1.10:5175" />
+      </label>
+      <label class="field">
+        <span>上报密钥</span>
+        <input v-model="reportConfig.token" type="password" placeholder="与 ScaleForge 的 SCALETAIL_CLIENT_TOKEN 保持一致" />
+      </label>
+      <label class="field">
+        <span>上报周期，秒</span>
+        <input v-model.number="reportConfig.intervalSeconds" type="number" min="5" max="3600" placeholder="15" />
       </label>
 
       <div class="command-head">

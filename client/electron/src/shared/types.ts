@@ -63,6 +63,15 @@ export interface ConnectResponse {
   message: string;
 }
 
+export interface ClientReportConfig {
+  enabled: boolean;
+  baseURL: string;
+  token: string;
+  intervalSeconds: number;
+  flowEnabled: boolean;
+  quotaGuardEnabled: boolean;
+}
+
 export interface ServiceState {
   name: string;
   exists: boolean;
@@ -110,6 +119,8 @@ export interface ScaleTailAPI {
   runNetcheck(): Promise<NetcheckReport>;
   getServiceStatus(): Promise<ServiceOverview>;
   startService(): Promise<ServiceOverview>;
+  getReportConfig(): Promise<ClientReportConfig>;
+  saveReportConfig(config: ClientReportConfig): Promise<ClientReportConfig>;
   openDashboard(): Promise<void>;
   openConnect(): Promise<void>;
   closeWindow(): Promise<void>;

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { ConnectRequest, ScaleTailAPI } from "../shared/types";
+import { ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
 
 const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
@@ -13,6 +13,8 @@ const api: ScaleTailAPI = {
   runNetcheck: () => ipcRenderer.invoke("api:netcheck"),
   getServiceStatus: () => ipcRenderer.invoke("api:getServiceStatus"),
   startService: () => ipcRenderer.invoke("api:startService"),
+  getReportConfig: () => ipcRenderer.invoke("api:getReportConfig"),
+  saveReportConfig: (config: ClientReportConfig) => ipcRenderer.invoke("api:saveReportConfig", config),
   openDashboard: () => ipcRenderer.invoke("window:dashboard"),
   openConnect: () => ipcRenderer.invoke("window:connect"),
   closeWindow: () => ipcRenderer.invoke("window:close"),
