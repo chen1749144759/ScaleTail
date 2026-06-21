@@ -72,6 +72,20 @@ export interface ClientReportConfig {
   quotaGuardEnabled: boolean;
 }
 
+export interface ClientUpdateInfo {
+  has_update: boolean;
+  id?: number;
+  version?: string;
+  platform?: string;
+  update_type?: "suggested" | "forced" | string;
+  forced?: boolean;
+  title?: string;
+  description?: string;
+  download_url?: string;
+  release_notes?: string;
+  created_at?: string;
+}
+
 export interface ServiceState {
   name: string;
   exists: boolean;

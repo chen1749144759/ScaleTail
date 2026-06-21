@@ -16,6 +16,7 @@ import {
 import { readClientReportConfig, saveClientReportConfig } from "./report_config";
 import { getServiceOverview, startScaleTailService } from "./service";
 import { startTelemetryReporter } from "./telemetry";
+import { startClientUpdateChecker } from "./client_update";
 import { BackendState, ClientReportConfig, ConnectRequest, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
@@ -26,6 +27,7 @@ let isQuitting = false;
 let lastStatus: Status | undefined;
 let stopWatch: (() => void) | undefined;
 let stopTelemetry: (() => void) | undefined;
+let stopUpdateChecker: (() => void) | undefined;
 let refreshTimer: NodeJS.Timeout | undefined;
 let authBrowserAllowedUntil = 0;
 let authBrowserSuppressedUntil = 0;
@@ -50,6 +52,7 @@ app.whenReady().then(async () => {
   registerIPC();
   startDaemonWatch();
   stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
+  stopUpdateChecker = startClientUpdateChecker();
   refreshTimer = setInterval(() => void refreshTrayStatus(), 8000);
   await refreshTrayStatus();
 
@@ -63,6 +66,7 @@ app.on("before-quit", () => {
   isQuitting = true;
   stopWatch?.();
   stopTelemetry?.();
+  stopUpdateChecker?.();
   if (refreshTimer) {
     clearInterval(refreshTimer);
   }
@@ -243,6 +247,7 @@ function registerIPC(): void {
   ipcMain.handle("api:saveReportConfig", async (_event, config: ClientReportConfig) => {
     const saved = saveClientReportConfig(config);
     restartTelemetryReporter();
+    restartClientUpdateChecker();
     return saved;
   });
   ipcMain.handle("window:dashboard", async () => openRoute("dashboard"));
@@ -255,6 +260,11 @@ function registerIPC(): void {
 function restartTelemetryReporter(): void {
   stopTelemetry?.();
   stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
+}
+
+function restartClientUpdateChecker(): void {
+  stopUpdateChecker?.();
+  stopUpdateChecker = startClientUpdateChecker();
 }
 
 async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: string; message: string }> {
