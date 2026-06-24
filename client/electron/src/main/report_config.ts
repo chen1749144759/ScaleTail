@@ -4,17 +4,24 @@ import { app } from "electron";
 import type { ClientReportConfig } from "../shared/types";
 
 const configFileName = "client-report.json";
+const bundledConfigFileName = "report-config.json";
 const defaultIntervalSeconds = 15;
 
 export function readClientReportConfig(): ClientReportConfig {
   const fromFile = readConfigFile();
+  const fromBundle = readBundledConfigFile();
+  const envBaseURL = process.env.SCALETAIL_REPORT_URL || "";
+  const envToken = process.env.SCALETAIL_CLIENT_TOKEN || "";
+  const defaultEnabled =
+    Boolean(envBaseURL && envToken) || Boolean(fromBundle.enabled ?? (fromBundle.baseURL && fromBundle.token));
+
   return {
-    enabled: fromFile.enabled ?? Boolean(process.env.SCALETAIL_REPORT_URL && process.env.SCALETAIL_CLIENT_TOKEN),
-    baseURL: fromFile.baseURL || process.env.SCALETAIL_REPORT_URL || "",
-    token: fromFile.token || process.env.SCALETAIL_CLIENT_TOKEN || "",
-    intervalSeconds: normalizeInterval(fromFile.intervalSeconds),
-    flowEnabled: fromFile.flowEnabled ?? true,
-    quotaGuardEnabled: fromFile.quotaGuardEnabled ?? true,
+    enabled: fromFile.enabled ?? defaultEnabled,
+    baseURL: fromFile.baseURL || envBaseURL || fromBundle.baseURL || "",
+    token: fromFile.token || envToken || fromBundle.token || "",
+    intervalSeconds: normalizeInterval(fromFile.intervalSeconds ?? fromBundle.intervalSeconds),
+    flowEnabled: fromFile.flowEnabled ?? fromBundle.flowEnabled ?? true,
+    quotaGuardEnabled: fromFile.quotaGuardEnabled ?? fromBundle.quotaGuardEnabled ?? true,
   };
 }
 
@@ -49,8 +56,28 @@ function normalizeInterval(value: unknown): number {
 }
 
 function readConfigFile(): Partial<ClientReportConfig> {
+  return readJSONConfig(configPath());
+}
+
+function readBundledConfigFile(): Partial<ClientReportConfig> {
+  const resourcesPath = (process as typeof process & { resourcesPath?: string }).resourcesPath;
+  const candidates = [
+    resourcesPath ? path.join(resourcesPath, "app", "resources", bundledConfigFileName) : "",
+    path.join(app.getAppPath(), "resources", bundledConfigFileName),
+  ].filter(Boolean);
+
+  for (const file of [...new Set(candidates)]) {
+    const parsed = readJSONConfig(file);
+    if (Object.keys(parsed).length > 0) {
+      return parsed;
+    }
+  }
+  return {};
+}
+
+function readJSONConfig(file: string): Partial<ClientReportConfig> {
   try {
-    const raw = fs.readFileSync(configPath(), "utf8");
+    const raw = fs.readFileSync(file, "utf8");
     const parsed = JSON.parse(raw) as Partial<ClientReportConfig>;
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {

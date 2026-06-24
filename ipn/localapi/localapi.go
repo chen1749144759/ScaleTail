@@ -44,6 +44,7 @@ import (
 	"scaletail.com/types/logger"
 	"scaletail.com/types/logid"
 	"scaletail.com/util/clientmetric"
+	"scaletail.com/util/dnsname"
 	"scaletail.com/util/eventbus"
 	"scaletail.com/util/httpm"
 	"scaletail.com/util/mak"
@@ -86,6 +87,7 @@ var handler = map[string]LocalAPIHandler{
 	"prefs":                (*Handler).servePrefs,
 	"reload-config":        (*Handler).reloadConfig,
 	"reset-auth":           (*Handler).serveResetAuth,
+	"scaletail-up":         (*Handler).serveScaleTailUp,
 	"services":             (*Handler).serveServices,
 	"set-expiry-sooner":    (*Handler).serveSetExpirySooner,
 	"shutdown":             (*Handler).serveShutdown,
@@ -939,6 +941,92 @@ func (h *Handler) serveStart(w http.ResponseWriter, r *http.Request) {
 		// TODO(bradfitz): map error to a good HTTP error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type scaleTailUpRequest struct {
+	ControlURL   string
+	AuthKey      string
+	Hostname     string
+	AcceptRoutes bool
+	AcceptDNS    *bool
+}
+
+func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
+	if !h.PermitWrite {
+		http.Error(w, "access denied", http.StatusForbidden)
+		return
+	}
+	if r.Method != httpm.POST {
+		http.Error(w, "want POST", http.StatusBadRequest)
+		return
+	}
+	var req scaleTailUpRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	controlURL := strings.TrimSpace(req.ControlURL)
+	if controlURL == "" {
+		http.Error(w, "missing ControlURL", http.StatusBadRequest)
+		return
+	}
+	u, err := url.Parse(controlURL)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		http.Error(w, "invalid ControlURL", http.StatusBadRequest)
+		return
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		http.Error(w, "ControlURL scheme must be http or https", http.StatusBadRequest)
+		return
+	}
+
+	hostname := strings.TrimSpace(req.Hostname)
+	if hostname != "" {
+		if err := dnsname.ValidHostname(hostname); err != nil {
+			http.Error(w, "invalid Hostname: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	acceptDNS := true
+	if req.AcceptDNS != nil {
+		acceptDNS = *req.AcceptDNS
+	}
+	prefs := ipn.NewPrefs()
+	prefs.ControlURL = controlURL
+	prefs.WantRunning = true
+	prefs.LoggedOut = false
+	prefs.RouteAll = req.AcceptRoutes
+	prefs.CorpDNS = acceptDNS
+	prefs.Hostname = hostname
+
+	if h.b.HealthTracker().IsUnhealthy(ipn.StateStoreHealth) {
+		http.Error(w, "cannot start backend when state store is unhealthy", http.StatusInternalServerError)
+		return
+	}
+	if err := h.b.CheckPrefs(prefs); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	st := h.b.StatusWithoutPeers()
+	hadNodeKey := st != nil && st.HaveNodeKey
+	err = h.b.Start(ipn.Options{
+		AuthKey:     strings.TrimSpace(req.AuthKey),
+		UpdatePrefs: prefs,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !hadNodeKey {
+		if err := h.b.StartLoginInteractiveAs(r.Context(), h.Actor); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

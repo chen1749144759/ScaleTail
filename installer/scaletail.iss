@@ -1,4 +1,4 @@
-#define AppVersion "0.0.2"
+#define AppVersion "0.0.6"
 
 [Setup]
 AppName=ScaleTail
@@ -29,6 +29,9 @@ Type: files; Name: "{app}\ScaleTailUI.exe"
 Type: files; Name: "{app}\scaletail.exe"
 Type: files; Name: "{app}\scaletaild.exe"
 Type: files; Name: "{app}\scaletail-localapi.exe"
+Type: files; Name: "{app}\tailscale.exe"
+Type: files; Name: "{app}\tailscaled.exe"
+Type: files; Name: "{app}\tailscale-localapi.exe"
 Type: files; Name: "{app}\wintun.dll"
 Type: filesandordirs; Name: "{app}\resources"
 Type: filesandordirs; Name: "{app}\locales"
@@ -46,9 +49,13 @@ Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTail.exe >NUL 2>NUL |
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 命令行..."
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭本地接口辅助进程..."
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版命令行..."
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版本地接口辅助进程..."
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 ScaleTail 服务..."
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletaild.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 服务进程..."
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscaled.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版 ScaleTail 服务进程..."
 Filename: "{cmd}"; Parameters: "/C call ""{app}\scaletaild.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧服务..."
+Filename: "{cmd}"; Parameters: "/C if exist ""{app}\tailscaled.exe"" call ""{app}\tailscaled.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧版服务..."
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧服务..."
 Filename: "{app}\scaletaild.exe"; Parameters: "install-system-daemon"; Flags: runhidden waituntilterminated; StatusMsg: "正在安装 ScaleTail 服务..."
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" start ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在启动 ScaleTail 服务..."
@@ -60,9 +67,13 @@ Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTail.exe >NUL 2>NUL |
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."; RunOnceId: "CloseScaleTailUI"
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 命令行..."; RunOnceId: "CloseScaleTailCLI"
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭本地接口辅助进程..."; RunOnceId: "CloseScaleTailLocalAPIHelper"
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版命令行..."; RunOnceId: "CloseLegacyTailscaleCLI"
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版本地接口辅助进程..."; RunOnceId: "CloseLegacyTailscaleLocalAPIHelper"
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 ScaleTail 服务..."; RunOnceId: "StopScaleTailService"
 Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletaild.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 服务进程..."; RunOnceId: "CloseScaleTailDaemon"
+Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscaled.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版 ScaleTail 服务进程..."; RunOnceId: "CloseLegacyTailscaleDaemon"
 Filename: "{cmd}"; Parameters: "/C call ""{app}\scaletaild.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在卸载 ScaleTail 服务..."; RunOnceId: "UninstallScaleTailService"
+Filename: "{cmd}"; Parameters: "/C if exist ""{app}\tailscaled.exe"" call ""{app}\tailscaled.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在卸载旧版 ScaleTail 服务..."; RunOnceId: "UninstallLegacyTailscaleService"
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在删除 ScaleTail 服务..."; RunOnceId: "DeleteScaleTailService"
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop WinTun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 WinTun 驱动..."; RunOnceId: "StopWinTun"
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete WinTun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在删除 WinTun 驱动..."; RunOnceId: "DeleteWinTun"
@@ -87,10 +98,14 @@ begin
   RunHidden('taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL');
   RunHidden('taskkill /F /T /IM scaletail.exe >NUL 2>NUL');
   RunHidden('taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL');
+  RunHidden('taskkill /F /T /IM tailscale.exe >NUL 2>NUL');
+  RunHidden('taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL');
   RunHidden('call "' + ExpandConstant('{sys}\sc.exe') + '" stop ScaleTail >NUL 2>NUL');
   RunHidden('timeout /T 2 /NOBREAK >NUL');
   RunHidden('taskkill /F /T /IM scaletaild.exe >NUL 2>NUL');
+  RunHidden('taskkill /F /T /IM tailscaled.exe >NUL 2>NUL');
   RunHidden('call "' + ExpandConstant('{app}\scaletaild.exe') + '" uninstall-system-daemon >NUL 2>NUL');
+  RunHidden('if exist "' + ExpandConstant('{app}\tailscaled.exe') + '" call "' + ExpandConstant('{app}\tailscaled.exe') + '" uninstall-system-daemon >NUL 2>NUL');
   RunHidden('call "' + ExpandConstant('{sys}\sc.exe') + '" delete ScaleTail >NUL 2>NUL');
 end;
 

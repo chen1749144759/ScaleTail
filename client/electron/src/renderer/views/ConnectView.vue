@@ -95,7 +95,15 @@ async function saveReportConfig() {
   error.value = "";
   message.value = "";
   try {
-    reportConfig.value = await window.scaletail.saveReportConfig(reportConfig.value);
+    const nextConfig: ClientReportConfig = {
+      enabled: Boolean(reportConfig.value.enabled),
+      baseURL: reportConfig.value.baseURL,
+      token: reportConfig.value.token,
+      intervalSeconds: Number(reportConfig.value.intervalSeconds),
+      flowEnabled: Boolean(reportConfig.value.flowEnabled),
+      quotaGuardEnabled: Boolean(reportConfig.value.quotaGuardEnabled),
+    };
+    reportConfig.value = await window.scaletail.saveReportConfig(nextConfig);
     message.value = "平台上报配置已保存。";
   } catch (err) {
     error.value = messageOf(err);

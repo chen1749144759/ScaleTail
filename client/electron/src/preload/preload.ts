@@ -14,7 +14,7 @@ const api: ScaleTailAPI = {
   getServiceStatus: () => ipcRenderer.invoke("api:getServiceStatus"),
   startService: () => ipcRenderer.invoke("api:startService"),
   getReportConfig: () => ipcRenderer.invoke("api:getReportConfig"),
-  saveReportConfig: (config: ClientReportConfig) => ipcRenderer.invoke("api:saveReportConfig", config),
+  saveReportConfig: (config: ClientReportConfig) => ipcRenderer.invoke("api:saveReportConfig", cleanReportConfig(config)),
   openDashboard: () => ipcRenderer.invoke("window:dashboard"),
   openConnect: () => ipcRenderer.invoke("window:connect"),
   closeWindow: () => ipcRenderer.invoke("window:close"),
@@ -31,3 +31,14 @@ const api: ScaleTailAPI = {
 };
 
 contextBridge.exposeInMainWorld("scaletail", api);
+
+function cleanReportConfig(config: ClientReportConfig): ClientReportConfig {
+  return {
+    enabled: Boolean(config.enabled),
+    baseURL: String(config.baseURL || ""),
+    token: String(config.token || ""),
+    intervalSeconds: Number(config.intervalSeconds || 15),
+    flowEnabled: Boolean(config.flowEnabled),
+    quotaGuardEnabled: Boolean(config.quotaGuardEnabled),
+  };
+}

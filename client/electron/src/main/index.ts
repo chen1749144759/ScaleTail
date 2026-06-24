@@ -8,8 +8,7 @@ import {
   patchPrefs,
   runNetcheck,
   setUseExitNode,
-  startLoginInteractive,
-  startWithPrefs,
+  startDaemonUp,
   validateHostname,
   watchIPNBus,
 } from "./localapi";
@@ -279,23 +278,13 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
 
   const controlURL = buildControlURL(req);
   const hostname = validateHostname(req.hostname);
-  const prefs = await getPrefs();
-  prefs.ControlURL = controlURL;
-  prefs.Hostname = hostname;
-  prefs.WantRunning = true;
-  prefs.LoggedOut = false;
-  prefs.RouteAll = Boolean(req.acceptRoutes);
-
   const authKey = req.authKey.trim();
   if (authKey) {
     suppressAuthBrowser();
   } else {
     allowAuthBrowser();
   }
-  await startWithPrefs(prefs, authKey);
-  if (!authKey && (state === "NeedsLogin" || !status.HaveNodeKey)) {
-    await startLoginInteractive();
-  }
+  await startDaemonUp(controlURL, hostname, authKey, Boolean(req.acceptRoutes));
   const nextStatus = await waitForConnectionProgress(authKey);
   if (!authKey && nextStatus.AuthURL) {
     openAuthURLIfAllowed(nextStatus.AuthURL);

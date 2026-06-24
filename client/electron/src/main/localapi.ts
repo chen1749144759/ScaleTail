@@ -132,10 +132,14 @@ export function watchIPNBus(onNotify: (notify: unknown) => void, onError: (err: 
 }
 
 function helperPath(): string {
+  return bundledBinaryPath(helperName);
+}
+
+function bundledBinaryPath(name: string): string {
   if (app.isPackaged) {
-    return path.join(path.dirname(process.execPath), helperName);
+    return path.join(path.dirname(process.execPath), name);
   }
-  return path.resolve(app.getAppPath(), "../../dist/windows-amd64", helperName);
+  return path.resolve(app.getAppPath(), "../../dist/windows-amd64", name);
 }
 
 export async function getStatus(peers = true): Promise<Status> {
@@ -150,15 +154,19 @@ export async function patchPrefs(body: unknown): Promise<Prefs> {
   return localRequest<Prefs>("PATCH", "/localapi/v0/prefs", body);
 }
 
-export async function startWithPrefs(prefs: Prefs, authKey: string): Promise<void> {
-  await localRequest<void>("POST", "/localapi/v0/start", {
-    UpdatePrefs: prefs,
+export async function startDaemonUp(
+  controlURL: string,
+  hostname: string,
+  authKey: string,
+  acceptRoutes: boolean,
+): Promise<void> {
+  await localRequest<void>("POST", "/localapi/v0/scaletail-up", {
+    ControlURL: controlURL,
+    Hostname: hostname,
     AuthKey: authKey,
-  }, 204, 45000);
-}
-
-export async function startLoginInteractive(): Promise<void> {
-  await localRequest<void>("POST", "/localapi/v0/login-interactive", undefined, 204, 20000);
+    AcceptRoutes: acceptRoutes,
+    AcceptDNS: true,
+  }, 204, 70000);
 }
 
 export async function logout(): Promise<void> {
