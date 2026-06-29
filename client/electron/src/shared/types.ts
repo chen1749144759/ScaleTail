@@ -43,6 +43,7 @@ export interface Prefs {
   WantRunning?: boolean;
   LoggedOut?: boolean;
   RouteAll?: boolean;
+  CorpDNS?: boolean;
   ExitNodeID?: string;
   AdvertiseRoutes?: string[];
   [key: string]: unknown;
@@ -55,6 +56,7 @@ export interface ConnectRequest {
   hostname: string;
   authKey: string;
   acceptRoutes: boolean;
+  acceptDNS: boolean;
 }
 
 export interface ConnectResponse {

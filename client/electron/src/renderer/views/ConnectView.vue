@@ -16,6 +16,7 @@ const useHTTPS = ref(false);
 const hostname = ref("");
 const authKey = ref("");
 const acceptRoutes = ref(true);
+const acceptDNS = ref(true);
 const loading = ref(false);
 const reportConfig = ref<ClientReportConfig>({
   enabled: false,
@@ -46,6 +47,7 @@ const commandLine = computed(() => {
     "up",
     `--login-server=${quoteArg(controlURL.value)}`,
     `--accept-routes=${acceptRoutes.value ? "true" : "false"}`,
+    `--accept-dns=${acceptDNS.value ? "true" : "false"}`,
   ];
   if (hostname.value.trim()) {
     args.push(`--hostname=${quoteArg(hostname.value.trim())}`);
@@ -76,6 +78,9 @@ async function load() {
     hostname.value = nextPrefs.Hostname || "";
     if (typeof nextPrefs.RouteAll === "boolean") {
       acceptRoutes.value = nextPrefs.RouteAll;
+    }
+    if (typeof nextPrefs.CorpDNS === "boolean") {
+      acceptDNS.value = nextPrefs.CorpDNS;
     }
     if (!serverPort.value) {
       serverPort.value = useHTTPS.value ? "443" : "80";
@@ -127,6 +132,7 @@ async function connect() {
       hostname: hostname.value,
       authKey: authKey.value,
       acceptRoutes: acceptRoutes.value,
+      acceptDNS: acceptDNS.value,
     });
     message.value = res.message;
     await load();
@@ -285,6 +291,10 @@ function messageOf(err: unknown) {
         <label>
           <input v-model="acceptRoutes" :disabled="configLocked" type="checkbox" />
           接受路由
+        </label>
+        <label>
+          <input v-model="acceptDNS" :disabled="configLocked" type="checkbox" />
+          采用服务端 DNS
         </label>
       </div>
 

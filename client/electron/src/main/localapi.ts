@@ -159,13 +159,14 @@ export async function startDaemonUp(
   hostname: string,
   authKey: string,
   acceptRoutes: boolean,
+  acceptDNS: boolean,
 ): Promise<void> {
   await localRequest<void>("POST", "/localapi/v0/scaletail-up", {
     ControlURL: controlURL,
     Hostname: hostname,
     AuthKey: authKey,
     AcceptRoutes: acceptRoutes,
-    AcceptDNS: true,
+    AcceptDNS: acceptDNS,
   }, 204, 70000);
 }
 

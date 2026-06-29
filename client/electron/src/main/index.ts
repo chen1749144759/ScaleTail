@@ -284,7 +284,13 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
   } else {
     allowAuthBrowser();
   }
-  await startDaemonUp(controlURL, hostname, authKey, Boolean(req.acceptRoutes));
+  await startDaemonUp(
+    controlURL,
+    hostname,
+    authKey,
+    Boolean(req.acceptRoutes),
+    Boolean(req.acceptDNS),
+  );
   const nextStatus = await waitForConnectionProgress(authKey);
   if (!authKey && nextStatus.AuthURL) {
     openAuthURLIfAllowed(nextStatus.AuthURL);
