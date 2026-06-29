@@ -132,6 +132,14 @@ ScaleTail 负责客户端连接和桌面体验；Headscale-Admin-AE 负责控制
 - macOS 未签名安装包通过 GitHub Actions macOS runner 自动构建。
 - Linux 图形端作为可选包输出，服务器场景默认只安装命令行和服务。
 
+## 交流学习
+
+欢迎加入 ScaleForge 交流群，一起交流自建 Headscale、ScaleTail、ScaleForge 的部署、使用和二次开发经验。
+
+群号：`1041671099`
+
+<img src="docs/images/scaleforge-qq-group.jpg" alt="ScaleForge 交流群" width="360">
+
 ## 打赏
 
 如果这个项目帮你节省了部署和维护时间，可以请作者喝杯咖啡。打赏二维码维护在 ScaleForge 仓库中：

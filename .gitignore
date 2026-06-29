@@ -61,3 +61,6 @@ client/electron/dist
 
 # Ignore syncthing state directory.
 /.stfolder
+
+# Ignore local Codex workspace skills and caches.
+/.codex/
