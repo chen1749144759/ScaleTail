@@ -12,6 +12,6 @@ if [ -x "/usr/bin/deb-systemd-helper" ]; then
     if [ "$1" = "purge" ]; then
 		deb-systemd-helper purge 'scaletaild.service' >/dev/null || true
 		deb-systemd-helper unmask 'scaletaild.service' >/dev/null || true
-		rm -rf /var/lib/tailscale
+		rm -rf /var/lib/scaletail
 	fi
 fi

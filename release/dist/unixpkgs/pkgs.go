@@ -129,7 +129,7 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if err := addFile(tsd, filepath.Join(dir, "scaletaild"), 0755); err != nil {
 		return nil, err
 	}
-	if err := addFile(ts, filepath.Join(dir, "tailscale"), 0755); err != nil {
+	if err := addFile(ts, filepath.Join(dir, "scaletail"), 0755); err != nil {
 		return nil, err
 	}
 	if t.os() == "linux" {
@@ -147,10 +147,10 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.defaults"), filepath.Join(dir, "scaletaild.defaults"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "tailscale-online.target"), filepath.Join(dir, "tailscale-online.target"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-online.target"), filepath.Join(dir, "scaletail-online.target"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "tailscale-wait-online.service"), filepath.Join(dir, "tailscale-wait-online.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-wait-online.service"), filepath.Join(dir, "scaletail-wait-online.service"), 0644); err != nil {
 			return nil, err
 		}
 	}
@@ -224,7 +224,7 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      ts,
-			Destination: "/usr/bin/tailscale",
+			Destination: "/usr/bin/scaletail",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
@@ -238,13 +238,13 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(scaletaildDir, "tailscale-online.target"),
-			Destination: "/lib/systemd/system/tailscale-online.target",
+			Source:      filepath.Join(scaletaildDir, "scaletail-online.target"),
+			Destination: "/lib/systemd/system/scaletail-online.target",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(scaletaildDir, "tailscale-wait-online.service"),
-			Destination: "/lib/systemd/system/tailscale-wait-online.service",
+			Source:      filepath.Join(scaletaildDir, "scaletail-wait-online.service"),
+			Destination: "/lib/systemd/system/scaletail-wait-online.service",
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
@@ -370,7 +370,7 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      ts,
-			Destination: "/usr/bin/tailscale",
+			Destination: "/usr/bin/scaletail",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
@@ -384,13 +384,13 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(scaletaildDir, "tailscale-online.target"),
-			Destination: "/lib/systemd/system/tailscale-online.target",
+			Source:      filepath.Join(scaletaildDir, "scaletail-online.target"),
+			Destination: "/lib/systemd/system/scaletail-online.target",
 		},
 		&files.Content{
 			Type:        files.TypeFile,
-			Source:      filepath.Join(scaletaildDir, "tailscale-wait-online.service"),
-			Destination: "/lib/systemd/system/tailscale-wait-online.service",
+			Source:      filepath.Join(scaletaildDir, "scaletail-wait-online.service"),
+			Destination: "/lib/systemd/system/scaletail-wait-online.service",
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
@@ -401,7 +401,7 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		// Creating an empty directory at install time resolves this issue.
 		&files.Content{
 			Type:        files.TypeDir,
-			Destination: "/var/cache/tailscale",
+			Destination: "/var/cache/scaletail",
 		},
 	}, 0, "rpm", false)
 	if err != nil {
@@ -568,7 +568,7 @@ Version=1.0
 Name=ScaleTail
 Comment=ScaleTail desktop tray and dashboard
 Exec=/usr/bin/scaletail systray
-TryExec=/usr/bin/tailscale
+TryExec=/usr/bin/scaletail
 Terminal=false
 NoDisplay=true
 StartupNotify=false
