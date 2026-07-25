@@ -1,4 +1,6 @@
-#define AppVersion "0.0.6"
+#ifndef AppVersion
+  #define AppVersion "0.0.7"
+#endif
 
 [Setup]
 AppName=ScaleTail
@@ -29,6 +31,7 @@ Type: files; Name: "{app}\ScaleTailUI.exe"
 Type: files; Name: "{app}\scaletail.exe"
 Type: files; Name: "{app}\scaletaild.exe"
 Type: files; Name: "{app}\scaletail-localapi.exe"
+Type: files; Name: "{app}\ScaleTailUpdateHelper.exe"
 Type: files; Name: "{app}\tailscale.exe"
 Type: files; Name: "{app}\tailscaled.exe"
 Type: files; Name: "{app}\tailscale-localapi.exe"
@@ -60,6 +63,7 @@ Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete ScaleTail >NUL 2
 Filename: "{app}\scaletaild.exe"; Parameters: "install-system-daemon"; Flags: runhidden waituntilterminated; StatusMsg: "正在安装 ScaleTail 服务..."
 Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" start ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在启动 ScaleTail 服务..."
 Filename: "{cmd}"; Parameters: "/C timeout /T 3 /NOBREAK >NUL"; Flags: runhidden waituntilterminated; StatusMsg: "正在等待 ScaleTail 服务就绪..."
+Filename: "{app}\ScaleTailUpdateHelper.exe"; Parameters: "signal --marker-id={param:OTAMARKER|}"; Flags: runhidden waituntilterminated; StatusMsg: "正在完成 ScaleTail 自动更新..."; Check: IsOTAUpdate
 Filename: "{app}\ScaleTailUI.exe"; Parameters: "--open-dashboard"; Description: "启动 ScaleTail 客户端"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
@@ -83,6 +87,7 @@ Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete Wintun >NUL 2>NU
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
 Type: filesandordirs; Name: "{commonappdata}\ScaleTail"
+Type: filesandordirs; Name: "{commonappdata}\ScaleTailOTA"
 
 [Code]
 procedure RunHidden(CommandLine: String);
@@ -113,6 +118,12 @@ procedure CleanupCurrentUserScaleTailData();
 begin
   RunHidden('if exist "%APPDATA%\ScaleTail" rmdir /S /Q "%APPDATA%\ScaleTail"');
   RunHidden('if exist "%LOCALAPPDATA%\ScaleTail" rmdir /S /Q "%LOCALAPPDATA%\ScaleTail"');
+end;
+
+function IsOTAUpdate(): Boolean;
+begin
+  Result := (ExpandConstant('{param:OTAUPDATE|0}') = '1') and
+    (ExpandConstant('{param:OTAMARKER|}') <> '');
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;

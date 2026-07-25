@@ -135,11 +135,31 @@ function helperPath(): string {
   return bundledBinaryPath(helperName);
 }
 
-function bundledBinaryPath(name: string): string {
+export function bundledBinaryPath(name: string): string {
   if (app.isPackaged) {
     return path.join(path.dirname(process.execPath), name);
   }
   return path.resolve(app.getAppPath(), "../../dist/windows-amd64", name);
+}
+
+export interface SignedUpdateInstallRequest {
+  installer_path: string;
+  version: string;
+  platform: string;
+  sha256: string;
+  file_size: number;
+  signature: string;
+  marker_id: string;
+}
+
+export async function installSignedUpdate(request: SignedUpdateInstallRequest): Promise<void> {
+  await localRequest<{ accepted: boolean }>(
+    "POST",
+    "/localapi/v0/scaletail-update/install",
+    request,
+    202,
+    120000,
+  );
 }
 
 export async function getStatus(peers = true): Promise<Status> {

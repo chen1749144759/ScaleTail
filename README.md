@@ -5,7 +5,7 @@
 [![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![Electron](https://img.shields.io/badge/Electron-38-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
-[![Upstream](https://img.shields.io/badge/Tailscale-v1.98.5%20fixes-4D7CFE)](https://github.com/tailscale/tailscale)
+[![Upstream](https://img.shields.io/badge/Tailscale-v1.98.9%20fixes-4D7CFE)](https://github.com/tailscale/tailscale/releases/tag/v1.98.9)
 
 ScaleTail 是基于 Tailscale 源码裂变的自建网络客户端，主要面向 Headscale/ScaleForge 私有控制服务器。项目目标是把新手原本需要在 CMD 里执行的连接、状态、netcheck、出口节点、宣告路由等操作移动到桌面可视化窗口中。
 
@@ -16,15 +16,23 @@ ScaleTail 是基于 Tailscale 源码裂变的自建网络客户端，主要面�
 | 项目项 | 当前说明 |
 |---|---|
 | 裂变来源 | 基于 `tailscale/tailscale` 主线源码改造，项目 module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.6` |
-| 对标官方版本 | 已按官方 Tailscale `v1.98.5` 的关键客户端修复做定向审计和回补 |
-| Go 版本 | `go.mod` 使用 Go `1.26.2` |
+| 当前产品版本 | `v0.0.7` |
+| 对标官方版本 | 已按官方 Tailscale `v1.98.9` 的关键客户端、安全和稳定性修复做定向审计和回补 |
+| Go 版本 | `go.mod` 使用 Go `1.26.5` |
 | 桌面端 | Electron 38 + Vue 3 + TypeScript |
 | 配套服务端 | 推荐配套 `ScaleForge` + `Headscale-Admin-AE` |
 
 注意：ScaleTail 不是对官方 Tailscale 的整仓无损同步版本，而是保留自定义命名、Windows 服务、LocalAPI helper、Electron 桌面端和安装包逻辑后，对上游关键稳定性修复进行选择性回补。
 
 ## 最近更新
+
+### v0.0.7 官方修复与 OTA 更新
+
+- 定向回补 Tailscale `v1.98.8-v1.98.9` 的 SSH 用户名/环境变量安全校验、Serve/Funnel 路径防护、服务 VIP 端口校验、休眠恢复和握手抑制等关键修复。
+- Windows 客户端支持完整 OTA：后台下载、SHA-256 校验、Ed25519 发布签名校验、`scaletaild` 二次验签、系统权限静默覆盖安装和安装后自动拉起桌面端。
+- OTA 不信任平台返回的下载地址本身；只有内置公钥认可的安装包才能进入静默安装流程。
+- 构建脚本会生成与安装包配套的 `.ota.json`，可直接导入 ScaleForge 客户端版本发布页。
+- `v0.0.7` 是 OTA 引导版本：更早版本需要手动覆盖安装一次；安装 `v0.0.7` 后，后续签名版本可由客户端静默覆盖升级。
 
 ### v0.0.6
 
@@ -45,11 +53,11 @@ ScaleTail 是基于 Tailscale 源码裂变的自建网络客户端，主要面�
 - 节点页支持 `netcheck`、出口节点选择、宣告子网路由。
 - `netcheck` 通过 LocalAPI 调用，不再依赖外露 CMD 窗口。
 - 托盘左键直接唤起已有窗口，不重复打开多个仪表盘。
-- Windows 安装包包含 `ScaleTailUI.exe`、`scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe`、`wintun.dll`。
+- Windows 安装包包含 `ScaleTailUI.exe`、`scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe`、`ScaleTailUpdateHelper.exe`、`wintun.dll`。
 - 安装、覆盖安装和卸载会尝试关闭相关进程、停止服务、清理旧服务和残留文件。
 - 新增平台上报能力：客户端可定时向 ScaleForge 上报流量、请求连接摘要、策略应用状态。
 - 新增策略领取能力：客户端可领取 ScaleForge 下发的限速/配额策略。
-- 新增客户端版本检查能力：支持接收 ScaleForge 发布的建议更新/强制更新，并在 Windows 桌面端提示。
+- 客户端版本发布支持建议更新/强制更新；Windows 桌面端可在不手动卸载、不重复操作安装向导的情况下完成签名 OTA 覆盖升级。
 - Windows 上传限速通过系统 QoS 尝试应用；下载限速字段已预留，但暂未做 TUN/内核级强制，后续进入 `scaletaild` 核心流量路径实现。
 
 ## 部署难度
@@ -88,8 +96,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-windows-inst
 输出文件：
 
 ```text
-dist\installer\ScaleTail-0.0.6-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.7-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.7-windows-amd64.ota.json
 ```
+
+构建脚本默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取 OTA 私钥，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。将安装包上传到下载地址后，在 ScaleForge 的“客户端版本”页面导入 `.ota.json`，再填写下载地址即可发布。
 
 ## Electron 开发
 

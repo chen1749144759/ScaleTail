@@ -84,6 +84,9 @@ export interface ClientUpdateInfo {
   title?: string;
   description?: string;
   download_url?: string;
+  sha256?: string;
+  signature?: string;
+  file_size?: number;
   release_notes?: string;
   created_at?: string;
 }

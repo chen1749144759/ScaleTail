@@ -4411,13 +4411,16 @@ func (c *Conn) maybeSendTSMPDiscoAdvert(de *endpoint) {
 	if !buildfeatures.HasCacheNetMap || !envknob.BoolDefaultTrue("TS_USE_CACHED_NETMAP") {
 		return
 	}
+	if c.controlKnobs == nil || !c.controlKnobs.CacheNetworkMaps.Load() {
+		return
+	}
 
 	de.mu.Lock()
 	defer de.mu.Unlock()
 
 	now := mono.Now()
 	if now.Sub(de.lastDiscoKeyAdvertisement) <= discoKeyAdvertisementInterval ||
-		(!de.lastDiscoKeyAdvertisement.IsZero() && de.bestAddr.isDirect()) {
+		(!de.lastDiscoKeyAdvertisement.IsZero() && !de.bestAddr.isZero()) {
 		return
 	}
 

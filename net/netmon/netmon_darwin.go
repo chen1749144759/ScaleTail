@@ -150,6 +150,11 @@ func (m *darwinRouteMon) skipInterfaceAddrMessage(msg *route.InterfaceAddrMessag
 }
 
 func (m *darwinRouteMon) skipRouteMessage(msg *route.RouteMessage) bool {
+	// RTM_MISS describes failed lookups rather than a topology change. Letting
+	// it through causes unreachable probes to trigger a repeated netcheck loop.
+	if msg.Type == unix.RTM_MISS {
+		return true
+	}
 	if ip := ipOfAddr(addrType(msg.Addrs, unix.RTAX_DST)); ip.IsLinkLocalUnicast() {
 		// Skip those like:
 		// dst = fe80::b476:66ff:fe30:c8f6%15

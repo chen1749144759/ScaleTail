@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+// isDangerousEnvVar reports dynamic-linker variables that must never be
+// forwarded, even when acceptEnv contains a wildcard.
+func isDangerousEnvVar(name string) bool {
+	upper := strings.ToUpper(name)
+
+	return strings.HasPrefix(upper, "LD_") || strings.HasPrefix(upper, "DYLD_")
+}
+
 // filterEnv filters a passed in environ string slice (a slice with strings
 // representing environment variables in the form "key=value") based on
 // the supplied slice of acceptEnv values.
@@ -30,6 +38,10 @@ func filterEnv(acceptEnv []string, environ []string) ([]string, error) {
 		variableName, _, ok := strings.Cut(envPair, "=")
 		if !ok {
 			return nil, fmt.Errorf(`invalid environment variable: %q. Variables must be in "KEY=VALUE" format`, envPair)
+		}
+
+		if isDangerousEnvVar(variableName) {
+			continue
 		}
 
 		// Short circuit if we have a direct match between the environment

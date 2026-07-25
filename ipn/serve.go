@@ -264,6 +264,47 @@ func (sc *ServeConfig) HasPathHandler() bool {
 	return false
 }
 
+// IsServingUnixAny reports whether any foreground, TCP, web, or service
+// handler forwards to a Unix domain socket.
+func (sc *ServeConfig) IsServingUnixAny() bool {
+	if sc == nil {
+		return false
+	}
+	for _, foreground := range sc.Foreground {
+		if foreground.IsServingUnixAny() {
+			return true
+		}
+	}
+	for _, handler := range sc.TCP {
+		if strings.HasPrefix(handler.TCPForward, "unix:") {
+			return true
+		}
+	}
+	for _, web := range sc.Web {
+		for _, handler := range web.Handlers {
+			if strings.HasPrefix(handler.Proxy, "unix:") {
+				return true
+			}
+		}
+	}
+	for _, service := range sc.Services {
+		for _, handler := range service.TCP {
+			if strings.HasPrefix(handler.TCPForward, "unix:") {
+				return true
+			}
+		}
+		for _, web := range service.Web {
+			for _, handler := range web.Handlers {
+				if strings.HasPrefix(handler.Proxy, "unix:") {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
 // IsTCPForwardingAny reports whether ServeConfig is currently forwarding in
 // TCPForward mode on any port. This is exclusive of Web/HTTPS serving.
 func (sc *ServeConfig) IsTCPForwardingAny() bool {

@@ -1679,6 +1679,12 @@ func (ns *Impl) acceptTCP(r *tcp.ForwarderRequest) {
 		// here instead.
 		r.Complete(true) // sends a RST
 		return
+	case ns.isVIPServiceIP(dialIP):
+		// A served VIP port returns before this switch. Reaching this branch
+		// means the service did not advertise the destination port; never
+		// rewrite it to an unrelated loopback service.
+		r.Complete(true) // sends a RST
+		return
 	case isTailscaleIP:
 		dialIP = ipv4Loopback
 	}

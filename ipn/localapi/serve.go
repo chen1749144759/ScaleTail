@@ -89,7 +89,7 @@ func authorizeServeConfigForGOOSAndUserContext(goos string, configIn *ipn.ServeC
 	if goos == "darwin" && version.IsSandboxedMacOS() {
 		return nil
 	}
-	if !configIn.HasPathHandler() {
+	if !configIn.HasPathHandler() && !configIn.IsServingUnixAny() {
 		return nil
 	}
 	if h.Actor.IsLocalAdmin(h.b.OperatorUserID()) {
@@ -97,9 +97,9 @@ func authorizeServeConfigForGOOSAndUserContext(goos string, configIn *ipn.ServeC
 	}
 	switch goos {
 	case "windows":
-		return errors.New("must be a Windows local admin to serve a path")
+		return errors.New("must be a Windows local admin to serve a path or Unix socket")
 	case "linux", "darwin", "illumos", "solaris":
-		return errors.New("must be root, or be an operator and able to run 'sudo tailscale' to serve a path")
+		return errors.New("must be root, or be an operator and able to run 'sudo scaletail' to serve a path or Unix socket")
 	default:
 		// We filter goos at the start of the func, this default case
 		// should never happen.

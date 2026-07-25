@@ -3,6 +3,7 @@ param(
   [string]$InstallerScript = "installer\scaletail.iss",
   [string]$ElectronDir = "client\electron",
   [string]$DependencyRoot = "D:\workspace-qoder\deps",
+  [string]$UpdateSigningKey = $env:SCALETAIL_UPDATE_SIGNING_KEY,
   [switch]$SkipElectron,
   [switch]$SkipInstaller
 )
@@ -11,12 +12,32 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 Set-Location $repoRoot
+$electronPackage = Get-Content -Raw -Encoding UTF8 (Join-Path $repoRoot "$ElectronDir\package.json") | ConvertFrom-Json
+$appVersion = [string]$electronPackage.version
+if (-not $appVersion) {
+  throw "Electron package version is empty."
+}
+$goKeySource = Get-Content -Raw -Encoding UTF8 (Join-Path $repoRoot "clientupdate\scaletailota\manifest.go")
+$electronKeySource = Get-Content -Raw -Encoding UTF8 (Join-Path $repoRoot "$ElectronDir\src\main\client_update.ts")
+$goPublicKey = [regex]::Match($goKeySource, 'PublicKeyBase64\s*=\s*"([^"]+)"').Groups[1].Value
+$electronPublicKey = [regex]::Match($electronKeySource, 'otaPublicKeyBase64\s*=\s*"([^"]+)"').Groups[1].Value
+if (-not $goPublicKey -or $goPublicKey -ne $electronPublicKey) {
+  throw "The OTA public keys embedded in scaletaild and Electron do not match."
+}
+if (-not $UpdateSigningKey) {
+  $defaultSigningKey = Join-Path $DependencyRoot "scaletail-ota\ed25519-private.key"
+  if (Test-Path -LiteralPath $defaultSigningKey) {
+    $UpdateSigningKey = $defaultSigningKey
+  }
+}
 
 $installerOutDirAbs = Join-Path $repoRoot "dist\installer"
 New-Item -ItemType Directory -Force -Path $installerOutDirAbs | Out-Null
 Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "ScaleTail-*-windows-amd64-setup*.exe" -ErrorAction SilentlyContinue |
   Remove-Item -Force
 Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "scaletail-*-windows-amd64-setup*.exe" -ErrorAction SilentlyContinue |
+  Remove-Item -Force
+Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "ScaleTail-*.ota.json" -ErrorAction SilentlyContinue |
   Remove-Item -Force
 
 $outDirAbs = Join-Path $repoRoot $OutDir
@@ -26,7 +47,8 @@ Remove-Item -LiteralPath `
   (Join-Path $outDirAbs "ScaleTailUI.exe"), `
   (Join-Path $outDirAbs "scaletail.exe"), `
   (Join-Path $outDirAbs "scaletaild.exe"), `
-  (Join-Path $outDirAbs "scaletail-localapi.exe") `
+  (Join-Path $outDirAbs "scaletail-localapi.exe"), `
+  (Join-Path $outDirAbs "ScaleTailUpdateHelper.exe") `
   -Force -ErrorAction SilentlyContinue
 
 $oldCgo = $env:CGO_ENABLED
@@ -38,14 +60,17 @@ try {
   go build -trimpath -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/scaletaild
   Write-Host "Building scaletail-localapi.exe"
   go build -trimpath -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/scaletail-localapi
+  Write-Host "Building ScaleTailUpdateHelper.exe"
+  go build -trimpath -ldflags "-H=windowsgui" -o (Join-Path $outDirAbs "ScaleTailUpdateHelper.exe") ./cmd/scaletail-update-helper
 } finally {
   $env:CGO_ENABLED = $oldCgo
 }
 
 & (Join-Path $PSScriptRoot "ensure-wintun.ps1") -OutputDir $OutDir
 
+$electronAbs = Join-Path $repoRoot $ElectronDir
+$electronOut = Join-Path $repoRoot "dist\electron\win-unpacked"
 if (-not $SkipElectron) {
-  $electronAbs = Join-Path $repoRoot $ElectronDir
   if (-not (Test-Path -LiteralPath $electronAbs)) {
     throw "Electron client directory not found: $electronAbs"
   }
@@ -87,10 +112,6 @@ if (-not $SkipElectron) {
     $env:CSC_IDENTITY_AUTO_DISCOVERY = $oldCSC
   }
 
-  $electronOut = Join-Path $repoRoot "dist\electron\win-unpacked"
-  if (-not (Test-Path -LiteralPath $electronOut)) {
-    throw "Electron output not found: $electronOut"
-  }
   Move-Item -LiteralPath (Join-Path $electronOut "ScaleTail.exe") -Destination (Join-Path $electronOut "ScaleTailUI.exe") -Force
   $appIcon = Join-Path $electronAbs "resources\app.ico"
   $rceditCandidates = @(
@@ -105,11 +126,16 @@ if (-not $SkipElectron) {
   } elseif (Test-Path -LiteralPath $appIcon) {
     Write-Warning "rcedit.exe not found; shortcut, tray, window, and installer icons will still use app.ico."
   }
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail.exe") -Destination (Join-Path $electronOut "scaletail.exe") -Force
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletaild.exe") -Destination (Join-Path $electronOut "scaletaild.exe") -Force
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail-localapi.exe") -Destination (Join-Path $electronOut "scaletail-localapi.exe") -Force
-  Copy-Item -LiteralPath (Join-Path $outDirAbs "wintun.dll") -Destination (Join-Path $electronOut "wintun.dll") -Force
 }
+
+if (-not (Test-Path -LiteralPath $electronOut)) {
+  throw "Electron output not found: $electronOut"
+}
+Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail.exe") -Destination (Join-Path $electronOut "scaletail.exe") -Force
+Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletaild.exe") -Destination (Join-Path $electronOut "scaletaild.exe") -Force
+Copy-Item -LiteralPath (Join-Path $outDirAbs "scaletail-localapi.exe") -Destination (Join-Path $electronOut "scaletail-localapi.exe") -Force
+Copy-Item -LiteralPath (Join-Path $outDirAbs "ScaleTailUpdateHelper.exe") -Destination (Join-Path $electronOut "ScaleTailUpdateHelper.exe") -Force
+Copy-Item -LiteralPath (Join-Path $outDirAbs "wintun.dll") -Destination (Join-Path $electronOut "wintun.dll") -Force
 
 if ($SkipInstaller) {
   Write-Host "SkipInstaller set; installer build skipped."
@@ -131,4 +157,33 @@ if (-not $iscc) {
 }
 
 Write-Host "Building installer with $iscc"
-& $iscc $InstallerScript
+& $iscc "/DAppVersion=$appVersion" $InstallerScript
+
+$installer = Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "ScaleTail-$appVersion-windows-amd64-setup*.exe" |
+  Sort-Object LastWriteTime -Descending |
+  Select-Object -First 1
+if (-not $installer) {
+  throw "Installer output for version $appVersion was not found."
+}
+$installerHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer.FullName).Hash
+$checksumPath = Join-Path $installerOutDirAbs "SHA256SUMS.txt"
+$checksumLine = "$installerHash  $($installer.Name)`n"
+[System.IO.File]::WriteAllText($checksumPath, $checksumLine, [System.Text.UTF8Encoding]::new($false))
+Write-Host "Checksum list: $checksumPath"
+
+if ($UpdateSigningKey) {
+  if (-not (Test-Path -LiteralPath $UpdateSigningKey)) {
+    throw "OTA signing key not found: $UpdateSigningKey"
+  }
+  $metadataPath = Join-Path $installerOutDirAbs "ScaleTail-$appVersion-windows-amd64.ota.json"
+  Write-Host "Signing OTA metadata"
+  go run ./cmd/scaletail-update-sign `
+    -private-key $UpdateSigningKey `
+    -file $installer.FullName `
+    -version $appVersion `
+    -platform windows-amd64 `
+    -json-out $metadataPath
+  Write-Host "OTA metadata: $metadataPath"
+} else {
+  Write-Warning "No OTA signing key configured. The installer is usable manually but cannot be installed silently through ScaleTail OTA."
+}

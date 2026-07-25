@@ -814,6 +814,12 @@ func (b *LocalBackend) getServeHandler(r *http.Request) (_ ipn.HTTPHandlerView, 
 		return h, r.URL.Path, true
 	}
 	pth := path.Clean(r.URL.Path)
+	// Malformed request targets such as "*" and an empty path are path.Dir
+	// fixed points. Reject them before the mount walk to prevent a remote
+	// request from pinning a CPU core through Serve or Funnel.
+	if !strings.HasPrefix(pth, "/") {
+		return z, "", false
+	}
 	for {
 		withSlash := pth + "/"
 		if h, ok := wsc.Handlers().GetOk(withSlash); ok {
@@ -825,7 +831,11 @@ func (b *LocalBackend) getServeHandler(r *http.Request) (_ ipn.HTTPHandlerView, 
 		if pth == "/" {
 			return z, "", false
 		}
-		pth = path.Dir(pth)
+		if parent := path.Dir(pth); parent != pth {
+			pth = parent
+		} else {
+			return z, "", false
+		}
 	}
 }
 
