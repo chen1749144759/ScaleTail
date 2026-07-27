@@ -26,13 +26,16 @@ ScaleTail 是基于 Tailscale 源码裂变的自建网络客户端，主要面�
 
 ## 最近更新
 
-### v0.0.7 官方修复与 OTA 更新
+### v0.0.7 官方修复、签名 OTA 与 TUN 双向限速
 
 - 定向回补 Tailscale `v1.98.8-v1.98.9` 的 SSH 用户名/环境变量安全校验、Serve/Funnel 路径防护、服务 VIP 端口校验、休眠恢复和握手抑制等关键修复。
 - Windows 客户端支持完整 OTA：后台下载、SHA-256 校验、Ed25519 发布签名校验、`scaletaild` 二次验签、系统权限静默覆盖安装和安装后自动拉起桌面端。
 - OTA 不信任平台返回的下载地址本身；只有内置公钥认可的安装包才能进入静默安装流程。
 - 构建脚本会生成与安装包配套的 `.ota.json`，可直接导入 ScaleForge 客户端版本发布页。
 - `v0.0.7` 是 OTA 引导版本：更早版本需要手动覆盖安装一次；安装 `v0.0.7` 后，后续签名版本可由客户端静默覆盖升级。
+- 上传和下载限速进入 `scaletaild` TUN 数据路径，按整台机器分别控制双向总带宽，策略支持 LocalAPI 热更新。
+- 限速只处理经过 ScaleTail 虚拟网卡的覆盖网络流量，不影响物理局域网直连、普通公网流量和控制连接。
+- 修正客户端采样语义：未连接网络时不把缺少流量采样误判为故障，平台依据心跳和连接状态区分离线、空闲与异常缺失。
 
 ### v0.0.6
 
@@ -107,6 +110,47 @@ dist\installer\ScaleTail-0.0.7-windows-amd64.ota.json
 
 构建脚本默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取 OTA 私钥，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。将安装包上传到下载地址后，在 ScaleForge 的“客户端版本”页面导入 `.ota.json`，再填写下载地址即可发布。
 
+## Windows 安装与升级
+
+1. 从 [GitHub Releases](https://github.com/chen1749144759/ScaleTail/releases) 下载 `ScaleTail-0.0.7-windows-amd64-setup-custom.exe` 和 `SHA256SUMS.txt`。
+2. 使用 PowerShell 执行 `Get-FileHash .\ScaleTail-0.0.7-windows-amd64-setup-custom.exe -Algorithm SHA256`，确认结果与校验文件一致。
+3. 右键安装包并选择“以管理员身份运行”。首次安装会安装 `ScaleTail` Windows 服务和 Wintun 驱动。
+4. 已安装旧版本时直接运行新安装包覆盖升级，不需要先断开网络或手动卸载；节点身份、服务端配置和上报配置会继续保留。
+5. `v0.0.6` 及更早版本需要手动覆盖安装一次 `v0.0.7`，之后才能使用签名 OTA 静默升级。
+
+公开 Release 安装包不内置任何生产环境的 `SCALETAIL_CLIENT_TOKEN`。新安装后请在客户端页面配置 ScaleForge 地址和上报密钥；覆盖升级不会清除已经保存的本地配置。
+
+## Linux 构建与安装
+
+在已安装 Ubuntu 24.04 WSL 的 Windows 构建机上执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-linux-packages-wsl.ps1 `
+  -Distro Ubuntu-24.04 `
+  -Version 0.0.7 `
+  -DependencyRoot D:\workspace-qoder\deps
+```
+
+默认输出到 `dist\linux-v0.0.7`，包含 amd64 的 `.tgz`、`.deb`、`.rpm`、可选 GUI 包和 `SHA256SUMS-linux-amd64.txt`。服务器建议只安装核心包；桌面 Linux 再选择 `scaletail-gui` 包。
+
+Debian/Ubuntu 示例：
+
+```bash
+sudo dpkg -i scaletail_0.0.7_amd64.deb
+sudo systemctl enable --now scaletaild
+sudo scaletail up --login-server=http://HEADSCALE_IP:PORT --auth-key=hskey-auth-REPLACE_ME --accept-routes
+```
+
+安装前请按实际协议替换控制服务器地址和预认证密钥；生产环境应优先使用 HTTPS，禁止把真实密钥写入镜像、ISO 公共仓库或安装日志。
+
+## v0.0.7 发布产物
+
+- `ScaleTail-0.0.7-windows-amd64-setup-custom.exe`：Windows amd64 图形客户端、服务、更新助手和 Wintun 的完整安装包。
+- `ScaleTail-0.0.7-windows-amd64.ota.json`：供 ScaleForge 客户端版本页导入的签名 OTA 元数据。
+- `scaletail_0.0.7_amd64.deb`、`.rpm`、`.tgz`：Linux amd64 核心客户端包。
+- `scaletail-gui_0.0.7_all.deb`、`scaletail-gui_0.0.7_noarch.rpm`：Linux 架构无关的可选图形集成包。
+- `SHA256SUMS.txt`、`SHA256SUMS-linux-amd64.txt`：下载完整性校验文件。
+
 ## Electron 开发
 
 ```powershell
@@ -140,6 +184,7 @@ ScaleTail 负责客户端连接和桌面体验；Headscale-Admin-AE 负责控制
 - Electron `npm run build` 通过。
 - Windows 安装包脚本完整通过。
 - Inno Setup 6 编译通过，安装包内确认包含 `scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe` 和 `wintun.dll`。
+- Linux amd64 的 tgz、deb、rpm 和可选 GUI 包使用锁定 revision 的 Tailscale Go 工具链在 Linux 容器中构建并完成包内容核验。
 
 ## TODO
 
