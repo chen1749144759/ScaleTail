@@ -1,17 +1,18 @@
 import { spawn } from "node:child_process";
-import path from "node:path";
-import { app } from "electron";
 import { readClientReportConfig } from "./report_config";
+import {
+  setTrafficShaper,
+  type TrafficShaperRequest,
+  type TrafficShaperResponse,
+} from "./localapi";
 import type { ClientReportConfig, NetcheckReport, Status } from "../shared/types";
 
 type StatusReader = (peers?: boolean) => Promise<Status>;
 type NetcheckReader = () => Promise<NetcheckReport>;
-type RunningSetter = (wantRunning: boolean) => Promise<void>;
 
 interface TelemetryReporterOptions {
   getStatus: StatusReader;
   runNetcheck: NetcheckReader;
-  setWantRunning: RunningSetter;
   intervalMS?: number;
   netcheckIntervalMS?: number;
 }
@@ -97,8 +98,19 @@ let timer: NodeJS.Timeout | undefined;
 let running = false;
 let lastNetcheckAt = 0;
 let lastNetcheck: NetcheckReport | undefined;
-let lastPolicyFingerprint = "";
 let quotaGuard: QuotaGuard | undefined;
+let disabledPolicyCleared = false;
+let policyEpoch = 0;
+let trafficShaperQueue: Promise<void> = Promise.resolve();
+
+export function resetTelemetryPolicyState(): void {
+  quotaGuard = undefined;
+  disabledPolicyCleared = false;
+  const epoch = ++policyEpoch;
+  void enqueueTrafficShaper(emptyTrafficShaperRequest(), epoch).catch((err) => {
+    console.warn("ScaleTail policy reset failed:", err);
+  });
+}
 
 export function startTelemetryReporter(options: TelemetryReporterOptions): () => void {
   const stored = readClientReportConfig();
@@ -115,10 +127,23 @@ export function startTelemetryReporter(options: TelemetryReporterOptions): () =>
 }
 
 async function collectAndReport(options: TelemetryReporterOptions): Promise<void> {
+  const epoch = policyEpoch;
   const config = readReportConfig();
   if (!config) {
+    if (!disabledPolicyCleared) {
+      try {
+        const response = await enqueueTrafficShaper(emptyTrafficShaperRequest(), epoch);
+        if (response && epoch === policyEpoch) {
+          quotaGuard = undefined;
+          disabledPolicyCleared = true;
+        }
+      } catch (err) {
+        console.warn("ScaleTail policy clear failed:", err);
+      }
+    }
     return;
   }
+  disabledPolicyCleared = false;
   if (running) {
     return;
   }
@@ -126,6 +151,7 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
   try {
     const status = await options.getStatus(true);
     if (status.BackendState !== "Running") {
+      quotaGuard = undefined;
       return;
     }
 
@@ -142,9 +168,12 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
 
     const report = await buildTrafficReport(status, config, lastNetcheck);
     await postJSON(endpoint(config.baseURL, "/traffic"), config.token, report);
+    if (epoch !== policyEpoch) {
+      return;
+    }
 
     if (config.quotaGuardEnabled) {
-      const guardResult = await enforceLocalQuotaGuard(options, report);
+      const guardResult = await enforceLocalQuotaGuard(report, epoch);
       if (guardResult) {
         await reportPolicyState(config, report, guardResult);
         return;
@@ -153,7 +182,13 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
 
     try {
       const policy = await fetchPolicy(config, report);
-      const result = await applyPolicy(options, policy);
+      if (epoch !== policyEpoch) {
+        return;
+      }
+      const result = await applyPolicy(policy, epoch);
+      if (!result) {
+        return;
+      }
       updateQuotaGuard(config, report, result);
       await reportPolicyState(config, report, result);
     } catch (err) {
@@ -192,17 +227,18 @@ async function buildTrafficReport(
   const rxBytesTotal = peers.reduce((sum, peer) => sum + Number(peer.RxBytes || 0), 0);
   const txBytesTotal = peers.reduce((sum, peer) => sum + Number(peer.TxBytes || 0), 0);
   const publicIP = String(netcheck?.GlobalV4 || netcheck?.GlobalV6 || "");
+  const scaleTailIPs = status.ScaleTailIPs?.length ? status.ScaleTailIPs : (self.ScaleTailIPs || []);
 
   return {
     machine_name: self.DNSName?.split(".")[0] || self.HostName || "",
     group_name: status.CurrentTailnet?.Name || "",
-    scaletail_ips: status.ScaleTailIPs || self.ScaleTailIPs || [],
+    scaletail_ips: scaleTailIPs,
     rx_bytes_total: rxBytesTotal,
     tx_bytes_total: txBytesTotal,
     derp: peers.some((peer) => Boolean(peer.Relay)),
     endpoint_type: peers.some((peer) => Boolean(peer.CurAddr)) ? "direct" : "derp",
     public_ip: publicIP,
-    flows: config.flowEnabled ? await collectFlowSummaries(config.intervalSeconds) : [],
+    flows: config.flowEnabled ? await collectFlowSummaries(config.intervalSeconds, scaleTailIPs) : [],
   };
 }
 
@@ -224,78 +260,45 @@ async function fetchPolicy(config: ReportConfig, report: TrafficReportPayload): 
   return await res.json() as PolicyResponse;
 }
 
-async function applyPolicy(options: TelemetryReporterOptions, policy: PolicyResponse): Promise<PolicyApplyResult> {
+async function applyPolicy(policy: PolicyResponse, epoch: number): Promise<PolicyApplyResult | undefined> {
   const effectivePolicy = policy.data?.effective || {};
   const policyID = policy.data?.matched_policies?.[0]?.id;
-  const warnings: string[] = [];
   const rateUp = positiveNumber(effectivePolicy.rate_up_mbps);
   const rateDown = positiveNumber(effectivePolicy.rate_down_mbps);
   const quotaExceeded = Boolean(effectivePolicy.quota_exceeded);
-  const exceedAction = effectivePolicy.exceed_action || "alert";
-  let uploadLimit = rateUp;
+  const exceedAction = normalizeExceedAction(effectivePolicy.exceed_action);
+  const request: TrafficShaperRequest = {
+    upload_bits_per_second: mbpsToBitsPerSecond(rateUp),
+    download_bits_per_second: mbpsToBitsPerSecond(rateDown),
+    quota_exceeded: quotaExceeded,
+    exceed_action: exceedAction,
+  };
 
-  if (quotaExceeded && exceedAction === "block") {
-    let error = "";
-    if (process.platform === "win32") {
-      try {
-        await applyWindowsUploadThrottle(undefined);
-        lastPolicyFingerprint = JSON.stringify({});
-      } catch (err) {
-        error = `已断开连接，但清理上传限速规则失败：${messageOf(err)}`;
-      }
+  try {
+    const response = await enqueueTrafficShaper(request, epoch);
+    if (!response) {
+      return undefined;
     }
-    await options.setWantRunning(false);
+    const error = response.warning || "";
     return {
       applied: !error,
       error,
       effectivePolicy,
       policyID,
     };
-  }
-
-  if (quotaExceeded && exceedAction === "throttle") {
-    uploadLimit = Math.min(uploadLimit || 0.5, 0.5);
-    warnings.push("月配额已超额，已执行上传降速。");
-  }
-  if (rateDown) {
-    warnings.push("当前客户端无需驱动只能可靠限制上传方向，下载限速已记录但未做内核级强制。");
-  }
-
-  if (process.platform !== "win32") {
-    return {
-      applied: !uploadLimit && warnings.length === 0,
-      error: uploadLimit ? "当前策略包含上传限速，但此执行器仅支持 Windows。" : warnings.join("；"),
-      effectivePolicy,
-      policyID,
-    };
-  }
-
-  try {
-    const fingerprint = JSON.stringify({ uploadLimit });
-    if (fingerprint !== lastPolicyFingerprint) {
-      await applyWindowsUploadThrottle(uploadLimit);
-      lastPolicyFingerprint = fingerprint;
-    }
   } catch (err) {
     return {
       applied: false,
-      error: `上传限速应用失败：${messageOf(err)}`,
+      error: `ScaleTail 核心限速策略应用失败：${messageOf(err)}`,
       effectivePolicy,
       policyID,
     };
   }
-
-  return {
-    applied: warnings.length === 0,
-    error: warnings.join("；"),
-    effectivePolicy,
-    policyID,
-  };
 }
 
 async function enforceLocalQuotaGuard(
-  options: TelemetryReporterOptions,
   report: TrafficReportPayload,
+  epoch: number,
 ): Promise<PolicyApplyResult | undefined> {
   if (!quotaGuard) {
     return undefined;
@@ -310,12 +313,12 @@ async function enforceLocalQuotaGuard(
     quota_exceeded: true,
     exceed_action: quotaGuard.exceedAction,
   };
-  return applyPolicy(options, {
+  return applyPolicy({
     data: {
       effective: effectivePolicy,
       matched_policies: quotaGuard.policyID ? [{ id: quotaGuard.policyID }] : [],
     },
-  });
+  }, epoch);
 }
 
 function updateQuotaGuard(config: ReportConfig, report: TrafficReportPayload, result: PolicyApplyResult): void {
@@ -352,16 +355,10 @@ async function reportPolicyState(
   });
 }
 
-async function collectFlowSummaries(windowSeconds: number): Promise<FlowSummary[]> {
+async function collectFlowSummaries(windowSeconds: number, scaleTailIPs: string[]): Promise<FlowSummary[]> {
   try {
     if (process.platform === "win32") {
-      return aggregateFlows(await collectWindowsTCPFlows(), windowSeconds);
-    }
-    if (process.platform === "linux") {
-      return aggregateFlows(await collectLinuxTCPFlows(), windowSeconds);
-    }
-    if (process.platform === "darwin") {
-      return aggregateFlows(await collectDarwinTCPFlows(), windowSeconds);
+      return aggregateFlows(await collectWindowsTCPFlows(scaleTailIPs), windowSeconds);
     }
   } catch (err) {
     console.warn("ScaleTail flow collection failed:", err);
@@ -369,12 +366,28 @@ async function collectFlowSummaries(windowSeconds: number): Promise<FlowSummary[
   return [];
 }
 
-async function collectWindowsTCPFlows(): Promise<RawFlowRecord[]> {
+async function collectWindowsTCPFlows(scaleTailIPs: string[]): Promise<RawFlowRecord[]> {
+  const cleanIPs = scaleTailIPs.map((value) => value.trim()).filter(Boolean);
+  if (cleanIPs.length === 0) {
+    return [];
+  }
+  const ipList = cleanIPs.map(powerShellQuote).join(",");
   const script = `
 $ErrorActionPreference = 'SilentlyContinue'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $OutputEncoding = [Console]::OutputEncoding
+$scaleTailIPs = @(${ipList})
+$scaleTailInterfaces = @(
+  Get-NetIPAddress -ErrorAction SilentlyContinue |
+    Where-Object { $scaleTailIPs -contains [string]$_.IPAddress } |
+    Select-Object -ExpandProperty InterfaceIndex -Unique
+)
+if ($scaleTailInterfaces.Count -eq 0) {
+  ConvertTo-Json -InputObject @() -Compress
+  exit 0
+}
 $proc = @{}
+$routeCache = @{}
 Get-Process | ForEach-Object { $proc[[int]$_.Id] = $_.ProcessName }
 $items = @(
   Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue |
@@ -383,14 +396,22 @@ $items = @(
       $_.RemoteAddress -notin @('127.0.0.1','::1','0.0.0.0','::')
     } |
     ForEach-Object {
-      [pscustomobject]@{
-        dst_ip = [string]$_.RemoteAddress
-        dst_port = [int]$_.RemotePort
-        protocol = 'tcp'
-        direction = 'outbound'
-        state = [string]$_.State
-        process_id = [int]$_.OwningProcess
-        process_name = [string]$proc[[int]$_.OwningProcess]
+      $remote = [string]$_.RemoteAddress
+      if (-not $routeCache.ContainsKey($remote)) {
+        $route = Find-NetRoute -RemoteIPAddress $remote -ErrorAction SilentlyContinue |
+          Select-Object -First 1
+        $routeCache[$remote] = if ($route) { [int]$route.InterfaceIndex } else { -1 }
+      }
+      if ($scaleTailInterfaces -contains [int]$routeCache[$remote]) {
+        [pscustomobject]@{
+          dst_ip = $remote
+          dst_port = [int]$_.RemotePort
+          protocol = 'tcp'
+          direction = 'outbound'
+          state = [string]$_.State
+          process_id = [int]$_.OwningProcess
+          process_name = [string]$proc[[int]$_.OwningProcess]
+        }
       }
     }
 )
@@ -403,16 +424,6 @@ ConvertTo-Json -InputObject $items -Depth 3 -Compress
     "-Command",
     script,
   ], 10_000));
-}
-
-async function collectLinuxTCPFlows(): Promise<RawFlowRecord[]> {
-  const output = await runCommandCapture("ss", ["-H", "-tunp", "state", "established"], 10_000);
-  return output.split(/\r?\n/).map(parseSSLine).filter(Boolean) as RawFlowRecord[];
-}
-
-async function collectDarwinTCPFlows(): Promise<RawFlowRecord[]> {
-  const output = await runCommandCapture("lsof", ["-nP", "-iTCP", "-sTCP:ESTABLISHED"], 10_000);
-  return output.split(/\r?\n/).slice(1).map(parseLsofLine).filter(Boolean) as RawFlowRecord[];
 }
 
 function aggregateFlows(records: RawFlowRecord[], windowSeconds: number): FlowSummary[] {
@@ -451,94 +462,6 @@ function aggregateFlows(records: RawFlowRecord[], windowSeconds: number): FlowSu
   return [...buckets.values()]
     .sort((a, b) => b.connection_count - a.connection_count)
     .slice(0, 500);
-}
-
-function parseSSLine(line: string): RawFlowRecord | undefined {
-  const parts = line.trim().split(/\s+/);
-  if (parts.length < 6) {
-    return undefined;
-  }
-  const endpoint = parseEndpoint(parts[5]);
-  if (!endpoint) {
-    return undefined;
-  }
-  const processPart = parts.slice(6).join(" ");
-  const pid = /pid=(\d+)/.exec(processPart)?.[1];
-  const name = /\(\("([^"]+)"/.exec(processPart)?.[1];
-  return {
-    dst_ip: endpoint.host,
-    dst_port: endpoint.port,
-    protocol: parts[0],
-    direction: "outbound",
-    state: parts[1],
-    process_id: pid ? Number(pid) : undefined,
-    process_name: name || "",
-  };
-}
-
-function parseLsofLine(line: string): RawFlowRecord | undefined {
-  const parts = line.trim().split(/\s+/);
-  if (parts.length < 9) {
-    return undefined;
-  }
-  const name = parts.slice(8).join(" ");
-  const remote = /->([^\s]+)\s+\(ESTABLISHED\)/.exec(name)?.[1];
-  const endpoint = remote ? parseEndpoint(remote) : undefined;
-  if (!endpoint) {
-    return undefined;
-  }
-  return {
-    dst_ip: endpoint.host,
-    dst_port: endpoint.port,
-    protocol: "tcp",
-    direction: "outbound",
-    state: "ESTABLISHED",
-    process_id: Number(parts[1]) || undefined,
-    process_name: parts[0] || "",
-  };
-}
-
-function parseEndpoint(value: string): { host: string; port?: number } | undefined {
-  const clean = value.trim();
-  const bracket = /^\[([^\]]+)\]:(\d+)$/.exec(clean);
-  if (bracket) {
-    return { host: bracket[1], port: Number(bracket[2]) };
-  }
-  const index = clean.lastIndexOf(":");
-  if (index <= 0) {
-    return undefined;
-  }
-  const host = clean.slice(0, index).replace(/^\[/, "").replace(/\]$/, "");
-  const port = Number(clean.slice(index + 1));
-  return { host, port: Number.isFinite(port) ? port : undefined };
-}
-
-async function applyWindowsUploadThrottle(rateUpMbps?: number): Promise<void> {
-  const policyName = "ScaleTail-UploadThrottle";
-  const bitsPerSecond = rateUpMbps ? Math.max(1, Math.round(rateUpMbps * 1_000_000)) : 0;
-  const daemonPath = scaleTailDaemonPath();
-  const script = `
-$ErrorActionPreference = 'Stop'
-$name = ${psQuote(policyName)}
-$appPath = ${psQuote(daemonPath)}
-$bits = ${bitsPerSecond}
-$existing = Get-NetQosPolicy -Name $name -PolicyStore ActiveStore -ErrorAction SilentlyContinue
-if ($existing) {
-  Remove-NetQosPolicy -Name $name -PolicyStore ActiveStore -Confirm:$false -ErrorAction SilentlyContinue
-}
-if ($bits -gt 0) {
-  New-NetQosPolicy -Name $name -AppPathNameMatchCondition $appPath -ThrottleRateActionBitsPerSecond $bits -PolicyStore ActiveStore | Out-Null
-}
-`;
-  await runPowerShell(script, 20_000);
-}
-
-function runPowerShell(script: string, timeoutMS: number): Promise<void> {
-  return runCommandCapture(
-    "powershell.exe",
-    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
-    timeoutMS,
-  ).then(() => undefined);
 }
 
 function runCommandCapture(command: string, args: string[], timeoutMS: number): Promise<string> {
@@ -605,13 +528,6 @@ function trafficBytes(report: TrafficReportPayload): number {
   return Number(report.rx_bytes_total || 0) + Number(report.tx_bytes_total || 0);
 }
 
-function scaleTailDaemonPath(): string {
-  if (app.isPackaged) {
-    return path.join(path.dirname(process.execPath), "scaletaild.exe");
-  }
-  return path.resolve(app.getAppPath(), "../../dist/windows-amd64/scaletaild.exe");
-}
-
 function normalizeInterval(value: unknown): number {
   const n = Math.round(Number(value || 15));
   if (!Number.isFinite(n)) {
@@ -643,8 +559,46 @@ function isLocalAddress(value: string): boolean {
     || value.startsWith("169.254.");
 }
 
-function psQuote(value: string): string {
+function powerShellQuote(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
+}
+
+function mbpsToBitsPerSecond(value?: number): number {
+  if (!value) {
+    return 0;
+  }
+  return Math.min(1_000_000_000_000, Math.max(1, Math.round(value * 1_000_000)));
+}
+
+function normalizeExceedAction(value: unknown): "alert" | "throttle" | "block" {
+  const action = String(value || "alert").toLowerCase();
+  if (action === "throttle" || action === "block") {
+    return action;
+  }
+  return "alert";
+}
+
+function emptyTrafficShaperRequest(): TrafficShaperRequest {
+  return {
+    upload_bits_per_second: 0,
+    download_bits_per_second: 0,
+    quota_exceeded: false,
+    exceed_action: "alert",
+  };
+}
+
+function enqueueTrafficShaper(
+  request: TrafficShaperRequest,
+  epoch: number,
+): Promise<TrafficShaperResponse | undefined> {
+  const operation = trafficShaperQueue.then(async () => {
+    if (epoch !== policyEpoch) {
+      return undefined;
+    }
+    return setTrafficShaper(request);
+  });
+  trafficShaperQueue = operation.then(() => undefined, () => undefined);
+  return operation;
 }
 
 function messageOf(err: unknown): string {

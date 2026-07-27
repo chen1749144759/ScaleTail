@@ -14,7 +14,7 @@ import {
 } from "./localapi";
 import { readClientReportConfig, saveClientReportConfig } from "./report_config";
 import { getServiceOverview, startScaleTailService } from "./service";
-import { startTelemetryReporter } from "./telemetry";
+import { resetTelemetryPolicyState, startTelemetryReporter } from "./telemetry";
 import { startClientUpdateChecker } from "./client_update";
 import { BackendState, ClientReportConfig, ConnectRequest, Status } from "../shared/types";
 
@@ -50,7 +50,7 @@ app.whenReady().then(async () => {
   createTray();
   registerIPC();
   startDaemonWatch();
-  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
+  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck });
   stopUpdateChecker = startClientUpdateChecker();
   refreshTimer = setInterval(() => void refreshTrayStatus(), 8000);
   await refreshTrayStatus();
@@ -203,6 +203,7 @@ function registerIPC(): void {
   ipcMain.handle("api:logout", async () => {
     await ensureDaemonReady(false);
     await logout();
+    resetTelemetryPolicyState();
     await refreshTrayStatus();
     return { ok: true };
   });
@@ -257,8 +258,9 @@ function registerIPC(): void {
 }
 
 function restartTelemetryReporter(): void {
+  resetTelemetryPolicyState();
   stopTelemetry?.();
-  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck, setWantRunning });
+  stopTelemetry = startTelemetryReporter({ getStatus, runNetcheck });
 }
 
 function restartClientUpdateChecker(): void {
@@ -284,6 +286,7 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
   } else {
     allowAuthBrowser();
   }
+  resetTelemetryPolicyState();
   await startDaemonUp(
     controlURL,
     hostname,
@@ -324,6 +327,7 @@ async function disconnect(): Promise<{ ok: boolean; message: string }> {
     throw new Error("当前没有可临时断开的已登录网络。");
   }
   await setWantRunning(false);
+  resetTelemetryPolicyState();
   await refreshTrayStatus();
   return { ok: true, message: "已临时断开连接，登录状态仍保留。需要恢复时点击“恢复连接”。" };
 }
@@ -334,6 +338,7 @@ async function reconnect(): Promise<{ ok: boolean; message: string }> {
     throw new Error("当前没有已保存的登录身份，请重新填写服务端信息和预认证密钥后连接。");
   }
   suppressAuthBrowser();
+  resetTelemetryPolicyState();
   await setRunningPrefs(true);
   const nextStatus = await waitForConnectionProgress("");
   await refreshTrayStatus();

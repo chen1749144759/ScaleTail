@@ -152,6 +152,34 @@ export interface SignedUpdateInstallRequest {
   marker_id: string;
 }
 
+export interface TrafficShaperRequest {
+  upload_bits_per_second: number;
+  download_bits_per_second: number;
+  quota_exceeded: boolean;
+  exceed_action: "alert" | "throttle" | "block";
+}
+
+export interface TrafficShaperStatus {
+  config: {
+    upload_bits_per_second: number;
+    download_bits_per_second: number;
+  };
+  active: boolean;
+  updated_at: string;
+  upload_bytes: number;
+  download_bytes: number;
+  upload_wait_nanos: number;
+  download_wait_nanos: number;
+}
+
+export interface TrafficShaperResponse {
+  status: TrafficShaperStatus;
+  quota_exceeded: boolean;
+  exceed_action: "alert" | "throttle" | "block";
+  blocked: boolean;
+  warning?: string;
+}
+
 export async function installSignedUpdate(request: SignedUpdateInstallRequest): Promise<void> {
   await localRequest<{ accepted: boolean }>(
     "POST",
@@ -160,6 +188,14 @@ export async function installSignedUpdate(request: SignedUpdateInstallRequest): 
     202,
     120000,
   );
+}
+
+export async function setTrafficShaper(request: TrafficShaperRequest): Promise<TrafficShaperResponse> {
+  return localRequest<TrafficShaperResponse>("POST", "/localapi/v0/traffic-shaper", request);
+}
+
+export async function getTrafficShaper(): Promise<TrafficShaperResponse> {
+  return localRequest<TrafficShaperResponse>("GET", "/localapi/v0/traffic-shaper");
 }
 
 export async function getStatus(peers = true): Promise<Status> {

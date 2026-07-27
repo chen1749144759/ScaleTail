@@ -4876,6 +4876,12 @@ func (b *LocalBackend) setPrefsLocked(newp *ipn.Prefs) ipn.PrefsView {
 	// newp, but everything in this function treats newp as completely new
 	// anyway, so its return value can be ignored here.
 	b.reconcilePrefsLocked(newp)
+	if !newp.WantRunning {
+		if tun, ok := b.sys.Tun.GetOK(); ok && tun.TrafficShaperStatus().Active {
+			tun.ClearTrafficShaper()
+			b.logf("traffic-shaper: cleared because ScaleTail is not running")
+		}
+	}
 
 	// We do this to avoid holding the lock while doing everything else.
 

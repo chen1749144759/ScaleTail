@@ -101,6 +101,10 @@ type Wrapper struct {
 	tdev  tun.Device
 	isTAP bool // whether tdev is a TAP device
 
+	// trafficShaper paces only packets crossing the ScaleTail TUN. Physical
+	// interface and control-plane traffic never enters this path.
+	trafficShaper TrafficShaper
+
 	started atomic.Bool   // whether Start has been called
 	startCh chan struct{} // closed in Start
 
@@ -367,6 +371,7 @@ func (t *Wrapper) isSelfDisco(p *packet.Parsed) bool {
 func (t *Wrapper) Close() error {
 	var err error
 	t.closeOnce.Do(func() {
+		t.trafficShaper.close()
 		if t.started.CompareAndSwap(false, true) {
 			close(t.startCh)
 		}
@@ -1016,6 +1021,18 @@ func (t *Wrapper) Read(buffs [][]byte, sizes []int, offset int) (int, error) {
 	if buffsGRO != nil {
 		buffsGRO.Flush()
 	}
+	t.noteActivity()
+	var paceErr error
+	if buffsPos > 0 {
+		var byteCount int
+		for _, size := range sizes[:buffsPos] {
+			byteCount += size
+		}
+		paceErr = t.trafficShaper.waitUpload(byteCount)
+		if paceErr != nil {
+			buffsPos = 0
+		}
+	}
 
 	// t.vectorBuffer has a fixed location in memory.
 	// TODO(raggi): add an explicit field and possibly method to the tunVectorReadResult
@@ -1025,7 +1042,9 @@ func (t *Wrapper) Read(buffs [][]byte, sizes []int, offset int) (int, error) {
 		t.sendBufferConsumed()
 	}
 
-	t.noteActivity()
+	if paceErr != nil {
+		return 0, paceErr
+	}
 	return buffsPos, res.err
 }
 
@@ -1300,6 +1319,13 @@ func (t *Wrapper) Write(buffs [][]byte, offset int) (int, error) {
 
 	if len(buffs) > 0 {
 		t.noteActivity()
+		var byteCount int
+		for _, buff := range buffs {
+			byteCount += len(buff) - offset
+		}
+		if err := t.trafficShaper.waitDownload(byteCount); err != nil {
+			return 0, err
+		}
 		_, err := t.tdevWrite(buffs, offset)
 		if err != nil {
 			t.metrics.inboundDroppedPacketsTotal.Add(usermetric.DropLabels{
