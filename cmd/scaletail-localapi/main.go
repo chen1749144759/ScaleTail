@@ -20,6 +20,13 @@ import (
 
 	"scaletail.com/client/local"
 	"scaletail.com/client/scaletail/apitype"
+	"scaletail.com/util/httpm"
+)
+
+const (
+	maxRequestBodyBytes  = 1 << 20
+	maxResponseBodyBytes = 16 << 20
+	maxErrorBodyBytes    = 64 << 10
 )
 
 func main() {
@@ -49,7 +56,7 @@ func runRequest(args []string) {
 		fatalf("invalid LocalAPI path %q", *path)
 	}
 
-	bodyBytes, err := io.ReadAll(os.Stdin)
+	bodyBytes, err := readLimited(os.Stdin, maxRequestBodyBytes)
 	if err != nil {
 		fatalf("read request body: %v", err)
 	}
@@ -76,7 +83,7 @@ func runRequest(args []string) {
 	}
 	defer res.Body.Close()
 
-	resBody, err := io.ReadAll(res.Body)
+	resBody, err := readLimited(res.Body, maxResponseBodyBytes)
 	if err != nil {
 		fatalf("read response body: %v", err)
 	}
@@ -99,7 +106,7 @@ func runWatch(args []string) {
 		fatalf("invalid LocalAPI path %q", *path)
 	}
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "http://"+apitype.LocalAPIHost+*path, nil)
+	req, err := http.NewRequestWithContext(context.Background(), httpm.GET, "http://"+apitype.LocalAPIHost+*path, nil)
 	if err != nil {
 		fatalf("create watch request: %v", err)
 	}
@@ -110,12 +117,23 @@ func runWatch(args []string) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		resBody, _ := io.ReadAll(res.Body)
+		resBody, _ := readLimited(res.Body, maxErrorBodyBytes)
 		fatalf("HTTP %d: %s", res.StatusCode, bestErrorMessage(resBody, res.Status))
 	}
 	if _, err := io.Copy(os.Stdout, res.Body); err != nil {
 		fatalf("stream watch response: %v", err)
 	}
+}
+
+func readLimited(r io.Reader, maxBytes int64) ([]byte, error) {
+	b, err := io.ReadAll(io.LimitReader(r, maxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(b)) > maxBytes {
+		return nil, fmt.Errorf("body exceeds %d bytes", maxBytes)
+	}
+	return b, nil
 }
 
 func bestErrorMessage(body []byte, fallback string) string {

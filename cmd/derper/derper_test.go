@@ -20,15 +20,15 @@ func TestProdAutocertHostPolicy(t *testing.T) {
 		in     string
 		wantOK bool
 	}{
-		{"derp.tailscale.com", true},
-		{"derp.tailscale.com.", true},
-		{"derp1.tailscale.com", true},
-		{"derp1b.tailscale.com", true},
-		{"derp2.tailscale.com", true},
-		{"derp02.tailscale.com", true},
-		{"derp-nyc.tailscale.com", true},
-		{"derpfoo.tailscale.com", true},
-		{"derp02.bar.tailscale.com", false},
+		{"derp.scaletail.com", true},
+		{"derp.scaletail.com.", true},
+		{"derp1.scaletail.com", true},
+		{"derp1b.scaletail.com", true},
+		{"derp2.scaletail.com", true},
+		{"derp02.scaletail.com", true},
+		{"derp-nyc.scaletail.com", true},
+		{"derpfoo.scaletail.com", true},
+		{"derp02.bar.scaletail.com", false},
 		{"example.net", false},
 	}
 	for _, tt := range tests {

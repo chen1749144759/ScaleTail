@@ -62,21 +62,11 @@ func newFlagSet(name string) *flag.FlagSet {
 	return fs
 }
 
-// CleanUpArgs rewrites command line arguments for simplicity and backwards compatibility.
-// In particular, it rewrites --authkey to --auth-key.
+// CleanUpArgs rewrites the legacy posture-checking spelling.
 func CleanUpArgs(args []string) []string {
 	out := make([]string, 0, len(args))
 	for _, arg := range args {
 		switch {
-		// Rewrite --authkey to --auth-key, and --authkey=x to --auth-key=x,
-		// and the same for the -authkey variant.
-		case arg == "--authkey", arg == "-authkey":
-			arg = "--auth-key"
-		case strings.HasPrefix(arg, "--authkey="), strings.HasPrefix(arg, "-authkey="):
-			_, val, _ := strings.Cut(arg, "=")
-			arg = "--auth-key=" + val
-
-		// And the same, for posture-checking => report-posture
 		case arg == "--posture-checking", arg == "-posture-checking":
 			arg = "--report-posture"
 		case strings.HasPrefix(arg, "--posture-checking="), strings.HasPrefix(arg, "-posture-checking="):

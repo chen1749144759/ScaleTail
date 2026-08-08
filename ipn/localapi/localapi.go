@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"golang.org/x/net/dns/dnsmessage"
 	"scaletail.com/client/scaletail/apitype"
@@ -29,6 +30,8 @@ import (
 	"scaletail.com/feature"
 	"scaletail.com/feature/buildfeatures"
 	"scaletail.com/hostinfo"
+	"scaletail.com/internal/accountauth"
+	"scaletail.com/internal/controlurl"
 	"scaletail.com/ipn"
 	"scaletail.com/ipn/ipnauth"
 	"scaletail.com/ipn/ipnlocal"
@@ -69,31 +72,33 @@ type LocalAPIHandler func(*Handler, http.ResponseWriter, *http.Request)
 // then it's a prefix match.
 var handler = map[string]LocalAPIHandler{
 	// The prefix match handlers end with a slash:
-	"profiles/": (*Handler).serveProfiles,
+	"profiles/":   (*Handler).serveProfiles,
+	"scaleforge/": (*Handler).serveScaleForgeClientProxy,
 
 	// The other /localapi/v0/NAME handlers are exact matches and contain only NAME
 	// without a trailing slash:
-	"cert-domains":         (*Handler).serveCertDomains,
-	"check-prefs":          (*Handler).serveCheckPrefs,
-	"check-so-mark-in-use": (*Handler).serveCheckSOMarkInUse,
-	"derpmap":              (*Handler).serveDERPMap,
-	"dns-config":           (*Handler).serveDNSConfig,
-	"goroutines":           (*Handler).serveGoroutines,
-	"login-interactive":    (*Handler).serveLoginInteractive,
-	"logout":               (*Handler).serveLogout,
-	"netcheck":             (*Handler).serveNetcheck,
-	"peer-by-id":           (*Handler).servePeerByID,
-	"ping":                 (*Handler).servePing,
-	"prefs":                (*Handler).servePrefs,
-	"reload-config":        (*Handler).reloadConfig,
-	"reset-auth":           (*Handler).serveResetAuth,
-	"scaletail-up":         (*Handler).serveScaleTailUp,
-	"services":             (*Handler).serveServices,
-	"set-expiry-sooner":    (*Handler).serveSetExpirySooner,
-	"shutdown":             (*Handler).serveShutdown,
-	"start":                (*Handler).serveStart,
-	"status":               (*Handler).serveStatus,
-	"whois":                (*Handler).serveWhoIs,
+	"cert-domains":            (*Handler).serveCertDomains,
+	"check-prefs":             (*Handler).serveCheckPrefs,
+	"check-so-mark-in-use":    (*Handler).serveCheckSOMarkInUse,
+	"derpmap":                 (*Handler).serveDERPMap,
+	"dns-config":              (*Handler).serveDNSConfig,
+	"goroutines":              (*Handler).serveGoroutines,
+	"login-interactive":       (*Handler).serveLoginInteractive,
+	"logout":                  (*Handler).serveLogout,
+	"netcheck":                (*Handler).serveNetcheck,
+	"peer-by-id":              (*Handler).servePeerByID,
+	"ping":                    (*Handler).servePing,
+	"prefs":                   (*Handler).servePrefs,
+	"reload-config":           (*Handler).reloadConfig,
+	"reset-auth":              (*Handler).serveResetAuth,
+	"scaletail-auth-password": (*Handler).serveScaleTailAuthPassword,
+	"scaletail-up":            (*Handler).serveScaleTailUp,
+	"services":                (*Handler).serveServices,
+	"set-expiry-sooner":       (*Handler).serveSetExpirySooner,
+	"shutdown":                (*Handler).serveShutdown,
+	"start":                   (*Handler).serveStart,
+	"status":                  (*Handler).serveStatus,
+	"whois":                   (*Handler).serveWhoIs,
 }
 
 func init() {
@@ -745,6 +750,7 @@ func (h *Handler) serveResetAuth(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "reset-auth failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	accountauth.Clear()
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -931,6 +937,10 @@ func (h *Handler) serveStart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if strings.TrimSpace(o.AuthKey) != "" {
+		http.Error(w, "pre-authentication keys are not supported; use account-password login", http.StatusBadRequest)
+		return
+	}
 
 	if h.b.HealthTracker().IsUnhealthy(ipn.StateStoreHealth) {
 		http.Error(w, "cannot start backend when state store is unhealthy", http.StatusInternalServerError)
@@ -938,6 +948,9 @@ func (h *Handler) serveStart(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.b.Start(o)
 	if err != nil {
+		if writeScaleTailUpdateRequired(w, err) {
+			return
+		}
 		// TODO(bradfitz): map error to a good HTTP error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -945,12 +958,251 @@ func (h *Handler) serveStart(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+const (
+	maxScaleTailUpRequestBytes            = 64 << 10
+	maxScaleTailPasswordAuthRequestBytes  = 8 << 10
+	maxScaleTailPasswordAuthResponseBytes = 64 << 10
+	maxScaleForgeClientRequestBytes       = 256 << 10
+	maxScaleForgeClientResponseBytes      = 1 << 20
+	maxScaleTailUsernameBytes             = 254
+	maxScaleTailPasswordBytes             = 72
+	scaleTailAuthIDPrefix                 = "hskey-authreq-"
+	scaleTailAuthIDLength                 = len(scaleTailAuthIDPrefix) + 24
+)
+
+const (
+	passwordAuthInvalidCredentials  = "invalid_credentials"
+	passwordAuthAccountLocked       = "account_locked"
+	passwordAuthAccountDisabled     = "account_disabled"
+	passwordAuthAccountExpired      = "account_expired"
+	passwordAuthPasswordExpired     = "password_expired"
+	passwordAuthNetworkNotAssigned  = "network_not_assigned"
+	passwordAuthNodeLimitReached    = "node_limit_reached"
+	passwordAuthTagsNotSupported    = "tags_not_supported"
+	passwordAuthHTTPSRequired       = "https_required"
+	passwordAuthSessionExpired      = "auth_session_expired"
+	passwordAuthInvalidSession      = "invalid_auth_session"
+	passwordAuthMachineMismatch     = "machine_mismatch"
+	passwordAuthSessionConsumed     = "auth_session_consumed"
+	passwordAuthTooManyAttempts     = "too_many_attempts"
+	passwordAuthInvalidRequest      = "invalid_request"
+	passwordAuthRegistrationFailed  = "registration_failed"
+	passwordAuthRouteApprovalFailed = "route_approval_failed"
+	passwordAuthInternalError       = "internal_error"
+	passwordAuthFailed              = "authentication_failed"
+	passwordAuthNetworkError        = "network_error"
+)
+
 type scaleTailUpRequest struct {
 	ControlURL   string
-	AuthKey      string
 	Hostname     string
 	AcceptRoutes bool
 	AcceptDNS    *bool
+}
+
+type scaleTailPasswordAuthRequest struct {
+	ControlURL string `json:"controlUrl,omitempty"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+}
+
+type scaleTailPasswordAuthUpstreamRequest struct {
+	AuthID   string `json:"authId"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type scaleTailPasswordAuthError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+var scaleForgeClientOperations = map[string]string{
+	"client-update": httpm.GET,
+	"traffic":       httpm.POST,
+	"policy":        httpm.GET,
+	"policy-state":  httpm.POST,
+}
+
+func (h *Handler) serveScaleForgeClientProxy(w http.ResponseWriter, r *http.Request) {
+	operation := strings.TrimPrefix(r.URL.Path, "/localapi/v0/scaleforge/")
+	wantMethod, ok := scaleForgeClientOperations[operation]
+	if !ok || operation == r.URL.Path {
+		http.NotFound(w, r)
+		return
+	}
+	if r.Method != wantMethod {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !h.PermitRead || (r.Method == httpm.POST && !h.PermitWrite) {
+		http.Error(w, "access denied", http.StatusForbidden)
+		return
+	}
+	if operation != "client-update" && r.URL.RawQuery != "" {
+		http.Error(w, "query parameters are not allowed", http.StatusBadRequest)
+		return
+	}
+
+	nm := h.b.NetMapNoPeers()
+	if nm == nil || nm.NodeKey.IsZero() {
+		http.Error(w, "ScaleTail node is not connected", http.StatusServiceUnavailable)
+		return
+	}
+
+	var body io.Reader = http.NoBody
+	if r.Method == httpm.POST {
+		payload, err := readLimitedBody(r.Body, maxScaleForgeClientRequestBytes)
+		if err != nil {
+			http.Error(w, "invalid client request", http.StatusRequestEntityTooLarge)
+			return
+		}
+		body = bytes.NewReader(payload)
+	}
+	target := &url.URL{
+		Scheme:   "https",
+		Host:     "unused",
+		Path:     "/machine/scaleforge/" + operation,
+		RawQuery: r.URL.RawQuery,
+	}
+	upstream, err := http.NewRequestWithContext(r.Context(), r.Method, target.String(), body)
+	if err != nil {
+		http.Error(w, "failed to create Noise request", http.StatusInternalServerError)
+		return
+	}
+	upstream.Header.Set("Accept", "application/json")
+	upstream.Header.Set(tailcfg.LBHeader, nm.NodeKey.String())
+	if r.Method == httpm.POST {
+		upstream.Header.Set("Content-Type", "application/json")
+	}
+
+	response, err := h.b.DoNoiseRequest(upstream)
+	if err != nil {
+		http.Error(w, "ScaleForge control channel is unavailable", http.StatusBadGateway)
+		return
+	}
+	defer response.Body.Close()
+	responseBody, err := readLimitedBody(response.Body, maxScaleForgeClientResponseBytes)
+	if err != nil {
+		http.Error(w, "invalid ScaleForge response", http.StatusBadGateway)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(response.StatusCode)
+	_, _ = w.Write(responseBody)
+}
+
+func (h *Handler) serveScaleTailAuthPassword(w http.ResponseWriter, r *http.Request) {
+	if !h.PermitWrite {
+		writeScaleTailPasswordAuthError(w, http.StatusForbidden, passwordAuthFailed)
+		return
+	}
+	if r.Method != httpm.POST {
+		http.Error(w, "want POST", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req scaleTailPasswordAuthRequest
+	if err := decodeLimitedJSON(w, r, &req, maxScaleTailPasswordAuthRequestBytes); err != nil {
+		status := http.StatusBadRequest
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			status = http.StatusRequestEntityTooLarge
+		}
+		http.Error(w, "invalid authentication request", status)
+		return
+	}
+	req.Username = strings.TrimSpace(req.Username)
+	if !validScaleTailAccountUsername(req.Username) {
+		http.Error(w, "invalid username", http.StatusBadRequest)
+		return
+	}
+	if !validScaleTailAccountPassword(req.Password) {
+		http.Error(w, "invalid password", http.StatusBadRequest)
+		return
+	}
+
+	st := h.b.StatusWithoutPeers()
+	authURL := ""
+	if st != nil {
+		authURL = st.AuthURL
+	}
+	controlURL, authID, err := scaleTailPasswordAuthSession(
+		h.b.Prefs().ControlURL(),
+		authURL,
+		req.ControlURL,
+	)
+	if err != nil {
+		if errors.Is(err, errScaleTailHTTPSRequired) {
+			writeScaleTailPasswordAuthError(w, http.StatusUpgradeRequired, passwordAuthHTTPSRequired)
+			return
+		}
+		if errors.Is(err, errScaleTailAuthSessionInvalid) {
+			writeScaleTailPasswordAuthError(w, http.StatusGone, passwordAuthInvalidSession)
+			return
+		}
+		writeScaleTailPasswordAuthError(w, http.StatusGone, passwordAuthSessionExpired)
+		return
+	}
+
+	credentialRequest := accountauth.BeginRequest()
+	payload, err := json.Marshal(scaleTailPasswordAuthUpstreamRequest{
+		AuthID:   authID,
+		Username: req.Username,
+		Password: req.Password,
+	})
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusInternalServerError, passwordAuthFailed)
+		return
+	}
+	httpReq, err := http.NewRequestWithContext(r.Context(), httpm.POST, "https://unused/machine/auth/password", bytes.NewReader(payload))
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusInternalServerError, passwordAuthFailed)
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Accept", "application/json")
+
+	resp, err := h.b.DoNoiseRequest(httpReq)
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusBadGateway, passwordAuthNetworkError)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := readLimitedBody(resp.Body, maxScaleTailPasswordAuthResponseBytes)
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusBadGateway, passwordAuthFailed)
+		return
+	}
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if !accountauth.SetIfCurrentRequest(
+			credentialRequest,
+			controlURL.String(),
+			req.Username,
+			req.Password,
+		) {
+			writeScaleTailPasswordAuthError(w, http.StatusConflict, passwordAuthInvalidSession)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	code := scaleTailPasswordAuthCode(resp.StatusCode, body)
+	writeScaleTailPasswordAuthError(w, passwordAuthHTTPStatus(code), code)
+}
+
+func validScaleTailAccountUsername(username string) bool {
+	return username != "" &&
+		len(username) <= maxScaleTailUsernameBytes &&
+		strings.IndexFunc(username, unicode.IsControl) == -1
+}
+
+func validScaleTailAccountPassword(password string) bool {
+	return password != "" &&
+		len(password) <= maxScaleTailPasswordBytes &&
+		strings.IndexFunc(password, unicode.IsControl) == -1
 }
 
 func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
@@ -963,7 +1215,7 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req scaleTailUpRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := decodeLimitedJSON(w, r, &req, maxScaleTailUpRequestBytes); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -973,13 +1225,13 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing ControlURL", http.StatusBadRequest)
 		return
 	}
-	u, err := url.Parse(controlURL)
-	if err != nil || u.Scheme == "" || u.Host == "" {
+	_, err := validateScaleTailControlURL(controlURL)
+	if err != nil {
+		if errors.Is(err, errScaleTailHTTPSRequired) {
+			writeScaleTailPasswordAuthError(w, http.StatusUpgradeRequired, passwordAuthHTTPSRequired)
+			return
+		}
 		http.Error(w, "invalid ControlURL", http.StatusBadRequest)
-		return
-	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		http.Error(w, "ControlURL scheme must be http or https", http.StatusBadRequest)
 		return
 	}
 
@@ -1008,17 +1260,24 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.b.CheckPrefs(prefs); err != nil {
+		if writeScaleTailUpdateRequired(w, err) {
+			return
+		}
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	st := h.b.StatusWithoutPeers()
 	hadNodeKey := st != nil && st.HaveNodeKey
-	err = h.b.Start(ipn.Options{
-		AuthKey:     strings.TrimSpace(req.AuthKey),
-		UpdatePrefs: prefs,
-	})
+	// Credentials from a previous control server must never be sent to the
+	// newly selected server. Clear them only after the request is validated so
+	// a malformed request cannot disrupt an otherwise healthy connection.
+	accountauth.Clear()
+	err = h.b.Start(ipn.Options{UpdatePrefs: prefs})
 	if err != nil {
+		if writeScaleTailUpdateRequired(w, err) {
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1029,6 +1288,263 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+var (
+	errScaleTailHTTPSRequired      = controlurl.ErrHTTPSRequired
+	errScaleTailAuthSessionInvalid = errors.New("authentication URL does not belong to the current control server")
+)
+
+func validateScaleTailControlURL(raw string) (*url.URL, error) {
+	return controlurl.ParseControl(raw)
+}
+
+func validateScaleTailAuthURL(raw string) (*url.URL, error) {
+	return controlurl.ParseAuth(raw)
+}
+
+func scaleTailPasswordAuthSession(controlRaw, authRaw, expectedControlRaw string) (*url.URL, string, error) {
+	controlURL, err := validateScaleTailControlURL(controlRaw)
+	if err != nil {
+		return nil, "", err
+	}
+	if strings.TrimSpace(expectedControlRaw) != "" {
+		expectedControlURL, err := validateScaleTailControlURL(expectedControlRaw)
+		if err != nil {
+			return nil, "", err
+		}
+		if !sameScaleTailURLOrigin(controlURL, expectedControlURL) {
+			return nil, "", errScaleTailAuthSessionInvalid
+		}
+	}
+	if strings.TrimSpace(authRaw) == "" {
+		return controlURL, "", nil
+	}
+	authURL, err := validateScaleTailAuthURL(authRaw)
+	if err != nil {
+		return nil, "", err
+	}
+	if !sameScaleTailURLOrigin(controlURL, authURL) {
+		return nil, "", errScaleTailAuthSessionInvalid
+	}
+	authID, err := scaleTailAuthIDFromURL(authURL)
+	if err != nil {
+		return nil, "", err
+	}
+	return controlURL, authID, nil
+}
+
+func sameScaleTailURLOrigin(a, b *url.URL) bool {
+	return controlurl.SameOrigin(a, b)
+}
+
+func scaleTailAuthIDFromURL(u *url.URL) (string, error) {
+	segments := strings.FieldsFunc(u.EscapedPath(), func(r rune) bool { return r == '/' })
+	if len(segments) < 2 {
+		return "", errors.New("authentication URL has no registration ID")
+	}
+	marker, err := url.PathUnescape(segments[len(segments)-2])
+	if err != nil || !strings.EqualFold(strings.TrimSpace(marker), "register") {
+		return "", errors.New("authentication URL is not a registration URL")
+	}
+	id, err := url.PathUnescape(segments[len(segments)-1])
+	if err != nil || !validScaleTailAuthID(id) {
+		return "", errors.New("authentication URL has an invalid registration ID")
+	}
+	return id, nil
+}
+
+func validScaleTailAuthID(id string) bool {
+	if len(id) != scaleTailAuthIDLength || !strings.HasPrefix(id, scaleTailAuthIDPrefix) {
+		return false
+	}
+	for i := len(scaleTailAuthIDPrefix); i < len(id); i++ {
+		c := id[i]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+func decodeLimitedJSON(w http.ResponseWriter, r *http.Request, dst any, maxBytes int64) error {
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(dst); err != nil {
+		return err
+	}
+	if err := dec.Decode(new(any)); err != io.EOF {
+		if err == nil {
+			return errors.New("request body must contain one JSON value")
+		}
+		return err
+	}
+	return nil
+}
+
+func readLimitedBody(r io.Reader, maxBytes int64) ([]byte, error) {
+	body, err := io.ReadAll(io.LimitReader(r, maxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(body)) > maxBytes {
+		return nil, errors.New("response body too large")
+	}
+	return body, nil
+}
+
+func scaleTailPasswordAuthCode(status int, body []byte) string {
+	var payload struct {
+		Code      string `json:"code"`
+		Error     string `json:"error"`
+		ErrorCode string `json:"error_code"`
+		Message   string `json:"message"`
+	}
+	if json.Unmarshal(body, &payload) == nil {
+		for _, value := range []string{payload.Code, payload.ErrorCode, payload.Error, payload.Message} {
+			if code := canonicalScaleTailPasswordAuthCode(value); code != "" {
+				return code
+			}
+		}
+	}
+	if code := canonicalScaleTailPasswordAuthCode(string(body)); code != "" {
+		return code
+	}
+	switch status {
+	case http.StatusUnauthorized:
+		return passwordAuthInvalidCredentials
+	case http.StatusLocked:
+		return passwordAuthAccountLocked
+	case http.StatusConflict:
+		return passwordAuthSessionConsumed
+	case http.StatusGone:
+		return passwordAuthSessionExpired
+	case http.StatusTooManyRequests:
+		return passwordAuthTooManyAttempts
+	case http.StatusUpgradeRequired:
+		return passwordAuthHTTPSRequired
+	default:
+		return passwordAuthFailed
+	}
+}
+
+func canonicalScaleTailPasswordAuthCode(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	value = strings.NewReplacer("-", "_", " ", "_").Replace(value)
+	for _, code := range []string{
+		passwordAuthInvalidCredentials,
+		passwordAuthAccountLocked,
+		passwordAuthAccountDisabled,
+		passwordAuthAccountExpired,
+		passwordAuthPasswordExpired,
+		passwordAuthNetworkNotAssigned,
+		passwordAuthNodeLimitReached,
+		passwordAuthTagsNotSupported,
+		passwordAuthHTTPSRequired,
+		passwordAuthSessionExpired,
+		passwordAuthInvalidSession,
+		passwordAuthMachineMismatch,
+		passwordAuthSessionConsumed,
+		passwordAuthTooManyAttempts,
+		passwordAuthInvalidRequest,
+		passwordAuthRegistrationFailed,
+		passwordAuthRouteApprovalFailed,
+		passwordAuthInternalError,
+	} {
+		if value == code || strings.Contains(value, code) {
+			return code
+		}
+	}
+	return ""
+}
+
+func passwordAuthHTTPStatus(code string) int {
+	switch code {
+	case passwordAuthInvalidCredentials:
+		return http.StatusUnauthorized
+	case passwordAuthAccountLocked:
+		return http.StatusLocked
+	case passwordAuthAccountDisabled, passwordAuthAccountExpired, passwordAuthPasswordExpired:
+		return http.StatusForbidden
+	case passwordAuthNetworkNotAssigned:
+		return http.StatusConflict
+	case passwordAuthNodeLimitReached:
+		return http.StatusConflict
+	case passwordAuthTagsNotSupported:
+		return http.StatusBadRequest
+	case passwordAuthInvalidRequest:
+		return http.StatusBadRequest
+	case passwordAuthHTTPSRequired:
+		return http.StatusUpgradeRequired
+	case passwordAuthSessionExpired, passwordAuthInvalidSession:
+		return http.StatusGone
+	case passwordAuthMachineMismatch:
+		return http.StatusUnauthorized
+	case passwordAuthSessionConsumed:
+		return http.StatusConflict
+	case passwordAuthTooManyAttempts:
+		return http.StatusTooManyRequests
+	case passwordAuthNetworkError:
+		return http.StatusBadGateway
+	default:
+		return http.StatusBadGateway
+	}
+}
+
+func passwordAuthMessage(code string) string {
+	switch code {
+	case passwordAuthInvalidCredentials:
+		return "invalid username or password"
+	case passwordAuthAccountLocked:
+		return "account is locked"
+	case passwordAuthAccountDisabled:
+		return "account is disabled"
+	case passwordAuthAccountExpired:
+		return "account has expired"
+	case passwordAuthPasswordExpired:
+		return "password has expired"
+	case passwordAuthNetworkNotAssigned:
+		return "account is not assigned to a network"
+	case passwordAuthNodeLimitReached:
+		return "account has reached its node limit"
+	case passwordAuthTagsNotSupported:
+		return "account-authenticated nodes cannot use identity tags"
+	case passwordAuthHTTPSRequired:
+		return "remote control server requires HTTPS"
+	case passwordAuthSessionExpired:
+		return "authentication session has expired"
+	case passwordAuthInvalidSession:
+		return "authentication session is invalid"
+	case passwordAuthMachineMismatch:
+		return "authentication session belongs to another machine"
+	case passwordAuthSessionConsumed:
+		return "authentication session has already been used"
+	case passwordAuthTooManyAttempts:
+		return "too many authentication attempts"
+	case passwordAuthInvalidRequest:
+		return "invalid authentication request"
+	case passwordAuthRegistrationFailed:
+		return "node registration failed"
+	case passwordAuthRouteApprovalFailed:
+		return "node connected but route approval failed"
+	case passwordAuthInternalError:
+		return "control server authentication failed"
+	case passwordAuthNetworkError:
+		return "control server request failed"
+	default:
+		return "authentication failed"
+	}
+}
+
+func writeScaleTailPasswordAuthError(w http.ResponseWriter, status int, code string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(scaleTailPasswordAuthError{
+		Code:    code,
+		Message: passwordAuthMessage(code),
+	})
 }
 
 func (h *Handler) serveLogout(w http.ResponseWriter, r *http.Request) {
@@ -1042,6 +1558,7 @@ func (h *Handler) serveLogout(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.b.Logout(r.Context(), h.Actor)
 	if err == nil {
+		accountauth.Clear()
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
@@ -1076,6 +1593,9 @@ func (h *Handler) servePrefs(w http.ResponseWriter, r *http.Request) {
 		var err error
 		prefs, err = h.b.EditPrefsAs(mp, h.Actor)
 		if err != nil {
+			if writeScaleTailUpdateRequired(w, err) {
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(resJSON{Error: err.Error()})
@@ -1095,6 +1615,23 @@ func (h *Handler) servePrefs(w http.ResponseWriter, r *http.Request) {
 
 type resJSON struct {
 	Error string `json:",omitempty"`
+}
+
+func writeScaleTailUpdateRequired(w http.ResponseWriter, err error) bool {
+	var required *ipnlocal.ScaleTailUpdateRequiredError
+	if !errors.As(err, &required) {
+		return false
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusLocked)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"code":             "forced_update_required",
+		"required_version": required.Version,
+		"revision":         required.Revision,
+		"error":            required.Error(),
+	})
+	return true
 }
 
 func (h *Handler) serveCheckPrefs(w http.ResponseWriter, r *http.Request) {

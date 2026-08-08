@@ -11,17 +11,16 @@ const emit = defineEmits<{
 const status = ref<Status | null>(null);
 const prefs = ref<Prefs | null>(null);
 const serverIP = ref("");
-const serverPort = ref("80");
-const useHTTPS = ref(false);
+const serverPort = ref("443");
+const useHTTPS = ref(true);
 const hostname = ref("");
-const authKey = ref("");
+const username = ref("");
+const password = ref("");
 const acceptRoutes = ref(true);
 const acceptDNS = ref(true);
 const loading = ref(false);
 const reportConfig = ref<ClientReportConfig>({
-  enabled: false,
-  baseURL: "",
-  token: "",
+  enabled: true,
   intervalSeconds: 15,
   flowEnabled: true,
   quotaGuardEnabled: true,
@@ -41,21 +40,15 @@ const controlURL = computed(() => {
   const port = serverPort.value.trim() || (useHTTPS.value ? "443" : "80");
   return `${scheme}://${serverIP.value.trim()}:${port}`;
 });
-const commandLine = computed(() => {
-  const args = [
-    "scaletail",
-    "up",
-    `--login-server=${quoteArg(controlURL.value)}`,
-    `--accept-routes=${acceptRoutes.value ? "true" : "false"}`,
-    `--accept-dns=${acceptDNS.value ? "true" : "false"}`,
+const connectionPreview = computed(() => {
+  const lines = [
+    `控制服务器  ${controlURL.value}`,
+    `登录账号    ${username.value.trim() || "（未填写）"}`,
+    `设备名称    ${hostname.value.trim() || "（使用系统主机名）"}`,
+    `接受路由    ${acceptRoutes.value ? "是" : "否"}`,
+    `采用 DNS    ${acceptDNS.value ? "是" : "否"}`,
   ];
-  if (hostname.value.trim()) {
-    args.push(`--hostname=${quoteArg(hostname.value.trim())}`);
-  }
-  if (authKey.value.trim()) {
-    args.push(`--auth-key=${quoteArg(authKey.value.trim())}`);
-  }
-  return args.join(" ");
+  return lines.join("\n");
 });
 
 onMounted(() => {
@@ -102,8 +95,6 @@ async function saveReportConfig() {
   try {
     const nextConfig: ClientReportConfig = {
       enabled: Boolean(reportConfig.value.enabled),
-      baseURL: reportConfig.value.baseURL,
-      token: reportConfig.value.token,
       intervalSeconds: Number(reportConfig.value.intervalSeconds),
       flowEnabled: Boolean(reportConfig.value.flowEnabled),
       quotaGuardEnabled: Boolean(reportConfig.value.quotaGuardEnabled),
@@ -130,7 +121,8 @@ async function connect() {
       serverPort: serverPort.value,
       useHTTPS: useHTTPS.value,
       hostname: hostname.value,
-      authKey: authKey.value,
+      username: username.value,
+      password: password.value,
       acceptRoutes: acceptRoutes.value,
       acceptDNS: acceptDNS.value,
     });
@@ -140,6 +132,7 @@ async function connect() {
     error.value = messageOf(err);
     message.value = "";
   } finally {
+    password.value = "";
     loading.value = false;
   }
 }
@@ -187,7 +180,8 @@ async function logoutCurrent() {
   message.value = "正在退出当前网络...";
   try {
     await window.scaletail.logout();
-    authKey.value = "";
+    username.value = "";
+    password.value = "";
     message.value = "已退出当前网络，现在可以修改服务端配置。";
     await load();
   } catch (err) {
@@ -200,8 +194,8 @@ async function logoutCurrent() {
 
 async function copyCommand() {
   try {
-    await navigator.clipboard.writeText(commandLine.value);
-    message.value = "命令已复制。";
+    await navigator.clipboard.writeText(connectionPreview.value);
+    message.value = "连接参数已复制，密码未包含在内。";
     error.value = "";
   } catch {
     error.value = "复制失败，请手动选中命令文本复制。";
@@ -220,13 +214,6 @@ function parseControlURL(raw: string) {
   } catch {
     // Keep the current form values if older prefs contain an unexpected URL.
   }
-}
-
-function quoteArg(value: string) {
-  if (!value) {
-    return "\"\"";
-  }
-  return /[\s"&|<>^]/.test(value) ? `"${value.replace(/"/g, "\\\"")}"` : value;
 }
 
 function lockMessage(state: string) {
@@ -253,7 +240,7 @@ function messageOf(err: unknown) {
       <div class="section-head">
         <div>
           <h2>服务端连接</h2>
-          <p>填写 Headscale/ScaleTail 控制服务器地址，连接会通过本地服务完成。</p>
+          <p>使用控制服务器账号登录。远程服务器必须提供可信 HTTPS。</p>
         </div>
         <StatusPill :state="backendState" />
       </div>
@@ -300,15 +287,22 @@ function messageOf(err: unknown) {
 
       <div class="preview mono">{{ controlURL }}</div>
 
-      <label class="field">
-        <span>预认证密钥，可选</span>
-        <input v-model="authKey" :disabled="configLocked" type="password" placeholder="tskey-auth-... 或 hskey-auth-..." />
-      </label>
+      <div class="form-grid">
+        <label class="field">
+          <span>账号</span>
+          <input v-model="username" :disabled="configLocked" type="text" autocomplete="off" placeholder="请输入账号" />
+        </label>
+        <label class="field">
+          <span>密码</span>
+          <input v-model="password" :disabled="configLocked" type="password" autocomplete="off" placeholder="请输入密码" />
+        </label>
+      </div>
 
       <div class="command-head">
         <strong>平台上报</strong>
         <button class="btn" :disabled="reportSaving" @click="saveReportConfig">保存</button>
       </div>
+      <p class="field-note">上报、策略和版本检查通过当前控制服务器的 Noise 加密通道完成，无需单独配置平台地址或密钥。</p>
       <div class="checks">
         <label>
           <input v-model="reportConfig.enabled" type="checkbox" />
@@ -324,26 +318,18 @@ function messageOf(err: unknown) {
         </label>
       </div>
       <label class="field">
-        <span>管理平台地址</span>
-        <input v-model="reportConfig.baseURL" type="text" placeholder="http://192.168.1.10:5175" />
-      </label>
-      <label class="field">
-        <span>上报密钥</span>
-        <input v-model="reportConfig.token" type="password" placeholder="与 ScaleForge 的 SCALETAIL_CLIENT_TOKEN 保持一致" />
-      </label>
-      <label class="field">
         <span>上报周期，秒</span>
         <input v-model.number="reportConfig.intervalSeconds" type="number" min="5" max="3600" placeholder="15" />
       </label>
 
       <div class="command-head">
-        <strong>等价命令</strong>
+        <strong>连接参数预览</strong>
         <button class="btn" @click="copyCommand">
           <Copy :size="16" />
           复制
         </button>
       </div>
-      <textarea class="command mono" :value="commandLine" readonly />
+      <textarea class="command mono" :value="connectionPreview" readonly />
 
       <div class="toolbar">
         <button v-if="canResume" class="btn primary" :disabled="loading" @click="reconnectCurrent">
@@ -375,7 +361,7 @@ function messageOf(err: unknown) {
           <span class="modal-kicker">退出当前网络</span>
           <h3 id="logout-title">清除当前登录状态？</h3>
           <p>
-            这会删除本机节点身份并解锁服务端配置。之后如需重新加入网络，需要重新填写有效预认证密钥，或在 Headscale 服务端手动注册。
+            这会删除本机节点身份并解锁服务端配置。之后如需重新加入网络，需要重新输入账号密码完成认证。
           </p>
         </div>
         <div class="modal-actions">

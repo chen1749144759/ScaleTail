@@ -99,8 +99,8 @@ func TestFQDNContains(t *testing.T) {
 		{"", "", true},
 		{"", "foo.com", true},
 		{"foo.com", "", false},
-		{"scaletail.com", "www.tailscale.com", true},
-		{"www.tailscale.com", "scaletail.com", false},
+		{"scaletail.com", "www.scaletail.com", true},
+		{"www.scaletail.com", "scaletail.com", false},
 		{"scale.com", "scaletail.com", false},
 		{"foo.com", "foo.com", true},
 	}

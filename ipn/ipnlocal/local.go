@@ -47,6 +47,7 @@ import (
 	"scaletail.com/health"
 	"scaletail.com/health/healthmsg"
 	"scaletail.com/hostinfo"
+	"scaletail.com/internal/accountauth"
 	"scaletail.com/ipn"
 	"scaletail.com/ipn/conffile"
 	"scaletail.com/ipn/ipnauth"
@@ -243,7 +244,8 @@ type LocalBackend struct {
 	// for testing and graceful shutdown purposes.
 	goTracker goroutines.Tracker
 
-	startOnce sync.Once // protects the one-time initialization in [LocalBackend.Start]
+	startOnce                  sync.Once // protects the one-time initialization in [LocalBackend.Start]
+	scaleTailUpdateMonitorOnce sync.Once
 
 	// extHost is the bridge between [LocalBackend] and the registered [ipnext.Extension]s.
 	// It may be nil in tests that use direct composite literal initialization of [LocalBackend]
@@ -293,25 +295,27 @@ type LocalBackend struct {
 	state          ipn.State // TODO(nickkhyl): move to nodeBackend
 	capTailnetLock bool      // whether netMap contains the tailnet lock capability
 	// hostinfo is mutated in-place while mu is held.
-	hostinfo          *tailcfg.Hostinfo      // TODO(nickkhyl): move to nodeBackend
-	nmExpiryTimer     tstime.TimerController // for updating netMap on node expiry; can be nil; TODO(nickkhyl): move to nodeBackend
-	activeLogin       string                 // last logged LoginName from netMap; TODO(nickkhyl): move to nodeBackend (or remove? it's in [ipn.LoginProfile]).
-	engineStatus      ipn.EngineStatus
-	endpoints         []tailcfg.Endpoint
-	blocked           bool
-	keyExpired        bool          // TODO(nickkhyl): move to nodeBackend
-	authURL           string        // non-empty if not Running; TODO(nickkhyl): move to nodeBackend
-	authURLTime       time.Time     // when the authURL was received from the control server; TODO(nickkhyl): move to nodeBackend
-	authActor         ipnauth.Actor // an actor who called [LocalBackend.StartLoginInteractive] last, or nil; TODO(nickkhyl): move to nodeBackend
-	egg               bool
-	interfaceState    *netmon.State      // latest network interface state or nil
-	peerAPIServer     *peerAPIServer     // or nil
-	peerAPIListeners  []*peerAPIListener // TODO(nickkhyl): move to nodeBackend
-	loginFlags        controlclient.LoginFlags
-	notifyWatchers    map[string]*watchSession // by session ID
-	lastStatusTime    time.Time                // status.AsOf value of the last processed status update
-	componentLogUntil map[string]componentLogState
-	currentUser       ipnauth.Actor
+	hostinfo              *tailcfg.Hostinfo      // TODO(nickkhyl): move to nodeBackend
+	nmExpiryTimer         tstime.TimerController // for updating netMap on node expiry; can be nil; TODO(nickkhyl): move to nodeBackend
+	activeLogin           string                 // last logged LoginName from netMap; TODO(nickkhyl): move to nodeBackend (or remove? it's in [ipn.LoginProfile]).
+	engineStatus          ipn.EngineStatus
+	endpoints             []tailcfg.Endpoint
+	blocked               bool
+	keyExpired            bool          // TODO(nickkhyl): move to nodeBackend
+	authURL               string        // non-empty if not Running; TODO(nickkhyl): move to nodeBackend
+	authURLTime           time.Time     // when the authURL was received from the control server; TODO(nickkhyl): move to nodeBackend
+	authActor             ipnauth.Actor // an actor who called [LocalBackend.StartLoginInteractive] last, or nil; TODO(nickkhyl): move to nodeBackend
+	egg                   bool
+	interfaceState        *netmon.State      // latest network interface state or nil
+	peerAPIServer         *peerAPIServer     // or nil
+	peerAPIListeners      []*peerAPIListener // TODO(nickkhyl): move to nodeBackend
+	loginFlags            controlclient.LoginFlags
+	notifyWatchers        map[string]*watchSession // by session ID
+	lastStatusTime        time.Time                // status.AsOf value of the last processed status update
+	componentLogUntil     map[string]componentLogState
+	currentUser           ipnauth.Actor
+	scaleTailUpdate       scaleTailUpdateState
+	scaleTailUpdateLoaded bool
 
 	// capForcedNetfilter is the netfilter that control instructs Linux clients
 	// to use, unless overridden locally.
@@ -2601,14 +2605,27 @@ func (b *LocalBackend) controlDebugFlags() []string {
 // from the following whether or not that is a safe transition).
 func (b *LocalBackend) Start(opts ipn.Options) error {
 	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.startLocked(opts)
+	err := b.startLocked(opts)
+	b.mu.Unlock()
+	if err == nil && runtime.GOOS == "windows" && !testenv.InTest() {
+		b.startScaleTailUpdateMonitor()
+	}
+	return err
 }
 
 func (b *LocalBackend) startLocked(opts ipn.Options) error {
 	b.logf("Start")
 	logf := logger.WithPrefix(b.logf, "Start: ")
 	b.startOnce.Do(b.initOnce)
+	if err := b.loadScaleTailUpdatePolicyLocked(); err != nil {
+		return err
+	}
+	if b.scaleTailForcedUpdateRequiredLocked() &&
+		((opts.UpdatePrefs != nil && opts.UpdatePrefs.WantRunning) ||
+			(opts.UpdatePrefs == nil && b.pm.CurrentPrefs().WantRunning())) {
+		return b.scaleTailUpdateRequiredErrorLocked()
+	}
+	previousControlURL := b.pm.CurrentPrefs().ControlURLOrDefault(b.polc)
 
 	var clientToShutdown controlclient.Client
 	defer func() {
@@ -2623,28 +2640,6 @@ func (b *LocalBackend) startLocked(opts ipn.Options) error {
 			return err
 		}
 	}
-	if b.state != ipn.Running && b.conf != nil && b.conf.Parsed.AuthKey != nil && opts.AuthKey == "" {
-		v := *b.conf.Parsed.AuthKey
-		if filename, ok := strings.CutPrefix(v, "file:"); ok {
-			b, err := os.ReadFile(filename)
-			if err != nil {
-				return fmt.Errorf("error reading config file authKey: %w", err)
-			}
-			v = strings.TrimSpace(string(b))
-		}
-		opts.AuthKey = v
-	}
-
-	if b.state != ipn.Running && b.conf == nil && opts.AuthKey == "" {
-		sysak, _ := b.polc.GetString(pkey.AuthKey, "")
-		if sysak != "" && len(b.pm.Profiles()) > 0 && b.state != ipn.NeedsLogin {
-			logf("not setting opts.AuthKey from syspolicy; login profiles exist, state=%v", b.state)
-		} else if sysak != "" {
-			logf("setting opts.AuthKey by syspolicy, len=%v", len(sysak))
-			opts.AuthKey = strings.TrimSpace(sysak)
-		}
-	}
-
 	hostinfo := hostinfo.New()
 	applyConfigToHostinfo(hostinfo, b.conf)
 	hostinfo.BackendLogID = b.backendLogID.String()
@@ -2735,6 +2730,9 @@ func (b *LocalBackend) startLocked(opts ipn.Options) error {
 	loggedOut := prefs.LoggedOut()
 
 	serverURL := prefs.ControlURLOrDefault(b.polc)
+	if previousControlURL != serverURL {
+		accountauth.Clear()
+	}
 	if inServerMode := prefs.ForceDaemon(); inServerMode || runtime.GOOS == "windows" {
 		logf("serverMode=%v", inServerMode)
 	}
@@ -2793,7 +2791,6 @@ func (b *LocalBackend) startLocked(opts ipn.Options) error {
 		Logf:                 logger.WithPrefix(b.logf, "control: "),
 		Persist:              *persistv,
 		ServerURL:            serverURL,
-		AuthKey:              opts.AuthKey,
 		Hostinfo:             b.hostInfoWithServicesLocked(),
 		HTTPTestClient:       httpTestClient,
 		DiscoPublicKey:       discoPublic,
@@ -4003,6 +4000,7 @@ func (b *LocalBackend) StartLoginInteractiveAs(ctx context.Context, user ipnauth
 	if b.health.IsUnhealthy(ipn.StateStoreHealth) {
 		return errors.New("cannot log in when state store is unhealthy")
 	}
+	accountauth.Clear()
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if b.cc == nil {
@@ -4327,6 +4325,9 @@ func (b *LocalBackend) checkPrefsLocked(p *ipn.Prefs) error {
 		return errors.New("can't reconfigure scaletaild when using a config file; config file is locked")
 	}
 	var errs []error
+	if p.WantRunning && b.scaleTailForcedUpdateRequiredLocked() {
+		errs = append(errs, b.scaleTailUpdateRequiredErrorLocked())
+	}
 	if p.Hostname == "badhostname.scaletail." {
 		// Keep this one just for testing.
 		errs = append(errs, errors.New("bad hostname [test]"))
@@ -6354,6 +6355,7 @@ func (b *LocalBackend) ShouldHandleViaIP(ip netip.Addr) bool {
 // Logout logs out the current profile, if any, and waits for the logout to
 // complete.
 func (b *LocalBackend) Logout(ctx context.Context, actor ipnauth.Actor) error {
+	accountauth.Clear()
 	b.mu.Lock()
 
 	if !b.hasNodeKeyLocked() {
@@ -6528,6 +6530,10 @@ func (b *LocalBackend) reconcilePrefsLocked(prefs *ipn.Prefs) (changed bool) {
 		changed = true
 	}
 	if buildfeatures.HasUseExitNode && b.resolveExitNodeInPrefsLocked(prefs) {
+		changed = true
+	}
+	if prefs.WantRunning && b.scaleTailForcedUpdateRequiredLocked() {
+		prefs.WantRunning = false
 		changed = true
 	}
 	if changed {
@@ -7478,6 +7484,7 @@ func (b *LocalBackend) resetDialPlan() {
 //
 // b.mu must be held.
 func (b *LocalBackend) resetForProfileChangeLocked() error {
+	accountauth.Clear()
 	if b.shutdownCalled {
 		// Prevent a call back to Start during Shutdown, which calls Logout for
 		// ephemeral nodes, which can then call back here. But we're shutting

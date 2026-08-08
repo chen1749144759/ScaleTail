@@ -29,7 +29,7 @@ func TestFindModuleInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefix := "path\tscaletail.com/cmd/scaletaild\nmod\ttailscale.com"
+	prefix := "path\tscaletail.com/cmd/scaletaild\nmod\tscaletail.com"
 	if !strings.HasPrefix(modinfo, prefix) {
 		t.Errorf("unexpected modinfo contents %q", modinfo)
 	}

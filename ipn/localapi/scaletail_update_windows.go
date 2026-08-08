@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package localapi
@@ -14,38 +14,101 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"sync"
 	"syscall"
 
 	"golang.org/x/sys/windows"
 	"scaletail.com/clientupdate/scaletailota"
-	"scaletail.com/util/cmpver"
 	"scaletail.com/util/httpm"
+	"scaletail.com/version"
 )
 
 const maxOTAInstallerSize = 1024 << 20
 
 var (
 	otaMarkerPattern  = regexp.MustCompile(`^[a-f0-9]{32}$`)
-	otaVersionPattern = regexp.MustCompile(`^[0-9A-Za-z][0-9A-Za-z._+-]{0,63}$`)
 	otaInstallMu      sync.Mutex
 	otaInstallRunning bool
 )
 
 type scaleTailUpdateInstallRequest struct {
 	InstallerPath string `json:"installer_path"`
+	Revision      uint64 `json:"policy_revision"`
+	UpdateType    string `json:"update_type"`
 	Version       string `json:"version"`
 	Platform      string `json:"platform"`
 	SHA256        string `json:"sha256"`
 	FileSize      int64  `json:"file_size"`
+	DownloadURL   string `json:"download_url"`
 	Signature     string `json:"signature"`
 	MarkerID      string `json:"marker_id"`
 }
 
 func init() {
 	Register("scaletail-update/install", (*Handler).serveScaleTailUpdateInstall)
+	Register("scaletail-update/policy", (*Handler).serveScaleTailUpdatePolicy)
+}
+
+func (h *Handler) serveScaleTailUpdatePolicy(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case httpm.GET:
+		if !h.PermitRead {
+			http.Error(w, "access denied", http.StatusForbidden)
+			return
+		}
+		status, err := h.b.ScaleTailUpdateStatus()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeScaleTailUpdateJSON(w, status)
+	case httpm.PUT:
+		if !h.PermitWrite {
+			http.Error(w, "access denied", http.StatusForbidden)
+			return
+		}
+		var policy scaletailota.Policy
+		decoder := json.NewDecoder(io.LimitReader(r.Body, 32<<10))
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&policy); err != nil {
+			http.Error(w, "invalid update policy", http.StatusBadRequest)
+			return
+		}
+		if policy.FileSize > maxOTAInstallerSize {
+			http.Error(w, "invalid update policy file size", http.StatusBadRequest)
+			return
+		}
+		status, err := h.b.ApplyScaleTailUpdatePolicy(policy)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		writeScaleTailUpdateJSON(w, status)
+	case httpm.PATCH:
+		if !h.PermitWrite {
+			http.Error(w, "access denied", http.StatusForbidden)
+			return
+		}
+		if err := h.b.AcknowledgeScaleTailUpdateResume(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		status, err := h.b.ScaleTailUpdateStatus()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeScaleTailUpdateJSON(w, status)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func writeScaleTailUpdateJSON(w http.ResponseWriter, value any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(value)
 }
 
 func (h *Handler) serveScaleTailUpdateInstall(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +132,7 @@ func (h *Handler) serveScaleTailUpdateInstall(w http.ResponseWriter, r *http.Req
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if current := installedScaleTailUIVersion(); current != "" && cmpver.Compare(req.Version, current) <= 0 {
+	if current := version.Short(); current != "" && !isNewerOTAVersion(req.Version, current) {
 		http.Error(w, fmt.Sprintf("update version %s is not newer than installed version %s", req.Version, current), http.StatusConflict)
 		return
 	}
@@ -112,25 +175,28 @@ func validateScaleTailUpdateRequest(req *scaleTailUpdateInstallRequest) error {
 	if !filepath.IsAbs(req.InstallerPath) || !strings.EqualFold(filepath.Ext(req.InstallerPath), ".exe") {
 		return fmt.Errorf("installer_path must be an absolute .exe path")
 	}
-	if !otaVersionPattern.MatchString(req.Version) {
-		return fmt.Errorf("invalid update version")
+	policy, err := scaletailota.Verify(req.policy())
+	if err != nil {
+		return err
 	}
-	if req.Platform != currentOTAPlatform() {
-		return fmt.Errorf("update platform %q does not match %q", req.Platform, currentOTAPlatform())
+	if policy.Action == scaletailota.ActionClear {
+		return fmt.Errorf("clear policy has no installer")
 	}
-	if len(req.SHA256) != sha256.Size*2 {
-		return fmt.Errorf("invalid SHA-256")
+	if policy.Platform != currentOTAPlatform() {
+		return fmt.Errorf("update platform %q does not match %q", policy.Platform, currentOTAPlatform())
 	}
-	if _, err := hex.DecodeString(req.SHA256); err != nil {
-		return fmt.Errorf("invalid SHA-256")
-	}
-	if req.FileSize <= 0 || req.FileSize > maxOTAInstallerSize {
+	if policy.FileSize > maxOTAInstallerSize {
 		return fmt.Errorf("invalid installer size")
 	}
+	req.applyPolicy(policy)
 	if !otaMarkerPattern.MatchString(req.MarkerID) {
 		return fmt.Errorf("invalid OTA marker")
 	}
 	return nil
+}
+
+func isNewerOTAVersion(candidate, current string) bool {
+	return scaletailota.IsNewerVersion(candidate, current)
 }
 
 func stageAndVerifyInstaller(req scaleTailUpdateInstallRequest) (string, error) {
@@ -182,7 +248,7 @@ func stageAndVerifyInstaller(req scaleTailUpdateInstallRequest) (string, error) 
 	if written != req.FileSize || hex.EncodeToString(hash.Sum(nil)) != req.SHA256 {
 		return "", fmt.Errorf("installer SHA-256 does not match signed metadata")
 	}
-	if err := scaletailota.Verify(req.Version, req.Platform, req.SHA256, req.FileSize, req.Signature); err != nil {
+	if _, err := scaletailota.Verify(req.policy()); err != nil {
 		return "", err
 	}
 
@@ -253,10 +319,7 @@ func cleanupOldOTAArtifacts(updateDir string) {
 }
 
 func currentOTAPlatform() string {
-	if runtime.GOARCH == "arm64" {
-		return "windows-arm64"
-	}
-	return "windows-amd64"
+	return scaletailota.CurrentPlatform()
 }
 
 func otaUpdateDir() (string, error) {
@@ -275,22 +338,28 @@ func otaMarkerDir() (string, error) {
 	return filepath.Join(programData, "ScaleTailOTA"), nil
 }
 
-func installedScaleTailUIVersion() string {
-	executable, err := os.Executable()
-	if err != nil {
-		return ""
+func (req *scaleTailUpdateInstallRequest) policy() scaletailota.Policy {
+	return scaletailota.Policy{
+		Revision:    req.Revision,
+		Action:      req.UpdateType,
+		Version:     req.Version,
+		Platform:    req.Platform,
+		SHA256:      req.SHA256,
+		FileSize:    req.FileSize,
+		DownloadURL: req.DownloadURL,
+		Signature:   req.Signature,
 	}
-	raw, err := os.ReadFile(filepath.Join(filepath.Dir(executable), "resources", "app", "package.json"))
-	if err != nil {
-		return ""
-	}
-	var pkg struct {
-		Version string `json:"version"`
-	}
-	if json.Unmarshal(raw, &pkg) != nil {
-		return ""
-	}
-	return strings.TrimSpace(pkg.Version)
+}
+
+func (req *scaleTailUpdateInstallRequest) applyPolicy(policy scaletailota.Policy) {
+	req.Revision = policy.Revision
+	req.UpdateType = policy.Action
+	req.Version = policy.Version
+	req.Platform = policy.Platform
+	req.SHA256 = policy.SHA256
+	req.FileSize = policy.FileSize
+	req.DownloadURL = policy.DownloadURL
+	req.Signature = policy.Signature
 }
 
 func setOTAInstallRunning(running bool) {

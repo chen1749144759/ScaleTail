@@ -109,12 +109,34 @@ func TestRelayManager_handleNewServerEndpointRunLoop(t *testing.T) {
 	serverDiscoA := key.NewDisco().Public()
 	serverDiscoB := key.NewDisco().Public()
 
+	// getAddrQuality returns an addrQuality with serverDisco and the provided
+	// VNI set. A negative vni leaves the VNI unset.
+	getAddrQuality := func(serverDisco key.DiscoPublic, vni int) addrQuality {
+		aq := addrQuality{relayServerDisco: serverDisco}
+		if vni >= 0 {
+			aq.epAddr.vni.Set(uint32(vni))
+		}
+		return aq
+	}
 	serverAendpointALamport1VNI1 := newRelayServerEndpointEvent{
 		wlb: endpointWithLastBest{ep: epA},
 		se:  udprelay.ServerEndpoint{ServerDisco: serverDiscoA, LamportID: 1, VNI: 1},
 	}
+	// lastBest matches the new server endpoint on both server disco and VNI,
+	// and is trusted: suppression should fire.
 	serverAendpointALamport1VNI1LastBestMatching := newRelayServerEndpointEvent{
-		wlb: endpointWithLastBest{ep: epA, lastBestIsTrusted: true, lastBest: addrQuality{relayServerDisco: serverDiscoA}},
+		wlb: endpointWithLastBest{ep: epA, lastBestIsTrusted: true, lastBest: getAddrQuality(serverDiscoA, 1)},
+		se:  udprelay.ServerEndpoint{ServerDisco: serverDiscoA, LamportID: 1, VNI: 1},
+	}
+	// lastBest matches on server disco but not VNI, so suppression must not
+	// fire after a remote restart or disco-key rotation.
+	serverAendpointALamport1VNI1LastBestMatchingServerNeqVNI := newRelayServerEndpointEvent{
+		wlb: endpointWithLastBest{ep: epA, lastBestIsTrusted: true, lastBest: getAddrQuality(serverDiscoA, 2)},
+		se:  udprelay.ServerEndpoint{ServerDisco: serverDiscoA, LamportID: 1, VNI: 1},
+	}
+	// An unset lastBest VNI is not enough evidence to suppress a handshake.
+	serverAendpointALamport1VNI1LastBestMatchingServerUnsetVNI := newRelayServerEndpointEvent{
+		wlb: endpointWithLastBest{ep: epA, lastBestIsTrusted: true, lastBest: getAddrQuality(serverDiscoA, -1)},
 		se:  udprelay.ServerEndpoint{ServerDisco: serverDiscoA, LamportID: 1, VNI: 1},
 	}
 	serverAendpointALamport2VNI1 := newRelayServerEndpointEvent{
@@ -212,11 +234,29 @@ func TestRelayManager_handleNewServerEndpointRunLoop(t *testing.T) {
 			},
 		},
 		{
-			name: "trusted-last-best-with-matching-server",
+			name: "trusted-last-best-matching-server-and-vni",
 			events: []newRelayServerEndpointEvent{
 				serverAendpointALamport1VNI1LastBestMatching,
 			},
 			want: []newRelayServerEndpointEvent{},
+		},
+		{
+			name: "trusted-last-best-matching-server-neq-vni",
+			events: []newRelayServerEndpointEvent{
+				serverAendpointALamport1VNI1LastBestMatchingServerNeqVNI,
+			},
+			want: []newRelayServerEndpointEvent{
+				serverAendpointALamport1VNI1LastBestMatchingServerNeqVNI,
+			},
+		},
+		{
+			name: "trusted-last-best-matching-server-unset-vni",
+			events: []newRelayServerEndpointEvent{
+				serverAendpointALamport1VNI1LastBestMatchingServerUnsetVNI,
+			},
+			want: []newRelayServerEndpointEvent{
+				serverAendpointALamport1VNI1LastBestMatchingServerUnsetVNI,
+			},
 		},
 	}
 	for _, tt := range tests {

@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	softwareKeyName  = `Software`
-	tsPoliciesSubkey = `Policies\Tailscale`
-	tsIPNSubkey      = `Tailscale IPN` // the legacy key we need to fallback to
+	softwareKeyName      = `Software`
+	scaleTailPoliciesKey = `Policies\ScaleTail`
+	scaleTailSettingsKey = `ScaleTail`
 )
 
 var (
@@ -171,7 +171,7 @@ func (ps *PlatformPolicyStore) Lock() (err error) {
 	}()
 
 	// Keep the Tailscale's registry keys open for the duration of the lock.
-	keyNames := tailscaleKeyNamesFor(ps.scope)
+	keyNames := scaleTailKeyNamesFor(ps.scope)
 	ps.tsKeys = make([]registry.Key, 0, len(keyNames))
 	for _, keyName := range keyNames {
 		var tsKey registry.Key
@@ -329,9 +329,9 @@ func (ps *PlatformPolicyStore) ReadStringArray(key pkey.Key) ([]string, error) {
 // stored is an implementation detail of each [Store]. In the [PlatformPolicyStore]
 // for Windows, we map nested policy categories onto the Registry key hierarchy.
 // The last component after a [pkey.KeyPathSeparator] is treated as the value name,
-// while everything preceding it is considered a subpath (relative to the {HKLM,HKCU}\Software\Policies\Tailscale key).
+// while everything preceding it is considered a subpath (relative to the {HKLM,HKCU}\Software\Policies\ScaleTail key).
 // If there are no [pkey.KeyPathSeparator]s in the key, the policy setting value
-// is meant to be stored directly under {HKLM,HKCU}\Software\Policies\Tailscale.
+// is meant to be stored directly under {HKLM,HKCU}\Software\Policies\ScaleTail.
 func splitSettingKey(key pkey.Key) (path, valueName string) {
 	if idx := strings.LastIndexByte(string(key), pkey.KeyPathSeparator); idx != -1 {
 		path = strings.ReplaceAll(string(key[:idx]), string(pkey.KeyPathSeparator), `\`)
@@ -376,7 +376,7 @@ func getPolicyValue[T any](ps *PlatformPolicyStore, key pkey.Key, getter registr
 	}
 
 	// The ps has not been locked, so we don't have any pre-opened keys.
-	for _, tsKeyName := range tailscaleKeyNamesFor(ps.scope) {
+	for _, tsKeyName := range scaleTailKeyNamesFor(ps.scope) {
 		var tsKey registry.Key
 		tsKey, err := registry.OpenKey(ps.softwareKey, tsKeyName, windows.KEY_READ)
 		if err != nil {
@@ -447,17 +447,15 @@ func (ps *PlatformPolicyStore) Done() <-chan struct{} {
 	return ps.done
 }
 
-func tailscaleKeyNamesFor(scope gp.Scope) []string {
+func scaleTailKeyNamesFor(scope gp.Scope) []string {
 	switch scope {
 	case gp.MachinePolicy:
-		// If a computer-side policy value does not exist under Software\Policies\Tailscale,
-		// we need to fallback and use the legacy Software\Tailscale IPN key.
-		return []string{tsPoliciesSubkey, tsIPNSubkey}
+		// Machine settings can be managed through group policy or through the
+		// product-owned registry key used by local provisioning.
+		return []string{scaleTailPoliciesKey, scaleTailSettingsKey}
 	case gp.UserPolicy:
-		// However, we've never used the legacy key with user-side policies,
-		// and we should never do so. Unlike HKLM\Software\Tailscale IPN,
-		// its HKCU counterpart is user-writable.
-		return []string{tsPoliciesSubkey}
+		// Do not accept the user-writable product settings key as policy.
+		return []string{scaleTailPoliciesKey}
 	default:
 		panic("unreachable")
 	}

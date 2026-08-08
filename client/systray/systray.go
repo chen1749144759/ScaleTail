@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 //go:build cgo || !darwin
@@ -169,7 +169,7 @@ This can lead to issues with D-Bus, and should be avoided.
 The systray application should be run with the same user as your desktop session.
 This usually means that you should run the application like:
 
-tailscale systray
+scaletail systray
 
 See https://scaletail.com/kb/1597/linux-systray for more information.`)
 	}
@@ -592,15 +592,8 @@ func (menu *Menu) watchIPNBusInner() error {
 			if err != nil {
 				return fmt.Errorf("ipnbus error: %w", err)
 			}
-			if url := n.BrowseToURL; url != nil {
-				// Avoid opening the browser when running as root, just in case.
-				runningAsRoot := os.Getuid() == 0
-				if !runningAsRoot {
-					if err := webbrowser.Open(*url); err != nil {
-						log.Printf("failed to open BrowseToURL: %v", err)
-					}
-				}
-			}
+			// BrowseToURL carries the internal registration session used by
+			// account-password authentication. It is not a user-facing URL.
 			var rebuild bool
 			if n.State != nil {
 				log.Printf("new state: %v", n.State)

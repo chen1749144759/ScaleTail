@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package clientupdate
@@ -7,6 +7,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"maps"
@@ -14,9 +15,11 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sort"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -818,9 +821,7 @@ func TestWriteFileSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 	f2 := filepath.Join(tmp, "f2")
-	if err := os.Symlink(f1, f2); err != nil {
-		t.Fatal(err)
-	}
+	requireSymlink(t, f1, f2)
 
 	if err := writeFile(strings.NewReader("new"), f2, 0600); err != nil {
 		t.Errorf("writeFile(%q) failed: %v", f2, err)
@@ -923,9 +924,7 @@ func TestCleanupOldDownloads(t *testing.T) {
 				}
 			}
 			for from, to := range tt.symlinks {
-				if err := os.Symlink(filepath.Join(dir, to), filepath.Join(dir, from)); err != nil {
-					t.Fatal(err)
-				}
+				requireSymlink(t, filepath.Join(dir, to), filepath.Join(dir, from))
 			}
 
 			up := &Updater{Arguments: Arguments{Logf: t.Logf}}
@@ -947,6 +946,16 @@ func TestCleanupOldDownloads(t *testing.T) {
 				t.Errorf("got files after cleanup: %q, want: %q", after, tt.after)
 			}
 		})
+	}
+}
+
+func requireSymlink(t *testing.T, oldname, newname string) {
+	t.Helper()
+	if err := os.Symlink(oldname, newname); err != nil {
+		if runtime.GOOS == "windows" && errors.Is(err, syscall.Errno(1314)) {
+			t.Skip("creating symbolic links requires Developer Mode or elevated privileges on Windows")
+		}
+		t.Fatal(err)
 	}
 }
 

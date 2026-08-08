@@ -34,8 +34,8 @@ func TestKeyToEnvVarName(t *testing.T) {
 		},
 		{
 			name: "CamelCase",
-			key:  "AuthKey",
-			want: "AUTH_KEY",
+			key:  "ControlURL",
+			want: "CONTROL_URL",
 		},
 		{
 			name: "LongerCamelCase",
@@ -174,22 +174,22 @@ func TestEnvPolicyStore(t *testing.T) {
 	}{
 		{
 			name:    "NotConfigured/String",
-			key:     "AuthKey",
+			key:     "ControlURL",
 			lookup:  blankEnv,
 			wantErr: setting.ErrNotConfigured,
 			want:    "",
 		},
 		{
 			name:   "Configured/String/Empty",
-			key:    "AuthKey",
-			lookup: makeEnv("AUTH_KEY", ""),
+			key:    "ControlURL",
+			lookup: makeEnv("CONTROL_URL", ""),
 			want:   "",
 		},
 		{
 			name:   "Configured/String/NonEmpty",
-			key:    "AuthKey",
-			lookup: makeEnv("AUTH_KEY", "ABC123"),
-			want:   "ABC123",
+			key:    "ControlURL",
+			lookup: makeEnv("CONTROL_URL", "https://control.example.com"),
+			want:   "https://control.example.com",
 		},
 		{
 			name:    "NotConfigured/UInt64",

@@ -18,7 +18,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mattn/go-isatty"
 	"github.com/peterbourgon/ff/v3/ffcli"
@@ -56,10 +55,6 @@ var netlockCmd = &ffcli.Command{
 }
 
 func runNetworkLockNoSubcommand(ctx context.Context, args []string) error {
-	// Detect & handle the deprecated command 'lock tskey-wrap'.
-	if len(args) >= 2 && args[0] == "tskey-wrap" {
-		return runTskeyWrapCmd(ctx, args[1:])
-	}
 	if len(args) > 0 {
 		return fmt.Errorf("scaletail lock: unknown subcommand: %s", args[0])
 	}
@@ -471,13 +466,10 @@ func runNetworkLockAdd(ctx context.Context, addArgs []string) error {
 
 var nlSignCmd = &ffcli.Command{
 	Name:       "sign",
-	ShortUsage: "scaletail lock sign <node-key> [<rotation-key>]\nscaletail lock sign <auth-key>",
-	ShortHelp:  "Sign a node or pre-approved auth key",
-	LongHelp: `Either:
-  - signs a node key and transmits the signature to the coordination
-    server, or
-  - signs a pre-approved auth key, printing it in a form that can be
-    used to bring up nodes under tailnet lock
+	ShortUsage: "scaletail lock sign <node-key> [<rotation-key>]",
+	ShortHelp:  "Sign a node key",
+	LongHelp: `Signs a node key and transmits the signature to the coordination
+server.
 
 If any of the key arguments begin with "file:", the key is retrieved from
 the file at the path specified in the argument suffix.`,
@@ -487,7 +479,7 @@ the file at the path specified in the argument suffix.`,
 func runNetworkLockSign(ctx context.Context, args []string) error {
 	// If any of the arguments start with "file:", replace that argument
 	// with the contents of the file. We do this early, before the check
-	// to see if the first argument is an auth key.
+	// to validate the node and rotation keys.
 	for i, arg := range args {
 		if filename, ok := strings.CutPrefix(arg, "file:"); ok {
 			b, err := os.ReadFile(filename)
@@ -496,10 +488,6 @@ func runNetworkLockSign(ctx context.Context, args []string) error {
 			}
 			args[i] = strings.TrimSpace(string(b))
 		}
-	}
-
-	if len(args) > 0 && strings.HasPrefix(args[0], "tskey-auth-") {
-		return runTskeyWrapCmd(ctx, args)
 	}
 
 	var (
@@ -728,59 +716,6 @@ func printNetworkLockLog(updates []ipnstate.NetworkLockUpdate, out io.Writer, js
 		}
 		fmt.Fprintln(out, stanza)
 	}
-	return nil
-}
-
-func runTskeyWrapCmd(ctx context.Context, args []string) error {
-	if len(args) != 1 {
-		return errors.New("usage: lock tskey-wrap <scaletail pre-auth key>")
-	}
-	if strings.Contains(args[0], "--TL") {
-		return errors.New("Error: provided key was already wrapped")
-	}
-
-	st, err := localClient.StatusWithoutPeers(ctx)
-	if err != nil {
-		return fixScaleTaildConnectError(err)
-	}
-
-	return wrapAuthKey(ctx, args[0], st)
-}
-
-func wrapAuthKey(ctx context.Context, keyStr string, status *ipnstate.Status) error {
-	// Generate a separate tailnet-lock key just for the credential signature.
-	// We use the free-form meta strings to mark a little bit of metadata about this
-	// key.
-	priv := key.NewNLPrivate()
-	m := map[string]string{
-		"purpose":            "pre-auth key",
-		"wrapper_stableid":   string(status.Self.ID),
-		"wrapper_createtime": fmt.Sprint(time.Now().Unix()),
-	}
-	if strings.HasPrefix(keyStr, "tskey-auth-") && strings.Index(keyStr[len("tskey-auth-"):], "-") > 0 {
-		// We don't want to accidentally embed the nonce part of the authkey in
-		// the event the format changes. As such, we make sure its in the format we
-		// expect (tskey-auth-<stableID, inc CNTRL suffix>-nonce) before we parse
-		// out and embed the stableID.
-		s := strings.TrimPrefix(keyStr, "tskey-auth-")
-		m["authkey_stableid"] = s[:strings.Index(s, "-")]
-	}
-	k := tka.Key{
-		Kind:   tka.Key25519,
-		Public: priv.Public().Verifier(),
-		Votes:  1,
-		Meta:   m,
-	}
-
-	wrapped, err := localClient.NetworkLockWrapPreauthKey(ctx, keyStr, priv)
-	if err != nil {
-		return fmt.Errorf("wrapping failed: %w", err)
-	}
-	if err := localClient.NetworkLockModify(ctx, []tka.Key{k}, nil); err != nil {
-		return fmt.Errorf("add key failed: %w", err)
-	}
-
-	fmt.Println(wrapped)
 	return nil
 }
 

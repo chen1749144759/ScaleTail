@@ -38,6 +38,7 @@ import (
 	_ "scaletail.com/feature/condregister/portmapper"
 	"scaletail.com/health"
 	"scaletail.com/hostinfo"
+	"scaletail.com/internal/accountauth"
 	"scaletail.com/ipn"
 	"scaletail.com/ipn/conffile"
 	"scaletail.com/ipn/ipnauth"
@@ -8139,7 +8140,6 @@ func TestStartPreservesLoginFlags(t *testing.T) {
 			ControlURL:  "https://controlplane.example.com",
 			WantRunning: false,
 		},
-		AuthKey: "tskey-auth-test",
 	}); err != nil {
 		t.Fatalf("Start: %v", err)
 	}
@@ -8156,5 +8156,36 @@ func TestStartPreservesLoginFlags(t *testing.T) {
 	cc.mu.Unlock()
 	if flags&controlclient.LoginEphemeral == 0 {
 		t.Errorf("cc.Login was never called with LoginEphemeral; got flags=%v", flags)
+	}
+}
+
+func TestStartClearsAccountCredentialOnlyWhenControlServerChanges(t *testing.T) {
+	accountauth.Clear()
+	t.Cleanup(accountauth.Clear)
+
+	b := newLocalBackendWithTestControl(t, false, func(tb testing.TB, opts controlclient.Options) controlclient.Client {
+		return newClient(tb, opts)
+	})
+	const firstControlURL = "https://control-one.example.com"
+	if err := b.Start(ipn.Options{UpdatePrefs: &ipn.Prefs{ControlURL: firstControlURL}}); err != nil {
+		t.Fatalf("initial Start: %v", err)
+	}
+
+	request := accountauth.BeginRequest()
+	if !accountauth.SetIfCurrentRequest(request, firstControlURL, "alice", "first password") {
+		t.Fatal("failed to seed account credential")
+	}
+	if err := b.Start(ipn.Options{UpdatePrefs: &ipn.Prefs{ControlURL: firstControlURL}}); err != nil {
+		t.Fatalf("same-server Start: %v", err)
+	}
+	if _, _, ok := accountauth.Get(firstControlURL); !ok {
+		t.Fatal("same control server unexpectedly cleared the account credential")
+	}
+
+	if err := b.Start(ipn.Options{UpdatePrefs: &ipn.Prefs{ControlURL: "https://control-two.example.com"}}); err != nil {
+		t.Fatalf("changed-server Start: %v", err)
+	}
+	if _, _, ok := accountauth.Get("https://control-two.example.com"); ok {
+		t.Fatal("changed control server retained the previous account credential")
 	}
 }

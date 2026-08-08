@@ -4,12 +4,13 @@
 package cli
 
 import (
+	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/netip"
 	"os"
@@ -18,55 +19,55 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/peterbourgon/ff/v3/ffcli"
+	"golang.org/x/term"
+	"scaletail.com/client/local"
 	"scaletail.com/feature/buildfeatures"
-	_ "scaletail.com/feature/condregister/awsparamstore"
-	_ "scaletail.com/feature/condregister/identityfederation"
-	_ "scaletail.com/feature/condregister/oauthkey"
 	"scaletail.com/health/healthmsg"
-	"scaletail.com/internal/client/scaletail"
+	"scaletail.com/internal/controlurl"
 	"scaletail.com/ipn"
 	"scaletail.com/ipn/ipnstate"
 	"scaletail.com/net/netutil"
 	"scaletail.com/net/tsaddr"
 	"scaletail.com/safesocket"
 	"scaletail.com/tailcfg"
+	"scaletail.com/types/key"
 	"scaletail.com/types/logger"
 	"scaletail.com/types/preftype"
 	"scaletail.com/types/views"
 	"scaletail.com/util/dnsname"
-	"scaletail.com/util/qrcodes"
-	"scaletail.com/util/syspolicy/policyclient"
 	"scaletail.com/version/distro"
 )
 
 var upCmd = &ffcli.Command{
 	Name:       "up",
 	ShortUsage: "scaletail up [flags]",
-	ShortHelp:  "Connect to Tailscale, logging in if needed",
+	ShortHelp:  "Connect to ScaleTail, logging in if needed",
 
 	LongHelp: strings.TrimSpace(`
-"scaletail up" connects this machine to your Tailscale network,
-triggering authentication if necessary.
+"scaletail up" connects this machine to your ScaleTail network.
+New logins use the same account and password as ScaleForge.
 
 With no flags, "scaletail up" brings the network online without
-changing any settings. (That is, it's the opposite of "tailscale
+changing any settings. (That is, it's the opposite of "scaletail
 down").
 
 If flags are specified, the flags must be the complete set of desired
 settings. An error is returned if any setting would be changed as a
 result of an unspecified flag's default value, unless the --reset flag
-is also used. (The flags --auth-key, --force-reauth, and --qr are not
-considered settings that need to be re-specified when modifying
-settings.)
+is also used. Identity flags and --force-reauth are not settings that
+need to be re-specified when modifying settings.
 `),
 	FlagSet: upFlagSet,
 	Exec: func(ctx context.Context, args []string) error {
-		return runUp(ctx, "up", args, upArgsGlobal)
+		return runUp(ctx, "up", args, upArgsGlobal, upFlagSet)
 	},
 }
 
@@ -95,15 +96,8 @@ func newUpFlagSet(goos string, upArgs *upArgsT, cmd string) *flag.FlagSet {
 
 	// When adding new flags, prefer to put them under "scaletail set" instead
 	// of here. Setting preferences via "scaletail up" is deprecated.
-	if buildfeatures.HasQRCodes {
-		upf.BoolVar(&upArgs.qr, "qr", false, "show QR code for login URLs")
-		upf.StringVar(&upArgs.qrFormat, "qr-format", string(qrcodes.FormatAuto), fmt.Sprintf("QR code formatting (%s, %s, %s, %s)", qrcodes.FormatAuto, qrcodes.FormatASCII, qrcodes.FormatLarge, qrcodes.FormatSmall))
-	}
-	upf.StringVar(&upArgs.authKeyOrFile, "auth-key", "", `node authorization key; if it begins with "file:", then it's a path to a file containing the authkey`)
-	upf.StringVar(&upArgs.audience, "audience", "", "Audience used when requesting an ID token from an identity provider for auth keys via workload identity federation")
-	upf.StringVar(&upArgs.clientID, "client-id", "", "Client ID used to generate authkeys via workload identity federation")
-	upf.StringVar(&upArgs.clientSecretOrFile, "client-secret", "", `Client Secret used to generate authkeys via OAuth; if it begins with "file:", then it's a path to a file containing the secret`)
-	upf.StringVar(&upArgs.idTokenOrFile, "id-token", "", `ID token from the identity provider to exchange with the control server for workload identity federation; if it begins with "file:", then it's a path to a file containing the token`)
+	upf.StringVar(&upArgs.username, "username", "", "ScaleForge account username")
+	upf.StringVar(&upArgs.passwordFile, "password-file", "", "read the ScaleForge account password from a 0600 file; use '-' for stdin")
 
 	upf.StringVar(&upArgs.server, "login-server", ipn.DefaultControlURL, "base URL of control server")
 	upf.BoolVar(&upArgs.acceptRoutes, "accept-routes", acceptRouteDefault(goos), "accept routes advertised by other Tailscale nodes")
@@ -171,13 +165,11 @@ func defaultNetfilterMode() string {
 }
 
 // upArgsT is the type of upArgs, the argument struct for `scaletail up`.
-// As of 2024-10-08, upArgsT is frozen and no new arguments should be
-// added to it. Add new arguments to setArgsT instead.
 type upArgsT struct {
-	qr                     bool
-	qrFormat               string
 	reset                  bool
 	server                 string
+	username               string
+	passwordFile           string
 	acceptRoutes           bool
 	acceptDNS              bool
 	exitNodeIP             string
@@ -194,11 +186,6 @@ type upArgsT struct {
 	snat                   bool
 	statefulFiltering      bool
 	netfilterMode          string
-	authKeyOrFile          string // "secret" or "file:/path/to/secret"
-	clientID               string
-	audience               string
-	clientSecretOrFile     string // "secret" or "file:/path/to/secret"
-	idTokenOrFile          string // "secret" or "file:/path/to/secret"
 	hostname               string
 	opUser                 string
 	json                   bool
@@ -208,80 +195,112 @@ type upArgsT struct {
 	postureChecking        bool
 }
 
-// resolveValueFromFile returns the value as-is, or if it starts with "file:",
-// reads and returns the trimmed contents of the file.
-func resolveValueFromFile(v string) (string, error) {
-	if file, ok := strings.CutPrefix(v, "file:"); ok {
-		b, err := os.ReadFile(file)
-		if err != nil {
-			return "", err
+func (a upArgsT) accountCredential() (string, []byte, error) {
+	username := strings.TrimSpace(a.username)
+	if username == "" {
+		if a.passwordFile != "" {
+			return "", nil, errors.New("--password-file requires --username")
 		}
-		return strings.TrimSpace(string(b)), nil
+		return "", nil, nil
 	}
-	return v, nil
-}
-
-// resolveValueFromParameterStore resolves a value from AWS Parameter Store if
-// the value looks like an SSM ARN. If the hook is not available or the value
-// is not an SSM ARN, it returns the value unchanged.
-func resolveValueFromParameterStore(ctx context.Context, v string) (string, error) {
-	if f, ok := scaletail.HookResolveValueFromParameterStore.GetOk(); ok {
-		return f(ctx, v)
+	if len([]byte(username)) > 254 || strings.IndexFunc(username, unicode.IsControl) >= 0 {
+		return "", nil, errors.New("account username must contain at most 254 bytes and no control characters")
 	}
-	return v, nil
-}
 
-// resolveValue will take the given value (e.g. as passed to --auth-key), and
-// depending on the prefix, resolve the value from either a file or AWS
-// Parameter Store. Values with an unknown prefix are returned as-is.
-func resolveValue(ctx context.Context, v string) (string, error) {
-	switch {
-	case strings.HasPrefix(v, "file:"):
-		return resolveValueFromFile(v)
-	case strings.HasPrefix(v, scaletail.ResolvePrefixAWSParameterStore):
-		return resolveValueFromParameterStore(ctx, v)
+	readPassword := func(r io.Reader) ([]byte, error) {
+		password, err := io.ReadAll(io.LimitReader(r, 75))
+		if err != nil {
+			return nil, err
+		}
+		if len(password) > 74 {
+			clear(password)
+			return nil, errors.New("password input is too large")
+		}
+		return password, nil
 	}
-	return v, nil
+
+	var password []byte
+	var err error
+	switch a.passwordFile {
+	case "":
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			return "", nil, errors.New("interactive password input requires a terminal; use --password-file for unattended login")
+		}
+		fmt.Fprint(Stderr, "ScaleForge account password: ")
+		password, err = term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Fprintln(Stderr)
+	case "-":
+		password, err = readPassword(os.Stdin)
+	default:
+		var file *os.File
+		file, err = os.Open(a.passwordFile)
+		if err == nil {
+			defer file.Close()
+			var info os.FileInfo
+			info, err = file.Stat()
+			if err == nil && !info.Mode().IsRegular() {
+				err = errors.New("password file must be a regular file")
+			}
+			if err == nil && runtime.GOOS != "windows" {
+				if info.Mode().Perm()&0o077 != 0 {
+					err = errors.New("password file must not be readable or writable by group or others")
+				}
+			}
+			if err == nil {
+				password, err = readPassword(file)
+			}
+		}
+	}
+	if err != nil {
+		clear(password)
+		return "", nil, fmt.Errorf("reading account password: %w", err)
+	}
+	password = bytes.TrimRight(password, "\r\n")
+	if len(password) == 0 || len(password) > 72 {
+		clear(password)
+		return "", nil, errors.New("account password must contain between 1 and 72 bytes")
+	}
+	if !utf8.Valid(password) {
+		clear(password)
+		return "", nil, errors.New("account password must be valid UTF-8")
+	}
+	if bytes.IndexFunc(password, unicode.IsControl) >= 0 {
+		clear(password)
+		return "", nil, errors.New("account password must not contain control characters")
+	}
+	return username, password, nil
 }
 
-func (a upArgsT) getAuthKey(ctx context.Context) (string, error) {
-	return resolveValue(ctx, a.authKeyOrFile)
-}
+func authenticateScaleTailAccount(ctx context.Context, username string, password []byte) error {
+	authCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
 
-func (a upArgsT) getClientSecret(ctx context.Context) (string, error) {
-	return resolveValue(ctx, a.clientSecretOrFile)
-}
+	var lastErr error
+	for {
+		lastErr = localClient.ScaleTailAuthenticateAccount(authCtx, username, password)
+		if lastErr == nil {
+			return nil
+		}
+		var authErr *local.ScaleTailPasswordAuthError
+		if errors.As(lastErr, &authErr) && authErr.StatusCode != 502 && authErr.StatusCode != 503 && authErr.StatusCode != 504 {
+			return lastErr
+		}
 
-func (a upArgsT) getIDToken(ctx context.Context) (string, error) {
-	return resolveValue(ctx, a.idTokenOrFile)
+		timer := time.NewTimer(750 * time.Millisecond)
+		select {
+		case <-authCtx.Done():
+			timer.Stop()
+			return fmt.Errorf("account authentication did not reach the control server: %w", lastErr)
+		case <-timer.C:
+		}
+	}
 }
 
 var upArgsGlobal upArgsT
 
-// Fields output when `scaletail up --json` is used. Two JSON blocks will be output.
-//
-// When "scaletail up" is run it first outputs a block with AuthURL and QR populated,
-// providing the link for where to authenticate this client. BackendState would be
-// valid but boring, as it will almost certainly be "NeedsLogin". Error would be
-// populated if something goes badly wrong.
-//
-// When the client is authenticated by having someone visit the AuthURL, a second
-// JSON block will be output. The AuthURL and QR fields will not be present, the
-// BackendState and Error fields will give the result of the authentication.
-// Ex:
-//
-//	{
-//	   "AuthURL": "https://login.scaletail.com/a/0123456789abcdef",
-//	   "QR": "data:image/png;base64,0123...cdef"
-//	   "BackendState": "NeedsLogin"
-//	}
-//
-//	{
-//	   "BackendState": "Running"
-//	}
+// upOutputJSON is emitted by `scaletail up --json` after account
+// authentication reaches a terminal state.
 type upOutputJSON struct {
-	AuthURL      string `json:",omitempty"` // Authentication URL of the form https://login.scaletail.com/a/0123456789
-	QR           string `json:",omitempty"` // a DataURL (base64) PNG of a QR code AuthURL
 	BackendState string `json:",omitempty"` // name of state like Running or NeedsMachineAuth
 	Error        string `json:",omitempty"` // description of an error
 }
@@ -328,7 +347,14 @@ func prefsFromUpArgs(upArgs upArgsT, warnf logger.Logf, st *ipnstate.Status, goo
 	}
 
 	prefs := ipn.NewPrefs()
-	prefs.ControlURL = upArgs.server
+	prefs.ControlURL = strings.TrimSpace(upArgs.server)
+	if prefs.ControlURL != "" {
+		controlURL, err := controlurl.ParseControl(prefs.ControlURL)
+		if err != nil {
+			return nil, fmt.Errorf("--login-server: %w", err)
+		}
+		prefs.ControlURL = strings.TrimRight(controlURL.String(), "/")
+	}
 	prefs.WantRunning = true
 	prefs.RouteAll = upArgs.acceptRoutes
 	if distro.Get() == distro.Synology {
@@ -464,7 +490,8 @@ func updatePrefs(prefs, curPrefs *ipn.Prefs, env upCheckEnv) (simpleUp bool, jus
 
 	justEdit := env.backendState == ipn.Running.String() &&
 		!env.upArgs.forceReauth &&
-		env.upArgs.authKeyOrFile == "" &&
+		env.upArgs.username == "" &&
+		env.upArgs.passwordFile == "" &&
 		!controlURLChanged &&
 		!tagsChanged
 
@@ -497,7 +524,7 @@ func presentSSHToggleRisk(wantSSH, haveSSH bool, acceptedRisks string) error {
 	return presentRiskToUser(riskLoseSSH, `You are connected using Tailscale SSH; this action will result in your session disconnecting.`, acceptedRisks)
 }
 
-func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retErr error) {
+func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT, commandFlagSet *flag.FlagSet) (retErr error) {
 	var egg bool
 	if len(args) > 0 {
 		egg = fmt.Sprint(args) == "[up down down left right left right b a]"
@@ -506,32 +533,30 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		}
 	}
 
+	username, password, err := upArgs.accountCredential()
+	if err != nil {
+		return err
+	}
+	defer clear(password)
+	if (cmd == "login" || upArgs.forceReauth) && username == "" {
+		return errors.New("account reauthentication requires --username and a password")
+	}
+	if cmd == "login" {
+		if err := localClient.SwitchToEmptyProfile(ctx); err != nil {
+			return err
+		}
+	}
+
 	st, err := localClient.Status(ctx)
 	if err != nil {
 		return fixScaleTaildConnectError(err)
 	}
-	origAuthURL := st.AuthURL
-	origNodeKey := st.Self.PublicKey
-
-	// printAuthURL reports whether we should print out the
-	// provided auth URL from an IPN notify.
-	printAuthURL := func(url string) bool {
-		if url == "" {
-			// Probably unnecessary but we used to have a bug where scaletaild
-			// could send an empty URL over the IPN bus. ~Harmless to keep.
-			return false
-		}
-		if upArgs.authKeyOrFile != "" {
-			// Issue 1755: when using an authkey, don't
-			// show an authURL that might still be pending
-			// from a previous non-completed interactive
-			// login.
-			return false
-		}
-		if upArgs.forceReauth && url == origAuthURL {
-			return false
-		}
-		return true
+	if !st.HaveNodeKey && username == "" {
+		return errors.New("this device is not registered; run scaletail login --username <account>")
+	}
+	var origNodeKey key.NodePublic
+	if st.Self != nil {
+		origNodeKey = st.Self.PublicKey
 	}
 
 	if distro.Get() == distro.Synology {
@@ -558,8 +583,6 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 	if err != nil {
 		return err
 	}
-	effectivePrefs := curPrefs
-
 	if cmd == "up" {
 		// "scaletail up" should not be able to change the
 		// profile name.
@@ -570,7 +593,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		goos:          effectiveGOOS(),
 		distro:        distro.Get(),
 		user:          os.Getenv("USER"),
-		flagSet:       upFlagSet,
+		flagSet:       commandFlagSet,
 		upArgs:        upArgs,
 		backendState:  st.BackendState,
 		curExitNodeIP: exitNodeIP(curPrefs, st),
@@ -638,48 +661,10 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 			return err
 		}
 
-		authKey, err := upArgs.getAuthKey(ctx)
+		err = localClient.Start(ctx, ipn.Options{UpdatePrefs: prefs})
 		if err != nil {
 			return err
 		}
-		// Try to use an OAuth secret to generate an auth key if that functionality
-		// is available.
-		if f, ok := scaletail.HookResolveAuthKey.GetOk(); ok {
-			clientSecret := authKey // the authkey argument accepts client secrets, if both arguments are provided authkey has precedence
-			if clientSecret == "" {
-				clientSecret, err = upArgs.getClientSecret(ctx)
-				if err != nil {
-					return err
-				}
-			}
-
-			authKey, err = f(ctx, clientSecret, prefs.AdvertiseTags)
-			if err != nil {
-				return err
-			}
-		}
-		// Try to resolve the auth key via workload identity federation if that functionality
-		// is available and no auth key is yet determined.
-		if f, ok := scaletail.HookResolveAuthKeyViaWIF.GetOk(); ok && authKey == "" {
-			idToken, err := upArgs.getIDToken(ctx)
-			if err != nil {
-				return err
-			}
-
-			authKey, err = f(ctx, prefs.ControlURL, upArgs.clientID, idToken, upArgs.audience, prefs.AdvertiseTags)
-			if err != nil {
-				return err
-			}
-		}
-
-		err = localClient.Start(ctx, ipn.Options{
-			AuthKey:     authKey,
-			UpdatePrefs: prefs,
-		})
-		if err != nil {
-			return err
-		}
-		effectivePrefs = prefs
 		if upArgs.forceReauth || !st.HaveNodeKey {
 			err := localClient.StartLoginInteractive(ctx)
 			if err != nil {
@@ -688,11 +673,25 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		}
 	}
 
-	upComplete := make(chan bool, 1)
+	stateComplete := make(chan struct{}, 1)
 	watchErr := make(chan error, 1)
+	authResult := make(chan error, 1)
+	var authOnce sync.Once
+	startAccountAuthentication := func() {
+		if username == "" {
+			return
+		}
+		authOnce.Do(func() {
+			go func() {
+				authResult <- authenticateScaleTailAccount(ctx, username, password)
+			}()
+		})
+	}
+	if username != "" && st.HaveNodeKey && !upArgs.forceReauth {
+		startAccountAuthentication()
+	}
 
 	go func() {
-		var printed bool // whether we've yet printed anything to stdout or stderr
 		lastURLPrinted := ""
 
 		// If we're doing a force-reauth, we need to get two notifications:
@@ -703,7 +702,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		// These two notifications arrive separately, and trying to combine them
 		// has caused unexpected issues elsewhere in `scaletail up`.  For now, we
 		// track them separately.
-		ipnIsRunning := false
+		ipnIsRunning := st.BackendState == ipn.Running.String()
 		waitingForKeyChange := upArgs.forceReauth
 
 		// If we're doing a simple up (i.e. `scaletail up`, no flags) and
@@ -711,8 +710,7 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 		// state notification from ipn, so we print the device approval URL
 		// immediately.
 		if simpleUp && st.BackendState == ipn.NeedsMachineAuth.String() {
-			printed = true
-			printDeviceApprovalInfo(env.upArgs.json, effectivePrefs, &lastURLPrinted)
+			printDeviceApprovalInfo(env.upArgs.json, &lastURLPrinted)
 		}
 
 		for {
@@ -722,12 +720,11 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 				return
 			}
 			if n.ErrMessage != nil {
-				msg := *n.ErrMessage
-				fatalf("backend error: %v\n", msg)
+				watchErr <- fmt.Errorf("backend error: %s", *n.ErrMessage)
+				return
 			}
 			if s := n.State; s != nil && *s == ipn.NeedsMachineAuth {
-				printed = true
-				printDeviceApprovalInfo(env.upArgs.json, effectivePrefs, &lastURLPrinted)
+				printDeviceApprovalInfo(env.upArgs.json, &lastURLPrinted)
 			}
 			if s := n.State; s != nil {
 				ipnIsRunning = *s == ipn.Running
@@ -736,103 +733,80 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT) (retE
 				waitingForKeyChange = false
 			}
 			if ipnIsRunning && !waitingForKeyChange {
-				// Done full authentication process
-				if env.upArgs.json {
-					printUpDoneJSON(ipn.Running, "")
-				} else if printed {
-					// Only need to print an update if we printed the "please click" message earlier.
-					fmt.Fprintf(Stderr, "Success.\n")
-				}
 				select {
-				case upComplete <- true:
+				case stateComplete <- struct{}{}:
 				default:
 				}
-				cancelWatch()
 				return
 			}
 			if url := n.BrowseToURL; url != nil {
-				authURL := *url
-				if !printAuthURL(authURL) || authURL == lastURLPrinted {
+				if strings.TrimSpace(*url) == "" {
 					continue
 				}
-				printed = true
-				lastURLPrinted = authURL
-				if upArgs.json {
-					js := &upOutputJSON{AuthURL: authURL, BackendState: st.BackendState}
-
-					if buildfeatures.HasQRCodes {
-						png, err := qrcodes.EncodePNG(authURL, 128)
-						if err == nil {
-							js.QR = "data:image/png;base64," + base64.StdEncoding.EncodeToString(png)
-						}
-					}
-
-					data, err := json.MarshalIndent(js, "", "\t")
-					if err != nil {
-						printf("upOutputJSON marshalling error: %v", err)
-					} else {
-						outln(string(data))
-					}
-				} else {
-					fmt.Fprintf(Stderr, "\nTo authenticate, visit:\n\n\t%s\n\n", authURL)
-					if upArgs.qr && buildfeatures.HasQRCodes {
-						_, err := qrcodes.Fprintln(Stderr, qrcodes.Format(upArgs.qrFormat), authURL)
-						if err != nil {
-							log.Print(err)
-						}
-					}
+				if username == "" {
+					watchErr <- errors.New("the control server requires account proof; run scaletail login --username <account>")
+					return
 				}
+				startAccountAuthentication()
 			}
 		}
 	}()
 
-	// This whole 'up' mechanism is too complicated and results in
-	// hairy stuff like this select. We're ultimately waiting for
-	// 'running' to be done, but even in the case where
-	// it succeeds, other parts may shut down concurrently so we
-	// need to prioritize reads from 'running' if it's
-	// readable; its send does happen before the pump mechanism
-	// shuts down. (Issue 2333)
 	var timeoutCh <-chan time.Time
-	if upArgs.timeout > 0 {
-		timeoutTimer := time.NewTimer(upArgs.timeout)
+	timeout := upArgs.timeout
+	if timeout == 0 && username != "" {
+		timeout = 60 * time.Second
+	}
+	if timeout > 0 {
+		timeoutTimer := time.NewTimer(timeout)
 		defer timeoutTimer.Stop()
 		timeoutCh = timeoutTimer.C
 	}
-	select {
-	case <-upComplete:
-		return nil
-	case <-watchCtx.Done():
+
+	stateDone := username == "" && !upArgs.forceReauth && st.BackendState == ipn.Running.String()
+	authDone := username == ""
+	for !stateDone || !authDone {
 		select {
-		case <-upComplete:
-			return nil
-		default:
+		case <-stateComplete:
+			stateDone = true
+		case err := <-authResult:
+			if err != nil {
+				if upArgs.json {
+					printUpDoneJSON(ipn.NeedsLogin, err.Error())
+				}
+				return err
+			}
+			authDone = true
+			latest, statusErr := localClient.StatusWithoutPeers(ctx)
+			if statusErr == nil && latest.BackendState == ipn.Running.String() {
+				if !upArgs.forceReauth || latest.Self != nil && latest.Self.PublicKey != origNodeKey {
+					stateDone = true
+				}
+			}
+		case <-watchCtx.Done():
+			return watchCtx.Err()
+		case err := <-watchErr:
+			return err
+		case <-timeoutCh:
+			return errors.New(`timeout waiting for ScaleTail account authentication and a Running state; check health with "scaletail status"`)
 		}
-		return watchCtx.Err()
-	case err := <-watchErr:
-		select {
-		case <-upComplete:
-			return nil
-		default:
-		}
-		return err
-	case <-timeoutCh:
-		return errors.New(`timeout waiting for ScaleTail service to enter a Running state; check health with "scaletail status"`)
 	}
+	if upArgs.json {
+		printUpDoneJSON(ipn.Running, "")
+	}
+	return nil
 }
 
-func printDeviceApprovalInfo(printJson bool, prefs *ipn.Prefs, lastURLPrinted *string) {
+func printDeviceApprovalInfo(printJson bool, lastMessagePrinted *string) {
 	if printJson {
 		printUpDoneJSON(ipn.NeedsMachineAuth, "")
 	} else {
-		deviceApprovalURL := prefs.AdminPageURL(policyclient.Get())
-
-		if lastURLPrinted != nil && deviceApprovalURL == *lastURLPrinted {
+		const message = "This machine is waiting for administrator approval in ScaleForge."
+		if lastMessagePrinted != nil && message == *lastMessagePrinted {
 			return
 		}
-
-		*lastURLPrinted = deviceApprovalURL
-		errf("\nTo approve your machine, visit (as admin):\n\n\t%s\n\n", deviceApprovalURL)
+		*lastMessagePrinted = message
+		errf("%s\n", message)
 	}
 }
 
@@ -942,7 +916,7 @@ func addPrefFlagMapping(flagName string, prefNames ...string) {
 // correspond to an ipn.Pref.
 func preflessFlag(flagName string) bool {
 	switch flagName {
-	case "auth-key", "force-reauth", "reset", "qr", "qr-format", "json", "timeout", "accept-risk", "host-routes", "client-id", "audience", "client-secret", "id-token":
+	case "username", "password-file", "force-reauth", "reset", "json", "timeout", "accept-risk", "host-routes":
 		return true
 	}
 	return false

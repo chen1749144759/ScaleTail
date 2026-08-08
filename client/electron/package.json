@@ -1,6 +1,6 @@
 {
   "name": "scaletail-windows-client",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "description": "ScaleTail Windows GUI client",
   "main": "dist/main/index.js",
@@ -13,17 +13,16 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc -p tsconfig.electron.json --noEmit",
     "package:win": "npm run build && electron-builder --win --x64 --dir"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "electron": "38.8.6",
-    "electron-builder": "^26.0.12",
+    "@vitejs/plugin-vue": "6.0.8",
+    "electron": "43.3.0",
+    "electron-builder": "26.15.3",
     "lucide-vue-next": "^0.468.0",
     "typescript": "^5.7.3",
-    "vite": "^6.0.7",
+    "vite": "8.2.1",
     "vue": "^3.5.13",
-    "vue-tsc": "^2.2.0"
+    "vue-tsc": "3.3.9"
   },
   "build": {
     "appId": "com.scaletail.windows.client",

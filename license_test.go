@@ -51,6 +51,11 @@ func TestLicenseHeaders(t *testing.T) {
 		if exceptions.Contains(filepath.ToSlash(path)) {
 			return nil
 		}
+		if fi.IsDir() && filepath.Clean(path) == "dist" {
+			// Local release artifacts are generated outside the source tree's
+			// license-header contract.
+			return filepath.SkipDir
+		}
 		base := filepath.Base(path)
 		switch base {
 		case ".git", "node_modules", "tempfork":

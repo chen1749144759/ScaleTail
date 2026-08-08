@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 // Windows-specific stuff that can't go in clientupdate.go because it needs

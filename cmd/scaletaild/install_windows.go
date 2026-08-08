@@ -6,7 +6,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -16,23 +15,11 @@ import (
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 	"scaletail.com/cmd/scaletaild/scaletaildhooks"
-	"scaletail.com/types/logger"
-	"scaletail.com/util/backoff"
 )
 
 func init() {
 	installSystemDaemon = installSystemDaemonWindows
 	uninstallSystemDaemon = uninstallSystemDaemonWindows
-}
-
-// serviceDependencies lists all system services that scaletaild depends on.
-// This list must be kept in sync with the ScaleTaildDependencies preprocessor
-// variable in the installer.
-var serviceDependencies = []string{
-	"Dnscache",
-	"iphlpsvc",
-	"netprofm",
-	"WinHttpAutoProxySvc",
 }
 
 func installSystemDaemonWindows(args []string) (err error) {
@@ -41,14 +28,6 @@ func installSystemDaemonWindows(args []string) (err error) {
 		return fmt.Errorf("failed to connect to Windows service manager: %v", err)
 	}
 	defer m.Disconnect()
-
-	service, err := m.OpenService(serviceName)
-	if err == nil {
-		service.Close()
-		return fmt.Errorf("service %q is already installed", serviceName)
-	}
-
-	// no such service; proceed to install the service.
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -59,14 +38,34 @@ func installSystemDaemonWindows(args []string) (err error) {
 		ServiceType:  windows.SERVICE_WIN32_OWN_PROCESS,
 		StartType:    mgr.StartAutomatic,
 		ErrorControl: mgr.ErrorNormal,
-		Dependencies: serviceDependencies,
 		DisplayName:  serviceName,
 		Description:  "Connects this computer to the ScaleTail network.",
 	}
 
-	service, err = m.CreateService(serviceName, exe, c)
-	if err != nil {
-		return fmt.Errorf("failed to create %q service: %v", serviceName, err)
+	service, err := m.OpenService(serviceName)
+	if errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
+		service, err = m.CreateService(serviceName, exe, c)
+		if err != nil {
+			return fmt.Errorf("failed to create %q service: %v", serviceName, err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("failed to open %q service: %v", serviceName, err)
+	} else {
+		existing, err := service.Config()
+		if err != nil {
+			service.Close()
+			return fmt.Errorf("failed to read %q service configuration: %v", serviceName, err)
+		}
+		existing.ServiceType = c.ServiceType
+		existing.StartType = c.StartType
+		existing.ErrorControl = c.ErrorControl
+		existing.BinaryPathName = exe
+		existing.DisplayName = c.DisplayName
+		existing.Description = c.Description
+		if err := service.UpdateConfig(existing); err != nil {
+			service.Close()
+			return fmt.Errorf("failed to update %q service configuration: %v", serviceName, err)
+		}
 	}
 	defer service.Close()
 
@@ -103,7 +102,6 @@ func uninstallSystemDaemonWindows(args []string) (ret error) {
 	}
 	defer m.Disconnect()
 
-	var deleted bool
 	var firstErr error
 	for _, name := range []string{serviceName} {
 		if err := uninstallWindowsService(m, name); err != nil {
@@ -115,13 +113,9 @@ func uninstallSystemDaemonWindows(args []string) (ret error) {
 			}
 			continue
 		}
-		deleted = true
 	}
 	if firstErr != nil {
 		return firstErr
-	}
-	if !deleted {
-		return fmt.Errorf("failed to open %q service: %w", serviceName, windows.ERROR_SERVICE_DOES_NOT_EXIST)
 	}
 	return nil
 }
@@ -146,16 +140,21 @@ func uninstallWindowsService(m *mgr.Mgr, name string) error {
 		return fmt.Errorf("failed to delete %q service: %v", name, err)
 	}
 
-	bo := backoff.NewBackoff("uninstall", logger.Discard, 30*time.Second)
 	end := time.Now().Add(15 * time.Second)
-	for time.Until(end) > 0 {
+	for {
 		service, err = m.OpenService(name)
-		if err != nil {
-			// service is no longer openable; success!
-			break
+		if errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
+			return nil
 		}
-		service.Close()
-		bo.BackOff(context.Background(), errors.New("service not deleted"))
+		if err != nil && !errors.Is(err, windows.ERROR_SERVICE_MARKED_FOR_DELETE) {
+			return fmt.Errorf("checking whether %q service was deleted: %w", name, err)
+		}
+		if err == nil {
+			service.Close()
+		}
+		if !time.Now().Before(end) {
+			return fmt.Errorf("timed out waiting for %q service deletion", name)
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
-	return nil
 }

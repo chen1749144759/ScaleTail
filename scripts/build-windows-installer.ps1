@@ -4,11 +4,25 @@ param(
   [string]$ElectronDir = "client\electron",
   [string]$DependencyRoot = "D:\workspace-qoder\deps",
   [string]$UpdateSigningKey = $env:SCALETAIL_UPDATE_SIGNING_KEY,
+  [string]$UpdateDownloadURL = $env:SCALETAIL_UPDATE_DOWNLOAD_URL,
+  [ValidateSet("suggested", "forced")]
+  [string]$UpdateType = "suggested",
+  [long]$UpdatePolicyRevision = 0,
+  [string]$ReleaseRepository = "chen1749144759/ScaleTail",
+  [string]$ReleaseTag = "",
+  [ValidateRange(1, 64)]
+  [int]$GoBuildParallelism = 4,
   [switch]$SkipElectron,
   [switch]$SkipInstaller
 )
 
 $ErrorActionPreference = "Stop"
+
+function Assert-NativeSuccess([string]$Operation) {
+  if ($LASTEXITCODE -ne 0) {
+    throw "$Operation failed with exit code $LASTEXITCODE."
+  }
+}
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 Set-Location $repoRoot
@@ -52,18 +66,32 @@ Remove-Item -LiteralPath `
   -Force -ErrorAction SilentlyContinue
 
 $oldCgo = $env:CGO_ENABLED
+$oldGoOS = $env:GOOS
+$oldGoArch = $env:GOARCH
+$oldGoMaxProcs = $env:GOMAXPROCS
 $env:CGO_ENABLED = "0"
+$env:GOOS = "windows"
+$env:GOARCH = "amd64"
+$env:GOMAXPROCS = [string]$GoBuildParallelism
+$goVersionLdflags = "-X scaletail.com/version.longStamp=$appVersion -X scaletail.com/version.shortStamp=$appVersion"
 try {
   Write-Host "Building scaletail.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "scaletail.exe") ./cmd/scaletail
+  go build -p $GoBuildParallelism -trimpath -ldflags $goVersionLdflags -o (Join-Path $outDirAbs "scaletail.exe") ./cmd/scaletail
+  Assert-NativeSuccess "Building scaletail.exe"
   Write-Host "Building scaletaild.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/scaletaild
+  go build -p $GoBuildParallelism -trimpath -ldflags $goVersionLdflags -o (Join-Path $outDirAbs "scaletaild.exe") ./cmd/scaletaild
+  Assert-NativeSuccess "Building scaletaild.exe"
   Write-Host "Building scaletail-localapi.exe"
-  go build -trimpath -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/scaletail-localapi
+  go build -p $GoBuildParallelism -trimpath -ldflags $goVersionLdflags -o (Join-Path $outDirAbs "scaletail-localapi.exe") ./cmd/scaletail-localapi
+  Assert-NativeSuccess "Building scaletail-localapi.exe"
   Write-Host "Building ScaleTailUpdateHelper.exe"
-  go build -trimpath -ldflags "-H=windowsgui" -o (Join-Path $outDirAbs "ScaleTailUpdateHelper.exe") ./cmd/scaletail-update-helper
+  go build -p $GoBuildParallelism -trimpath -ldflags "$goVersionLdflags -H=windowsgui" -o (Join-Path $outDirAbs "ScaleTailUpdateHelper.exe") ./cmd/scaletail-update-helper
+  Assert-NativeSuccess "Building ScaleTailUpdateHelper.exe"
 } finally {
   $env:CGO_ENABLED = $oldCgo
+  $env:GOOS = $oldGoOS
+  $env:GOARCH = $oldGoArch
+  $env:GOMAXPROCS = $oldGoMaxProcs
 }
 
 & (Join-Path $PSScriptRoot "ensure-wintun.ps1") -OutputDir $OutDir
@@ -96,12 +124,15 @@ if (-not $SkipElectron) {
       if (Test-Path -LiteralPath "package-lock.json") {
         Write-Host "Installing Electron dependencies with npm ci"
         npm ci
+        Assert-NativeSuccess "Installing Electron dependencies"
       } else {
         Write-Host "Installing Electron dependencies with npm install"
         npm install
+        Assert-NativeSuccess "Installing Electron dependencies"
       }
       Write-Host "Building Electron GUI"
       npm run package:win
+      Assert-NativeSuccess "Building Electron GUI"
     } finally {
       Pop-Location
     }
@@ -123,6 +154,7 @@ if (-not $SkipElectron) {
   if ((Test-Path -LiteralPath $appIcon) -and $rcedit) {
     Write-Host "Embedding Electron executable icon"
     & $rcedit (Join-Path $electronOut "ScaleTailUI.exe") "--set-icon" $appIcon
+    Assert-NativeSuccess "Embedding Electron executable icon"
   } elseif (Test-Path -LiteralPath $appIcon) {
     Write-Warning "rcedit.exe not found; shortcut, tray, window, and installer icons will still use app.ico."
   }
@@ -158,6 +190,7 @@ if (-not $iscc) {
 
 Write-Host "Building installer with $iscc"
 & $iscc "/DAppVersion=$appVersion" $InstallerScript
+Assert-NativeSuccess "Building Inno Setup installer"
 
 $installer = Get-ChildItem -LiteralPath $installerOutDirAbs -Filter "ScaleTail-$appVersion-windows-amd64-setup*.exe" |
   Sort-Object LastWriteTime -Descending |
@@ -175,14 +208,29 @@ if ($UpdateSigningKey) {
   if (-not (Test-Path -LiteralPath $UpdateSigningKey)) {
     throw "OTA signing key not found: $UpdateSigningKey"
   }
+  if (-not $UpdateDownloadURL) {
+    if (-not $ReleaseTag) {
+      $ReleaseTag = "v$appVersion"
+    }
+    $encodedTag = [Uri]::EscapeDataString($ReleaseTag)
+    $encodedAsset = [Uri]::EscapeDataString($installer.Name)
+    $UpdateDownloadURL = "https://github.com/$ReleaseRepository/releases/download/$encodedTag/$encodedAsset"
+  }
   $metadataPath = Join-Path $installerOutDirAbs "ScaleTail-$appVersion-windows-amd64.ota.json"
-  Write-Host "Signing OTA metadata"
+  if ($UpdatePolicyRevision -le 0) {
+    $UpdatePolicyRevision = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+  }
+  Write-Host "Signing OTA metadata for $UpdateDownloadURL"
   go run ./cmd/scaletail-update-sign `
     -private-key $UpdateSigningKey `
     -file $installer.FullName `
     -version $appVersion `
     -platform windows-amd64 `
+    -action $UpdateType `
+    -revision $UpdatePolicyRevision `
+    -download-url $UpdateDownloadURL `
     -json-out $metadataPath
+  Assert-NativeSuccess "Signing OTA metadata"
   Write-Host "OTA metadata: $metadataPath"
 } else {
   Write-Warning "No OTA signing key configured. The installer is usable manually but cannot be installed silently through ScaleTail OTA."

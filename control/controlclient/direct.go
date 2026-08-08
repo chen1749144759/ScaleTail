@@ -38,6 +38,7 @@ import (
 	"scaletail.com/feature/buildfeatures"
 	"scaletail.com/health"
 	"scaletail.com/hostinfo"
+	"scaletail.com/internal/accountauth"
 	"scaletail.com/ipn/ipnstate"
 	"scaletail.com/logtail"
 	"scaletail.com/net/dnscache"
@@ -1170,6 +1171,10 @@ func (c *Direct) sendMapRequest(ctx context.Context, isStreaming bool, nu Netmap
 		return err
 	}
 	ts2021.AddLBHeader(req, nodeKey)
+	if username, password, ok := accountauth.Get(serverURL); ok {
+		req.Header.Set(accountauth.UsernameHeader, username)
+		req.Header.Set(accountauth.PasswordHeader, password)
+	}
 
 	res, err := httpc.Do(req)
 	if err != nil {

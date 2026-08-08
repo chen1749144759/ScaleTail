@@ -3,7 +3,7 @@
 
 //go:build cgo || !darwin
 
-// systray is a minimal Tailscale systray application.
+// systray is a minimal ScaleTail systray application.
 package main
 
 import (
@@ -16,8 +16,8 @@ import (
 )
 
 var socket = flag.String("socket", paths.DefaultScaleTaildSocket(), "scaletaild socket 路径")
-var theme = flag.String("theme", "dark", "Tailscale 图标主题：dark, dark:nobg, light, light:nobg")
-var openDashboard = flag.Bool("open-dashboard", false, "启动后打开仪表台")
+var theme = flag.String("theme", "dark", "ScaleTail 图标主题：dark、dark:nobg、light、light:nobg")
+var openDashboard = flag.Bool("open-dashboard", false, "启动后打开仪表盘")
 
 func main() {
 	flag.Parse()

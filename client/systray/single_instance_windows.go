@@ -70,5 +70,5 @@ func systrayCommandPipeName() string {
 		user = "default"
 	}
 	user = regexp.MustCompile(`[^A-Za-z0-9_.-]+`).ReplaceAllString(user, "_")
-	return `\\.\pipe\TailscaleDevSystray-` + user
+	return `\\.\pipe\ScaleTailSystray-` + user
 }

@@ -6,14 +6,11 @@ package cli
 import (
 	"bytes"
 	stdcmp "cmp"
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"net/netip"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -23,7 +20,6 @@ import (
 	"github.com/peterbourgon/ff/v3/ffcli"
 	"scaletail.com/envknob"
 	"scaletail.com/health/healthmsg"
-	"scaletail.com/internal/client/scaletail"
 	"scaletail.com/ipn"
 	"scaletail.com/ipn/ipnstate"
 	"scaletail.com/tailcfg"
@@ -253,10 +249,9 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 			want: "",
 		},
 		{
-			// Issue 1725: "scaletail up --authkey=..." (or other non-empty flags) works from
-			// a fresh server's initial prefs.
+			// Account identity flags work from a fresh server's initial prefs.
 			name:     "up_with_default_prefs",
-			flags:    []string{"--authkey=foosdlkfjskdljf"},
+			flags:    []string{"--username=alice"},
 			curPrefs: ipn.NewPrefs(),
 			want:     "",
 		},
@@ -510,7 +505,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 		},
 		{
 			name:  "errors_preserve_explicit_flags",
-			flags: []string{"--reset", "--force-reauth=false", "--authkey=secretrand"},
+			flags: []string{"--reset", "--force-reauth=false", "--username=alice"},
 			curPrefs: &ipn.Prefs{
 				ControlURL:    ipn.DefaultControlURL,
 				WantRunning:   false,
@@ -520,7 +515,7 @@ func TestCheckForAccidentalSettingReverts(t *testing.T) {
 				Hostname:            "foo",
 				NoStatefulFiltering: opt.NewBool(true),
 			},
-			want: accidentalUpPrefix + " --auth-key=secretrand --force-reauth=false --reset --hostname=foo",
+			want: accidentalUpPrefix + " --force-reauth=false --reset --username=alice --hostname=foo",
 		},
 		{
 			name:  "error_exit_node_omit_with_ip_pref",
@@ -1513,17 +1508,6 @@ func TestCleanUpArgs(t *testing.T) {
 	}{
 		{in: S{"something"}, want: S{"something"}},
 		{in: S{}, want: S{}},
-		{in: S{"--authkey=0"}, want: S{"--auth-key=0"}},
-		{in: S{"a", "--authkey=1", "b"}, want: S{"a", "--auth-key=1", "b"}},
-		{in: S{"a", "--auth-key=2", "b"}, want: S{"a", "--auth-key=2", "b"}},
-		{in: S{"a", "-authkey=3", "b"}, want: S{"a", "--auth-key=3", "b"}},
-		{in: S{"a", "-auth-key=4", "b"}, want: S{"a", "-auth-key=4", "b"}},
-		{in: S{"a", "--authkey", "5", "b"}, want: S{"a", "--auth-key", "5", "b"}},
-		{in: S{"a", "-authkey", "6", "b"}, want: S{"a", "--auth-key", "6", "b"}},
-		{in: S{"a", "authkey", "7", "b"}, want: S{"a", "authkey", "7", "b"}},
-		{in: S{"--authkeyexpiry", "8"}, want: S{"--authkeyexpiry", "8"}},
-		{in: S{"--auth-key-expiry", "9"}, want: S{"--auth-key-expiry", "9"}},
-
 		{in: S{"--posture-checking"}, want: S{"--report-posture"}},
 		{in: S{"-posture-checking"}, want: S{"--report-posture"}},
 		{in: S{"--posture-checking=nein"}, want: S{"--report-posture=nein"}},
@@ -1730,78 +1714,6 @@ func TestDocs(t *testing.T) {
 		})
 	}
 	walk(t, root)
-}
-
-func TestUpResolves(t *testing.T) {
-	const testARN = "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter"
-	undo := scaletail.HookResolveValueFromParameterStore.SetForTest(func(_ context.Context, valueOrARN string) (string, error) {
-		if valueOrARN == testARN {
-			return "resolved-value", nil
-		}
-		return valueOrARN, nil
-	})
-	defer undo()
-
-	const content = "file-content"
-	fpath := filepath.Join(t.TempDir(), "testfile")
-	if err := os.WriteFile(fpath, []byte(content), 0600); err != nil {
-		t.Fatal(err)
-	}
-
-	testCases := []struct {
-		name string
-		arg  string
-		want string
-	}{
-		{"parameter_store", testARN, "resolved-value"},
-		{"file", "file:" + fpath, "file-content"},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name+"_auth_key", func(t *testing.T) {
-			args := upArgsT{authKeyOrFile: tt.arg}
-			got, err := args.getAuthKey(t.Context())
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
-			}
-		})
-
-		t.Run(tt.name+"_client_secret", func(t *testing.T) {
-			args := upArgsT{clientSecretOrFile: tt.arg}
-			got, err := args.getClientSecret(t.Context())
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
-			}
-		})
-
-		t.Run(tt.name+"_id_token", func(t *testing.T) {
-			args := upArgsT{idTokenOrFile: tt.arg}
-			got, err := args.getIDToken(t.Context())
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
-			}
-		})
-	}
-
-	t.Run("passthrough", func(t *testing.T) {
-		args := upArgsT{authKeyOrFile: "tskey-abcd1234"}
-		got, err := args.getAuthKey(t.Context())
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if got != "tskey-abcd1234" {
-			t.Errorf("got %q, want %q", got, "tskey-abcd1234")
-		}
-	})
 }
 
 func TestDeps(t *testing.T) {

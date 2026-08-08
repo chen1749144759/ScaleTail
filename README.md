@@ -1,157 +1,157 @@
 # ScaleTail
 
 [![Release](https://img.shields.io/github/v/release/chen1749144759/ScaleTail?sort=semver&label=release)](https://github.com/chen1749144759/ScaleTail/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20amd64-0078D4?logo=windows&logoColor=white)](https://github.com/chen1749144759/ScaleTail/releases)
+[![Windows](https://img.shields.io/badge/Windows-amd64-0078D4?logo=windows&logoColor=white)](https://github.com/chen1749144759/ScaleTail/releases)
+[![Linux](https://img.shields.io/badge/Linux-amd64-FCC624?logo=linux&logoColor=black)](https://github.com/chen1749144759/ScaleTail/releases)
 [![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white)](https://go.dev/)
-[![Electron](https://img.shields.io/badge/Electron-38-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![Electron](https://img.shields.io/badge/Electron-43.3.0-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 [![Upstream](https://img.shields.io/badge/Tailscale-v1.98.9%20fixes-4D7CFE)](https://github.com/tailscale/tailscale/releases/tag/v1.98.9)
 
-ScaleTail 是基于 Tailscale 源码裂变的自建网络客户端，主要面向 Headscale/ScaleForge 私有控制服务器。项目目标是把新手原本需要在 CMD 里执行的连接、状态、netcheck、出口节点、宣告路由等操作移动到桌面可视化窗口中。
+ScaleTail 是面向 Headscale-Admin-AE 与 ScaleForge 私有控制面的网络客户端。项目基于 `tailscale/tailscale` 源码裂变，统一使用 ScaleTail 产品名，并提供 Windows 桌面端、系统服务、Linux CLI、签名 OTA、DNS 策略、流量采样和 TUN 数据路径限速。
 
 仓库地址：[chen1749144759/ScaleTail](https://github.com/chen1749144759/ScaleTail)
 
 ## 版本定位
 
-| 项目项 | 当前说明 |
+| 项目 | 当前说明 |
 |---|---|
-| 裂变来源 | 基于 `tailscale/tailscale` 主线源码改造，项目 module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.7` |
-| 对标官方版本 | 已按官方 Tailscale `v1.98.9` 的关键客户端、安全和稳定性修复做定向审计和回补 |
-| Go 版本 | `go.mod` 使用 Go `1.26.5` |
-| 桌面端 | Electron 38 + Vue 3 + TypeScript |
-| 配套服务端 | 推荐配套 `ScaleForge` + `Headscale-Admin-AE` |
+| 裂变来源 | `tailscale/tailscale` 主线源码，Go module 已改为 `scaletail.com` |
+| 当前产品版本 | `v0.0.8`，后续版本继续沿用签名 OTA v3 |
+| 对标版本 | 已定向审计并回补 Tailscale `v1.98.9` 的关键安全和稳定性修复 |
+| Windows 桌面端 | Electron 43.3.0 + Vue 3 + TypeScript |
+| 配套服务端 | Headscale-Admin-AE + ScaleForge |
 
-注意：ScaleTail 不是对官方 Tailscale 的整仓无损同步版本，而是保留自定义命名、Windows 服务、LocalAPI helper、Electron 桌面端和安装包逻辑后，对上游关键稳定性修复进行选择性回补。
+ScaleTail 不是上游的无损镜像。上游修复会先按当前控制协议、服务命名、LocalAPI、桌面端和安装包结构评估，再定向实现。
 
-## 最近更新
+## 核心架构
 
-### v0.0.7 官方修复、签名 OTA 与 TUN 双向限速
+```text
+ScaleTail UI / scaletail CLI
+          |
+          | LocalAPI / Windows named pipe / Unix socket
+          v
+      scaletaild
+          |
+          | Noise control connection + account proof
+          v
+ Headscale-Admin-AE
+          |
+          | private Unix socket gateway
+          v
+      ScaleForge
+```
 
-- 定向回补 Tailscale `v1.98.8-v1.98.9` 的 SSH 用户名/环境变量安全校验、Serve/Funnel 路径防护、服务 VIP 端口校验、休眠恢复和握手抑制等关键修复。
-- Windows 客户端支持完整 OTA：后台下载、SHA-256 校验、Ed25519 发布签名校验、`scaletaild` 二次验签、系统权限静默覆盖安装和安装后自动拉起桌面端。
-- OTA 不信任平台返回的下载地址本身；只有内置公钥认可的安装包才能进入静默安装流程。
-- 构建脚本会生成与安装包配套的 `.ota.json`，可直接导入 ScaleForge 客户端版本发布页。
-- `v0.0.7` 是 OTA 引导版本：更早版本需要手动覆盖安装一次；安装 `v0.0.7` 后，后续签名版本可由客户端静默覆盖升级。
-- 上传和下载限速进入 `scaletaild` TUN 数据路径，按整台机器分别控制双向总带宽，策略支持 LocalAPI 热更新。
-- 限速只处理经过 ScaleTail 虚拟网卡的覆盖网络流量，不影响物理局域网直连、普通公网流量和控制连接。
-- 修正客户端采样语义：未连接网络时不把缺少流量采样误判为故障，平台依据心跳和连接状态区分离线、空闲与异常缺失。
+- `scaletaild` 是网络核心和长期运行的系统服务。
+- Windows UI 和 Linux CLI 都通过 LocalAPI 调用 `scaletaild`，不会要求用户打开 CMD 完成连接。
+- 账号密码通过本机 LocalAPI 进入现有 Noise 控制连接，不由浏览器跳转，也不使用预认证 Key。
+- 机器密钥、节点密钥仍用于 WireGuard/Noise 加密身份，但不是另一套用户登录凭证。
+- 遥测、策略和更新请求由 Headscale 验证节点身份后通过私有 UDS 转发，不再维护额外的客户端上报令牌。
 
-### v0.0.6
+## 账户认证
 
-- Electron 连接流程改为直接调用 `scaletaild` LocalAPI 新增的 `/localapi/v0/scaletail-up`，执行等价 `up` 的连接逻辑，不再走隐藏 CLI 作为连接主路径。
-- `scaletail-up` 支持控制服务器地址、设备名、预认证密钥、接受路由和 DNS 偏好，并在 daemon 内完成参数校验、Prefs 更新、启动和必要的交互式登录触发。
-- 修复平台上报配置保存时 Electron IPC 出现 `An object could not be cloned` 的问题，保存前会转为可克隆的纯对象。
-- 支持读取打包内置的 `resources/report-config.json`，便于安装包携带 ScaleForge 上报地址和客户端 token；用户配置仍优先覆盖内置配置。
-- 安装包版本升级到 `0.0.6`，覆盖安装和卸载时会清理旧版 `tailscale.exe`、`tailscaled.exe`、`tailscale-localapi.exe` 进程和旧服务残留。
+新设备和重新认证统一使用 ScaleForge 账号密码。服务端要求每个新的控制会话完成账户证明，并将节点有效期限制在密码有效期内。
 
-## 自实现功能
+- 密码最长 72 字节，由服务端使用强密码哈希保存。
+- 密码每 90 天必须由用户更新；过期后不能建立新的认证会话。
+- 生产环境必须使用受信任的 HTTPS 控制地址，避免凭证发往明文或伪造服务端。
+- CLI 不提供明文 `--password` 参数，避免密码进入 shell 历史和进程列表。
+- 旧预认证 Key、浏览器认证、OIDC 登录和手工注册码不是当前产品登录路径。
 
-- 产品命名统一为 ScaleTail，核心命令为 `scaletail`，核心服务为 `scaletaild`，LocalAPI helper 为 `scaletail-localapi`。
-- Windows 桌面端使用 Electron 38 + Vue 3 + TypeScript 实现，安装后由托盘常驻。
-- 服务端连接页支持控制服务器 IP/域名、端口、HTTP/HTTPS、设备名、预认证密钥、接受路由。
-- 连接页展示等价命令，便于核对实际执行逻辑，例如 `scaletail up --login-server=http://host:port --auth-key=...`。
-- 已修正预认证密钥连接逻辑：填写 key 时不再触发浏览器交互式认证。
-- 仪表盘展示连接状态、本机名称、本机 ScaleTail IP、节点数量、节点列表和节点流量。
-- 节点页支持 `netcheck`、出口节点选择、宣告子网路由。
-- `netcheck` 通过 LocalAPI 调用，不再依赖外露 CMD 窗口。
-- 托盘左键直接唤起已有窗口，不重复打开多个仪表盘。
-- Windows 安装包包含 `ScaleTailUI.exe`、`scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe`、`ScaleTailUpdateHelper.exe`、`wintun.dll`。
-- 安装、覆盖安装和卸载会尝试关闭相关进程、停止服务、清理旧服务和残留文件。
-- 新增平台上报能力：客户端可定时向 ScaleForge 上报流量、请求连接摘要、策略应用状态。
-- 新增策略领取能力：客户端可领取 ScaleForge 下发的限速/配额策略。
-- 客户端版本发布支持建议更新/强制更新；Windows 桌面端可在不手动卸载、不重复操作安装向导的情况下完成签名 OTA 覆盖升级。
-- Windows 双向限速已进入 `scaletaild` TUN 核心流量路径：上传、下载分别按整台机器的总带宽整形，所有进程和连接共享总额度，不按进程或单连接分配。
-- 数据面继续使用 Wintun，不引入 WinDivert 或额外进程级拦截驱动。
-- 限速策略支持 LocalAPI 热更新；相同策略重复轮询不会重置令牌桶，断开连接、退出网络、服务关闭和配额阻断都会清除运行态，不在系统中遗留限速状态。
-- 限速只作用于穿过 ScaleTail 虚拟网卡的覆盖网络流量，不影响物理局域网直连、普通公网访问和控制连接。
-- Windows 连接明细按实际路由出口过滤，只有确认经当前 ScaleTail 虚拟网卡转发的目标才会上报；物理网直连和未走 ScaleTail 的公网连接不会进入平台排行。
-- 月度配额的提醒、降速和阻断由 `scaletaild` 执行；降速同时约束双向总带宽，阻断会停止当前网络连接。
+交互式 Linux 登录：
 
-## 部署难度
+```bash
+sudo scaletail login \
+  --login-server=https://control.example.com \
+  --username=alice
+```
 
-| 场景 | 难度 | 说明 |
-|---|---:|---|
-| 直接安装 Windows exe 安装包 | 低 | 推荐方式。需要管理员权限安装 Windows 服务和 Wintun。 |
-| 从源码构建 Windows 安装包 | 中 | 需要 Go、Node.js、npm、Inno Setup 6。构建脚本已自动处理 Electron 和 Wintun。 |
-| Linux 客户端命令行包 | 中 | 可按原项目 Linux 编译链路打包，图形窗口可选。 |
-| macOS 未签名包 | 中高 | 可以通过 GitHub Actions macOS runner 构建，未签名包需要用户手动信任。 |
-| 自行深度改核心网络 | 高 | 涉及 `scaletaild`、LocalAPI、Wintun/TUN、路由、DNS 和控制面协议。 |
+命令会在终端中隐藏输入密码。无人值守或 ISO 预制场景应由安全的配置系统生成仅 root 可读的密码文件：
+
+```bash
+sudo install -o root -g root -m 0600 /secure/provision/account-password \
+  /etc/scaletail/account-password
+
+sudo scaletail login \
+  --login-server=https://control.example.com \
+  --username=alice \
+  --password-file=/etc/scaletail/account-password
+```
+
+登录后再单独配置路由，避免身份参数和网络参数混在同一条命令中：
+
+```bash
+sudo scaletail set --accept-routes=true
+sudo scaletail set --advertise-routes=192.168.10.0/24
+```
+
+## 自实现能力
+
+- Windows 原生产品入口：Electron 仪表盘、托盘单实例、连接/恢复/断开/退出网络、节点、出口节点、路由、DNS 和 netcheck。
+- Windows 服务、二进制、安装目录、快捷方式和卸载逻辑统一为 `ScaleTail`、`scaletail.exe`、`scaletaild.exe`。
+- Windows 安装包包含 `ScaleTailUI.exe`、`scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe`、更新助手和 `wintun.dll`。
+- 安装包支持直接覆盖升级；卸载会停止服务并清理相关进程、服务和历史残留。
+- Windows 签名 OTA：下载、SHA-256 校验、Ed25519 发布签名校验、daemon 二次验签和静默覆盖安装。
+- ScaleForge DNS 策略下发；客户端可显式选择是否采用服务端 DNS。
+- 流量、连接摘要、在线状态、策略应用结果和安全数据定时上报。
+- 上传/下载限速位于 `scaletaild` TUN 数据路径，按整台机器控制经过 ScaleTail 覆盖网络的总带宽。
+- 限速策略可经 LocalAPI 热更新；断开、退出、关闭和配额阻断会清理运行态。
+- 物理局域网直连和未经过 ScaleTail 虚拟网卡的普通公网流量不统计、不限速。
 
 ## Windows 构建
 
-前置要求：
+前置依赖：
 
 - Go 1.26+
 - Node.js + npm
 - Inno Setup 6
 - PowerShell
 
-默认依赖缓存目录：
-
-```text
-D:\workspace-qoder\deps
-```
-
-如果 Inno Setup 不在 `D:\Inno Setup 6\ISCC.exe`，可以设置 `ISCC` 环境变量指向 `ISCC.exe`。
-
-在项目根目录执行：
+默认依赖缓存位于 `D:\workspace-qoder\deps`。Inno Setup 不在 `D:\Inno Setup 6\ISCC.exe` 时，可设置 `ISCC` 环境变量。
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-windows-installer.ps1
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\build-windows-installer.ps1 `
+  -GoBuildParallelism 4
 ```
 
-输出文件：
+主要输出：
 
 ```text
-dist\installer\ScaleTail-0.0.7-windows-amd64-setup-custom.exe
-dist\installer\ScaleTail-0.0.7-windows-amd64.ota.json
+dist\installer\ScaleTail-0.0.8-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.8-windows-amd64.ota.json
 ```
 
-构建脚本默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取 OTA 私钥，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。将安装包上传到下载地址后，在 ScaleForge 的“客户端版本”页面导入 `.ota.json`，再填写下载地址即可发布。
+OTA 私钥默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。
 
-## Windows 安装与升级
+`GoBuildParallelism` 默认是 `4`，用于限制大型 Windows 构建的并发编译器数量；稳定的高性能构建机可显式调高。
 
-1. 从 [GitHub Releases](https://github.com/chen1749144759/ScaleTail/releases) 下载 `ScaleTail-0.0.7-windows-amd64-setup-custom.exe` 和 `SHA256SUMS.txt`。
-2. 使用 PowerShell 执行 `Get-FileHash .\ScaleTail-0.0.7-windows-amd64-setup-custom.exe -Algorithm SHA256`，确认结果与校验文件一致。
-3. 右键安装包并选择“以管理员身份运行”。首次安装会安装 `ScaleTail` Windows 服务和 Wintun 驱动。
-4. 已安装旧版本时直接运行新安装包覆盖升级，不需要先断开网络或手动卸载；节点身份、服务端配置和上报配置会继续保留。
-5. `v0.0.6` 及更早版本需要手动覆盖安装一次 `v0.0.7`，之后才能使用签名 OTA 静默升级。
+## OTA v3 发布协议
 
-公开 Release 安装包不内置任何生产环境的 `SCALETAIL_CLIENT_TOKEN`。新安装后请在客户端页面配置 ScaleForge 地址和上报密钥；覆盖升级不会清除已经保存的本地配置。
-
-## Linux 构建与安装
-
-在已安装 Ubuntu 24.04 WSL 的 Windows 构建机上执行：
+v3 将策略版本、建议/强制/撤销动作和安装包元数据放在同一个签名中。每次发布或撤销必须使用严格递增的 `revision`：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-linux-packages-wsl.ps1 `
-  -Distro Ubuntu-24.04 `
-  -Version 0.0.7 `
-  -DependencyRoot D:\workspace-qoder\deps
+go run ./cmd/scaletail-update-sign `
+  -private-key D:\secure\ed25519-private.key `
+  -file .\dist\installer\ScaleTail-0.0.8-windows-amd64-setup-custom.exe `
+  -version 0.0.8 `
+  -platform windows-amd64 `
+  -action suggested `
+  -revision 202608090001 `
+  -download-url https://downloads.example.com/releases/ScaleTail-0.0.8-windows-amd64-setup.exe `
+  -json-out .\dist\installer\ScaleTail-0.0.8-windows-amd64.ota.json
 ```
 
-默认输出到 `dist\linux-v0.0.7`，包含 amd64 的 `.tgz`、`.deb`、`.rpm`、可选 GUI 包和 `SHA256SUMS-linux-amd64.txt`。服务器建议只安装核心包；桌面 Linux 再选择 `scaletail-gui` 包。
+签名消息按顺序包含 `scaletail-update-v3`、`revision`、动作、版本、平台、小写 SHA-256、文件大小和规范化 `download_url`。`signature` 必须使用 `v3.<Ed25519 Base64>`；v1/v2 元数据会被拒绝。
 
-Debian/Ubuntu 示例：
+- `suggested` 允许用户延后安装，`forced` 会由 daemon 持久化强制策略、暂停网络并要求升级。
+- `clear` 是带签名的撤销策略，不含安装包摘要、大小和 URL；撤销后按升级前状态恢复网络。
+- `scaletaild` 持久化已接受的最高 revision，拒绝回滚和同 revision 内容替换；Electron 只是展示和触发入口。
+- 安装包在 Electron 下载前和 daemon 执行前分别验签、核对大小及 SHA-256，静默覆盖升级不要求先卸载或手工断开。
 
-```bash
-sudo dpkg -i scaletail_0.0.7_amd64.deb
-sudo systemctl enable --now scaletaild
-sudo scaletail up --login-server=http://HEADSCALE_IP:PORT --auth-key=hskey-auth-REPLACE_ME --accept-routes
-```
+客户端会在下载安装包前完成签名和元数据校验，并且每个重定向都只能是无凭据、无片段的 HTTPS DNS 主机名。它拒绝 `localhost`、回环/私网/链路本地 IP literal 及全部 IP literal。当前没有预解析域名并拒绝私网 DNS 结果，以避免把一次 DNS 查询误当成连接时保证；受信任下载域必须在发布运维层控制，DNS 重绑定或恶意 DNS 解析到私网仍是该层的残余风险。
 
-安装前请按实际协议替换控制服务器地址和预认证密钥；生产环境应优先使用 HTTPS，禁止把真实密钥写入镜像、ISO 公共仓库或安装日志。
-
-## v0.0.7 发布产物
-
-- `ScaleTail-0.0.7-windows-amd64-setup-custom.exe`：Windows amd64 图形客户端、服务、更新助手和 Wintun 的完整安装包。
-- `ScaleTail-0.0.7-windows-amd64.ota.json`：供 ScaleForge 客户端版本页导入的签名 OTA 元数据。
-- `scaletail_0.0.7_amd64.deb`、`.rpm`、`.tgz`：Linux amd64 核心客户端包。
-- `scaletail-gui_0.0.7_all.deb`、`scaletail-gui_0.0.7_noarch.rpm`：Linux 架构无关的可选图形集成包。
-- `SHA256SUMS.txt`、`SHA256SUMS-linux-amd64.txt`：下载完整性校验文件。
-
-## Electron 开发
+Electron 单独验证：
 
 ```powershell
 cd client\electron
@@ -160,53 +160,71 @@ npm run typecheck
 npm run build
 ```
 
-完整联调建议使用构建脚本生成 `dist\electron\win-unpacked\ScaleTailUI.exe`，或直接安装生成的 Windows 安装包。
+## Linux 构建
 
-## 与服务端关系
+在安装了 Ubuntu 24.04 WSL 的 Windows 构建机上执行：
 
-```text
-ScaleTail 客户端
-  |
-  | Tailscale/headscale 控制协议 + LocalAPI
-  v
-Headscale-Admin-AE 控制服务
-  |
-  | 共享数据库/API
-  v
-ScaleForge 管理平台
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\build-linux-packages-wsl.ps1 `
+  -Distro Ubuntu-24.04 `
+  -Version 0.0.8 `
+  -DependencyRoot D:\workspace-qoder\deps
 ```
 
-ScaleTail 负责客户端连接和桌面体验；Headscale-Admin-AE 负责控制面和节点注册；ScaleForge 负责可视化管理、策略、流量统计、安全审计。
+输出目录 `dist\linux-v0.0.8` 包含 amd64 的 `.tgz`、`.deb`、`.rpm`、校验文件以及可选 GUI 包。无桌面的服务器只安装核心包：
 
-## 当前已验证
+```bash
+sudo dpkg -i scaletail_0.0.8_amd64.deb
+sudo systemctl enable --now scaletaild
+sudo scaletail login --login-server=https://control.example.com --username=alice
+```
 
-- Electron `npm run typecheck` 通过。
-- Electron `npm run build` 通过。
-- Windows 安装包脚本完整通过。
-- Inno Setup 6 编译通过，安装包内确认包含 `scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe` 和 `wintun.dll`。
-- Linux amd64 的 tgz、deb、rpm 和可选 GUI 包使用锁定 revision 的 Tailscale Go 工具链在 Linux 容器中构建并完成包内容核验。
+## 部署难度
 
-## TODO
+| 场景 | 难度 | 说明 |
+|---|---:|---|
+| Windows 安装包 | 低 | 管理员运行安装包，自动安装服务和 Wintun |
+| Windows 源码构建 | 中 | 需要 Go、Node.js、npm 和 Inno Setup 6 |
+| Linux CLI | 中 | 安装核心包、启用服务并完成账户登录 |
+| Linux 无人值守 | 中 | 需要安全注入 0600 密码文件并规划 90 天轮换 |
+| macOS 未签名包 | 中高 | 通过 GitHub Actions macOS runner 构建，用户需手动信任 |
+| 核心网络开发 | 高 | 涉及 LocalAPI、TUN、路由、DNS、Noise 和控制协议 |
 
-- 继续减少上游残留命名和注释中的 Tailscale 字样。
-- macOS 未签名安装包通过 GitHub Actions macOS runner 自动构建。
-- Linux 图形端作为可选包输出，服务器场景默认只安装命令行和服务。
+## 安全边界
+
+- 不要把账号密码、OTA 私钥或生产配置提交到仓库、镜像、ISO 公共层或安装日志。
+- 不要把密码直接写在命令行参数中；无人值守只使用权限为 `0600` 的文件或标准输入。
+- 强制 OTA 只接受内置公钥验证通过且摘要匹配的安装包。
+- 自定义 DERP 不是必需组件；当前优先使用服务端嵌入 DERP，并启用私有节点验证。
+- 客户端升级不会部署或迁移 ScaleForge/Headscale 数据库，服务端升级需按各自仓库文档执行。
+
+## 验证
+
+开发改动至少运行：
+
+```powershell
+go test ./cmd/scaletail/cli ./client/local ./ipn/localapi ./control/controlclient
+cd client\electron
+npm run typecheck
+npm run build
+```
+
+安装包发布前还需确认 Inno Setup 编译成功，并检查安装包包含全部 ScaleTail 二进制、更新助手和 `wintun.dll`。
 
 ## 交流学习
 
-欢迎加入 ScaleForge 交流群，一起交流自建 Headscale、ScaleTail、ScaleForge 的部署、使用和二次开发经验。
+欢迎加入 ScaleForge 交流学习群，讨论 Headscale、ScaleTail、ScaleForge 的部署、使用和二次开发。
 
 群号：`1041671099`
 
-<img src="docs/images/scaleforge-qq-group.jpg" alt="ScaleForge 交流群" width="360">
+<img src="docs/images/scaleforge-qq-group.jpg" alt="ScaleForge 交流学习群" width="360">
 
 ## 打赏
 
-如果这个项目帮你节省了部署和维护时间，可以请作者喝杯咖啡。打赏二维码维护在 ScaleForge 仓库中：
+如果项目帮助你节省了部署和维护时间，可以请作者喝杯咖啡：
 
 ![打赏](https://raw.githubusercontent.com/chen1749144759/ScaleForge/main/docs/screenshots/donate.jpg)
-
-感谢支持，项目会继续围绕自建 Headscale/ScaleTail 网络的易用性、稳定性和安全可视化迭代。
 
 ## 致谢
 

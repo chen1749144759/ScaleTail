@@ -47,30 +47,6 @@ func (lc *Client) NetworkLockInit(ctx context.Context, keys []tka.Key, disableme
 	return decodeJSON[*ipnstate.NetworkLockStatus](body)
 }
 
-// NetworkLockWrapPreauthKey wraps a pre-auth key with information to
-// enable unattended bringup in the locked tailnet.
-func (lc *Client) NetworkLockWrapPreauthKey(ctx context.Context, preauthKey string, tkaKey key.NLPrivate) (string, error) {
-	encodedPrivate, err := tkaKey.MarshalText()
-	if err != nil {
-		return "", err
-	}
-
-	var b bytes.Buffer
-	type wrapRequest struct {
-		TSKey  string
-		TKAKey string // key.NLPrivate.MarshalText
-	}
-	if err := json.NewEncoder(&b).Encode(wrapRequest{TSKey: preauthKey, TKAKey: string(encodedPrivate)}); err != nil {
-		return "", err
-	}
-
-	body, err := lc.send(ctx, "POST", "/localapi/v0/tka/wrap-preauth-key", 200, &b)
-	if err != nil {
-		return "", fmt.Errorf("error: %w", err)
-	}
-	return string(body), nil
-}
-
 // NetworkLockModify adds and/or removes key(s) to the tailnet key authority.
 func (lc *Client) NetworkLockModify(ctx context.Context, addKeys, removeKeys []tka.Key) error {
 	var b bytes.Buffer

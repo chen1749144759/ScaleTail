@@ -1,12 +1,44 @@
+// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import path from "node:path";
 import { app } from "electron";
-import { ConnectRequest, NetcheckReport, Prefs, Status } from "../shared/types";
+import type { ConnectRequest, NetcheckReport, Prefs, Status } from "../shared/types";
 
 const helperName = process.platform === "win32" ? "scaletail-localapi.exe" : "scaletail-localapi";
+const maxHelperRequestBytes = 1 << 20;
+const maxHelperStdoutBytes = 16 << 20;
+const maxHelperStderrBytes = 256 << 10;
+
+export type PasswordAuthErrorCode =
+  | "invalid_credentials"
+  | "account_locked"
+  | "account_disabled"
+  | "account_expired"
+  | "password_expired"
+  | "network_not_assigned"
+  | "node_limit_reached"
+  | "tags_not_supported"
+  | "https_required"
+  | "auth_session_expired"
+  | "invalid_auth_session"
+  | "machine_mismatch"
+  | "auth_session_consumed"
+  | "too_many_attempts"
+  | "invalid_request"
+  | "registration_failed"
+  | "route_approval_failed"
+  | "internal_error"
+  | "authentication_failed"
+  | "network_error";
 
 export class LocalAPIError extends Error {
-  constructor(message: string, public statusCode?: number) {
+  constructor(
+    message: string,
+    public statusCode?: number,
+    public code?: string,
+  ) {
     super(message);
     this.name = "LocalAPIError";
   }
@@ -20,6 +52,9 @@ export async function localRequest<T>(
   timeoutMS = 15000,
 ): Promise<T> {
   const payload = body === undefined ? undefined : JSON.stringify(body);
+  if (payload && Buffer.byteLength(payload, "utf8") > maxHelperRequestBytes) {
+    throw new LocalAPIError("LocalAPI 请求体过大");
+  }
   return new Promise<T>((resolve, reject) => {
     const child = spawn(
       helperPath(),
@@ -38,22 +73,51 @@ export async function localRequest<T>(
     );
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let failed = false;
     const timer = setTimeout(() => {
+      failed = true;
       child.kill();
       reject(new Error("LocalAPI 请求超时"));
     }, timeoutMS + 3000);
 
-    child.stdout.on("data", (chunk) => stdout.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
-    child.stderr.on("data", (chunk) => stderr.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+    child.stdout.on("data", (chunk) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      stdoutBytes += buffer.length;
+      if (stdoutBytes > maxHelperStdoutBytes) {
+        failed = true;
+        child.kill();
+        reject(new LocalAPIError("LocalAPI 响应体过大"));
+        return;
+      }
+      stdout.push(buffer);
+    });
+    child.stderr.on("data", (chunk) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      stderrBytes += buffer.length;
+      if (stderrBytes > maxHelperStderrBytes) {
+        failed = true;
+        child.kill();
+        reject(new LocalAPIError("LocalAPI 错误响应过大"));
+        return;
+      }
+      stderr.push(buffer);
+    });
     child.on("error", (err) => {
       clearTimeout(timer);
+      failed = true;
       reject(err);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
+      if (failed) {
+        return;
+      }
       if (code !== 0) {
-        const message = Buffer.concat(stderr).toString("utf8").trim() || `LocalAPI helper 退出码 ${code}`;
-        reject(new LocalAPIError(errorMessage(message, "LocalAPI 请求失败"), parseHTTPStatus(message)));
+        const raw = Buffer.concat(stderr).toString("utf8").trim() || `LocalAPI helper 退出码 ${code}`;
+        const parsed = parseLocalAPIError(raw, "LocalAPI 请求失败");
+        reject(new LocalAPIError(parsed.message, parsed.statusCode, parsed.code));
         return;
       }
       const raw = Buffer.concat(stdout).toString("utf8").trim();
@@ -144,12 +208,33 @@ export function bundledBinaryPath(name: string): string {
 
 export interface SignedUpdateInstallRequest {
   installer_path: string;
+  policy_revision: number;
+  update_type: "suggested" | "forced";
   version: string;
   platform: string;
   sha256: string;
   file_size: number;
+  download_url: string;
   signature: string;
   marker_id: string;
+}
+
+export interface SignedUpdatePolicy {
+  policy_revision: number;
+  update_type: "suggested" | "forced" | "clear";
+  version: string;
+  platform: string;
+  sha256: string;
+  file_size: number;
+  download_url: string;
+  signature: string;
+}
+
+export interface UpdatePolicyStatus {
+  active: boolean;
+  current_version: string;
+  resume_pending: boolean;
+  policy: SignedUpdatePolicy;
 }
 
 export interface TrafficShaperRequest {
@@ -190,12 +275,51 @@ export async function installSignedUpdate(request: SignedUpdateInstallRequest): 
   );
 }
 
+export async function getUpdatePolicyStatus(): Promise<UpdatePolicyStatus> {
+  return localRequest<UpdatePolicyStatus>("GET", "/localapi/v0/scaletail-update/policy");
+}
+
+export async function applyUpdatePolicy(request: SignedUpdatePolicy): Promise<UpdatePolicyStatus> {
+  return localRequest<UpdatePolicyStatus>("PUT", "/localapi/v0/scaletail-update/policy", request);
+}
+
+export async function acknowledgeUpdateResume(): Promise<UpdatePolicyStatus> {
+  return localRequest<UpdatePolicyStatus>("PATCH", "/localapi/v0/scaletail-update/policy", {});
+}
+
 export async function setTrafficShaper(request: TrafficShaperRequest): Promise<TrafficShaperResponse> {
   return localRequest<TrafficShaperResponse>("POST", "/localapi/v0/traffic-shaper", request);
 }
 
 export async function getTrafficShaper(): Promise<TrafficShaperResponse> {
   return localRequest<TrafficShaperResponse>("GET", "/localapi/v0/traffic-shaper");
+}
+
+export async function reportScaleForgeTraffic<T>(body: unknown): Promise<T> {
+  return localRequest<T>("POST", "/localapi/v0/scaleforge/traffic", body, 200, 20000);
+}
+
+export async function fetchScaleForgePolicy<T>(): Promise<T> {
+  return localRequest<T>("GET", "/localapi/v0/scaleforge/policy", undefined, 200, 20000);
+}
+
+export async function reportScaleForgePolicyState<T>(body: unknown): Promise<T> {
+  return localRequest<T>("POST", "/localapi/v0/scaleforge/policy-state", body, 200, 20000);
+}
+
+export async function fetchScaleForgeClientUpdate<T>(currentVersion: string, platform: string, currentRevision = 0): Promise<T> {
+  const query = new URLSearchParams({
+    current_version: currentVersion,
+    platform,
+    current_revision: String(currentRevision),
+  });
+  return localRequest<T>(
+    "GET",
+    `/localapi/v0/scaleforge/client-update?${query.toString()}`,
+    undefined,
+    200,
+    20000,
+  );
 }
 
 export async function getStatus(peers = true): Promise<Status> {
@@ -213,14 +337,12 @@ export async function patchPrefs(body: unknown): Promise<Prefs> {
 export async function startDaemonUp(
   controlURL: string,
   hostname: string,
-  authKey: string,
   acceptRoutes: boolean,
   acceptDNS: boolean,
 ): Promise<void> {
   await localRequest<void>("POST", "/localapi/v0/scaletail-up", {
     ControlURL: controlURL,
     Hostname: hostname,
-    AuthKey: authKey,
     AcceptRoutes: acceptRoutes,
     AcceptDNS: acceptDNS,
   }, 204, 70000);
@@ -270,7 +392,21 @@ export function buildControlURL(req: ConnectRequest): string {
   }
 
   const scheme = useHTTPS ? "https" : "http";
-  return `${scheme}://${host}:${numericPort}`;
+  const urlHost = host.includes(":") && !host.startsWith("[") ? `[${host}]` : host;
+  let parsed: URL;
+  try {
+    parsed = new URL(`${scheme}://${urlHost}:${numericPort}`);
+  } catch {
+    throw new Error("服务端地址格式无效");
+  }
+  if (!useHTTPS && !isLoopbackHost(parsed.hostname)) {
+    throw new LocalAPIError(
+      "https_required: 远程控制服务器必须使用 HTTPS；HTTP 仅允许 localhost 或回环地址。",
+      426,
+      "https_required",
+    );
+  }
+  return parsed.origin;
 }
 
 export function validateHostname(hostname: string): string {
@@ -284,15 +420,40 @@ export function validateHostname(hostname: string): string {
   return value;
 }
 
-function errorMessage(raw: string, fallback: string): string {
-  if (!raw) {
-    return fallback;
+function isLoopbackHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
+  if (host === "localhost" || host === "::1" || host === "0:0:0:0:0:0:0:1") {
+    return true;
+  }
+  const parts = host.split(".");
+  return parts.length === 4
+    && parts[0] === "127"
+    && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255);
+}
+
+function parseLocalAPIError(
+  raw: string,
+  fallback: string,
+): { message: string; statusCode?: number; code?: string } {
+  const statusCode = parseHTTPStatus(raw);
+  const body = raw.replace(/^HTTP\s+\d{3}:\s*/i, "").trim();
+  if (!body) {
+    return { message: fallback, statusCode };
   }
   try {
-    const parsed = JSON.parse(raw) as { Error?: string; error?: string };
-    return parsed.Error || parsed.error || raw;
+    const parsed = JSON.parse(body) as {
+      Code?: string;
+      code?: string;
+      Error?: string;
+      error?: string;
+      Message?: string;
+      message?: string;
+    };
+    const code = parsed.code || parsed.Code;
+    const message = parsed.message || parsed.Message || parsed.Error || parsed.error || fallback;
+    return { message, statusCode, code };
   } catch {
-    return raw;
+    return { message: body, statusCode };
   }
 }
 

@@ -3,11 +3,11 @@ import vue from "@vitejs/plugin-vue";
 import { resolve } from "node:path";
 
 export default defineConfig({
-  root: resolve(__dirname, "src/renderer"),
+  root: resolve(import.meta.dirname, "src/renderer"),
   base: "./",
   plugins: [vue()],
   build: {
-    outDir: resolve(__dirname, "dist/renderer"),
+    outDir: resolve(import.meta.dirname, "dist/renderer"),
     emptyOutDir: true,
   },
 });

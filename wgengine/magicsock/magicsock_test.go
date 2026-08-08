@@ -39,6 +39,9 @@ import (
 	"go4.org/mem"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
+	extwgconn "golang.zx2c4.com/wireguard/conn"
+	extwgdevice "golang.zx2c4.com/wireguard/device"
+	extwgtest "golang.zx2c4.com/wireguard/tun/tuntest"
 	"scaletail.com/control/controlknobs"
 	"scaletail.com/derp/derpserver"
 	"scaletail.com/disco"
@@ -2251,16 +2254,16 @@ func TestSetNetworkMapWithNoPeers(t *testing.T) {
 
 // newWireguard starts up a new wireguard-go device attached to a test tun, and
 // returns the device, tun and endpoint port. To add peers call device.IpcSet with UAPI instructions.
-func newWireguard(t *testing.T, uapi string, aips []netip.Prefix) (*device.Device, *tuntest.ChannelTUN, uint16) {
-	wgtun := tuntest.NewChannelTUN()
+func newWireguard(t *testing.T, uapi string, aips []netip.Prefix) (*extwgdevice.Device, *extwgtest.ChannelTUN, uint16) {
+	wgtun := extwgtest.NewChannelTUN()
 	wglogf := func(f string, args ...any) {
 		t.Logf("wg-go: "+f, args...)
 	}
-	wglog := device.Logger{
+	wglog := extwgdevice.Logger{
 		Verbosef: func(string, ...any) {},
 		Errorf:   wglogf,
 	}
-	wgdev := wgcfg.NewDevice(wgtun.TUN(), wgconn.NewDefaultBind(), &wglog)
+	wgdev := extwgdevice.NewDevice(wgtun.TUN(), extwgconn.NewDefaultBind(), &wglog)
 
 	if err := wgdev.IpcSet(uapi); err != nil {
 		t.Fatal(err)
@@ -4436,6 +4439,10 @@ func TestSendingTSMPDiscoTimer(t *testing.T) {
 	tw := eventbustest.NewWatcher(t, conn.eventBus)
 	t.Cleanup(func() { conn.Close() })
 
+	// maybeSendTSMPDiscoAdvert only advertises when netmap caching is enabled.
+	conn.controlKnobs = new(controlknobs.Knobs)
+	conn.controlKnobs.CacheNetworkMaps.Store(true)
+
 	peerKey := key.NewNode().Public()
 	ep := &endpoint{
 		nodeID:    1,
@@ -4495,5 +4502,77 @@ func TestSendingTSMPDiscoTimer(t *testing.T) {
 	conn.maybeSendTSMPDiscoAdvert(ep)
 	if err := eventbustest.ExpectExactly(tw, eventbustest.Type[NewDiscoKeyAvailable]()); err != nil {
 		t.Errorf("expected only one event, got: %s", err)
+	}
+}
+
+func TestSendingTSMPDiscoCachingDisabled(t *testing.T) {
+	tests := []struct {
+		name  string
+		knobs *controlknobs.Knobs
+	}{
+		{name: "no-knobs"},
+		{name: "caching-disabled", knobs: new(controlknobs.Knobs)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			conn := newTestConn(t)
+			t.Cleanup(func() { conn.Close() })
+			conn.controlKnobs = tt.knobs
+			ep := &endpoint{
+				nodeID:    1,
+				publicKey: key.NewNode().Public(),
+				nodeAddr:  netip.MustParseAddr("100.64.0.1"),
+				c:         conn,
+			}
+
+			conn.maybeSendTSMPDiscoAdvert(ep)
+			ep.mu.Lock()
+			defer ep.mu.Unlock()
+			if !ep.lastDiscoKeyAdvertisement.IsZero() {
+				t.Errorf("lastDiscoKeyAdvertisement = %v; want zero", ep.lastDiscoKeyAdvertisement)
+			}
+		})
+	}
+}
+
+func TestSendingTSMPDiscoPeerRelaySuppressed(t *testing.T) {
+	conn := newTestConn(t)
+	t.Cleanup(func() { conn.Close() })
+	conn.controlKnobs = new(controlknobs.Knobs)
+	conn.controlKnobs.CacheNetworkMaps.Store(true)
+
+	ep := &endpoint{
+		nodeID:    1,
+		publicKey: key.NewNode().Public(),
+		nodeAddr:  netip.MustParseAddr("100.64.0.1"),
+		c:         conn,
+	}
+	discoKey := key.NewDisco().Public()
+	ep.disco.Store(&endpointDisco{key: discoKey, short: discoKey.ShortString()})
+	nodeView := (&tailcfg.Node{
+		Key:       ep.publicKey,
+		Addresses: []netip.Prefix{netip.MustParsePrefix("100.64.0.1/32")},
+	}).View()
+	conn.mu.Lock()
+	conn.peersByID = map[tailcfg.NodeID]tailcfg.NodeView{nodeView.ID(): nodeView}
+	conn.mu.Unlock()
+	conn.peerMap.upsertEndpoint(ep, key.DiscoPublic{})
+
+	var vni packet.VirtualNetworkID
+	vni.Set(7)
+	lastAdvert := mono.Now().Add(-discoKeyAdvertisementInterval - time.Second)
+	ep.mu.Lock()
+	ep.lastDiscoKeyAdvertisement = lastAdvert
+	ep.bestAddr = addrQuality{epAddr: epAddr{
+		ap:  netip.MustParseAddrPort("1.2.3.4:567"),
+		vni: vni,
+	}}
+	ep.mu.Unlock()
+	conn.maybeSendTSMPDiscoAdvert(ep)
+
+	ep.mu.Lock()
+	defer ep.mu.Unlock()
+	if ep.lastDiscoKeyAdvertisement != lastAdvert {
+		t.Errorf("lastDiscoKeyAdvertisement = %v; want unchanged %v", ep.lastDiscoKeyAdvertisement, lastAdvert)
 	}
 }

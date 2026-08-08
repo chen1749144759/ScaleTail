@@ -5,18 +5,15 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path"
-	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
-	"github.com/tailscale/setec/client/setec"
 	"scaletail.com/prober"
 	"scaletail.com/tsweb"
 	"scaletail.com/types/key"
@@ -26,12 +23,7 @@ import (
 	_ "scaletail.com/tsweb/promvarz"
 )
 
-const meshKeyEnvVar = "TAILSCALE_DERPER_MESH_KEY"
-const setecMeshKeyName = "meshkey"
-
-func defaultSetecCacheDir() string {
-	return filepath.Join(os.Getenv("HOME"), ".cache", "derper-secrets")
-}
+const meshKeyEnvVar = "SCALETAIL_DERPER_MESH_KEY"
 
 var (
 	dev                = flag.Bool("dev", false, "run in localhost development mode")
@@ -51,9 +43,6 @@ var (
 	qdPacketTimeout    = flag.Duration("qd-packet-timeout", 5*time.Second, "queuing delay packets arriving after this period of time from being sent are treated like dropped packets and don't count toward queuing delay timings")
 	regionCodeOrID     = flag.String("region-code", "", "probe only this region (e.g. 'lax' or '17'); if left blank, all regions will be probed")
 	meshPSKFile        = flag.String("mesh-psk-file", "", "if non-empty, path to file containing the mesh pre-shared key file. It must be 64 lowercase hexadecimal characters; whitespace is trimmed.")
-	secretsURL         = flag.String("secrets-url", "", "SETEC server URL for secrets retrieval of mesh key")
-	secretPrefix       = flag.String("secrets-path-prefix", "prod/derp", fmt.Sprintf("setec path prefix for \"%s\" secret for DERP mesh key", setecMeshKeyName))
-	secretsCacheDir    = flag.String("secrets-cache-dir", defaultSetecCacheDir(), "directory to cache setec secrets in (required if --secrets-url is set)")
 )
 
 func main() {
@@ -132,34 +121,13 @@ func getMeshKey() (key.DERPMesh, error) {
 		} else {
 			log.Printf("Set mesh key from %s\n", meshKeyEnvVar)
 		}
-	} else if *secretsURL != "" {
-		meshKeySecret := path.Join(*secretPrefix, setecMeshKeyName)
-		fc, err := setec.NewFileCache(*secretsCacheDir)
-		if err != nil {
-			log.Fatalf("NewFileCache: %v", err)
-		}
-		log.Printf("Setting up setec store from %q", *secretsURL)
-		st, err := setec.NewStore(context.Background(),
-			setec.StoreConfig{
-				Client: setec.Client{Server: *secretsURL},
-				Secrets: []string{
-					meshKeySecret,
-				},
-				Cache: fc,
-			})
-		if err != nil {
-			log.Fatalf("NewStore: %v", err)
-		}
-		meshKey = st.Secret(meshKeySecret).GetString()
-		log.Println("Got mesh key from setec store")
-		st.Close()
 	} else if *meshPSKFile != "" {
-		b, err := setec.StaticFile(*meshPSKFile)
+		b, err := os.ReadFile(*meshPSKFile)
 		if err != nil {
-			log.Fatalf("StaticFile failed to get key: %v", err)
+			return key.DERPMesh{}, fmt.Errorf("read mesh key file: %w", err)
 		}
 		log.Println("Got mesh key from static file")
-		meshKey = b.GetString()
+		meshKey = strings.TrimSpace(string(b))
 	}
 	if meshKey == "" {
 		log.Printf("No mesh key found, mesh key is empty")

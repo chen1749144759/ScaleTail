@@ -305,7 +305,7 @@ func mkOutput(v verInfo) (VersionInfo, error) {
 // url that would be used for the current version, thus ensuring that product IDs
 // are mapped 1:1 to a unique version number.
 func makeMSIProductCodes(v verInfo, track string) map[string]string {
-	urlBase := fmt.Sprintf("https://pkgs.scaletail.com/%s/tailscale-setup-%d.%d.%d-", track, v.major, v.minor, v.patch)
+	urlBase := fmt.Sprintf("https://pkgs.scaletail.com/%s/scaletail-setup-%d.%d.%d-", track, v.major, v.minor, v.patch)
 
 	result := map[string]string{}
 

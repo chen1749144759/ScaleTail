@@ -654,29 +654,6 @@ func TestTKAFilterNetmap(t *testing.T) {
 
 	n5Rotated, n5RotatedSig := resign(n5nl, n5InitialSig.Serialize())
 
-	nodeFromAuthKey := func(authKey string) (key.NodePrivate, tkatype.MarshaledSignature) {
-		_, isWrapped, sig, priv := tka.DecodeWrappedAuthkey(authKey, t.Logf)
-		if !isWrapped {
-			t.Errorf("expected wrapped key")
-		}
-
-		node := key.NewNode()
-		nodeSig, err := tka.SignByCredential(priv, sig, node.Public())
-		if err != nil {
-			t.Error(err)
-		}
-		return node, nodeSig
-	}
-
-	preauth, err := b.NetworkLockWrapPreauthKey("tskey-auth-k7UagY1CNTRL-ZZZZZ", nlPriv)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Two nodes created using the same auth key, both should be valid.
-	n60, n60Sig := nodeFromAuthKey(preauth)
-	n61, n61Sig := nodeFromAuthKey(preauth)
-
 	nm := &netmap.NetworkMap{
 		Peers: nodeViews([]*tailcfg.Node{
 			{ID: 1, Key: n1.Public(), KeySignature: n1GoodSig.Serialize()},
@@ -685,8 +662,6 @@ func TestTKAFilterNetmap(t *testing.T) {
 			{ID: 4, Key: n4.Public(), KeySignature: n4Sig.Serialize()},         // messed-up signature
 			{ID: 50, Key: n5.Public(), KeySignature: n5InitialSig.Serialize()}, // rotated
 			{ID: 51, Key: n5Rotated.Public(), KeySignature: n5RotatedSig},
-			{ID: 60, Key: n60.Public(), KeySignature: n60Sig},
-			{ID: 61, Key: n61.Public(), KeySignature: n61Sig},
 		}),
 	}
 
@@ -695,8 +670,6 @@ func TestTKAFilterNetmap(t *testing.T) {
 	want := nodeViews([]*tailcfg.Node{
 		{ID: 1, Key: n1.Public(), KeySignature: n1GoodSig.Serialize()},
 		{ID: 51, Key: n5Rotated.Public(), KeySignature: n5RotatedSig},
-		{ID: 60, Key: n60.Public(), KeySignature: n60Sig},
-		{ID: 61, Key: n61.Public(), KeySignature: n61Sig},
 	})
 	nodePubComparer := cmp.Comparer(func(x, y key.NodePublic) bool {
 		return x.Raw32() == y.Raw32()

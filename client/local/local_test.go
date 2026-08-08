@@ -7,6 +7,7 @@ package local
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 	"net/http"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"scaletail.com/tstest/deptest"
 	"scaletail.com/tstest/nettest"
 	"scaletail.com/types/key"
+	"scaletail.com/util/httpm"
 )
 
 func TestGetServeConfigFromJSON(t *testing.T) {
@@ -58,6 +60,62 @@ func TestWhoIsPeerNotFound(t *testing.T) {
 	res, err = lc.WhoIs(context.Background(), "1.2.3.4:5678")
 	if err != ErrPeerNotFound {
 		t.Errorf("got (%v, %v), want ErrPeerNotFound", res, err)
+	}
+}
+
+func TestScaleTailAuthenticateAccount(t *testing.T) {
+	nw := nettest.GetNetwork(t)
+	ts := nettest.NewHTTPServer(nw, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != httpm.POST || r.URL.Path != "/localapi/v0/scaletail-auth-password" {
+			t.Errorf("request = %s %s", r.Method, r.URL.Path)
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		var credential struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&credential); err != nil {
+			t.Errorf("decode credential: %v", err)
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		if credential.Username != "alice" || credential.Password != "secret" {
+			t.Errorf("credential = %#v", credential)
+			http.Error(w, "bad credential", http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer ts.Close()
+
+	lc := &Client{Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return nw.Dial(ctx, network, ts.Listener.Addr().String())
+	}}
+	if err := lc.ScaleTailAuthenticateAccount(t.Context(), "alice", []byte("secret")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestScaleTailAuthenticateAccountError(t *testing.T) {
+	nw := nettest.GetNetwork(t)
+	ts := nettest.NewHTTPServer(nw, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"code":"invalid_credentials","message":"authentication failed"}`))
+	}))
+	defer ts.Close()
+
+	lc := &Client{Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return nw.Dial(ctx, network, ts.Listener.Addr().String())
+	}}
+	err := lc.ScaleTailAuthenticateAccount(t.Context(), "alice", []byte("wrong"))
+	authErr, ok := err.(*ScaleTailPasswordAuthError)
+	if !ok {
+		t.Fatalf("error = %T %v", err, err)
+	}
+	if authErr.StatusCode != http.StatusUnauthorized || authErr.Code != "invalid_credentials" {
+		t.Fatalf("authentication error = %#v", authErr)
 	}
 }
 

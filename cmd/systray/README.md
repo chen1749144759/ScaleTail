@@ -1,6 +1,6 @@
 # systray
 
-The systray command is a minimal Tailscale systray application for Linux.
+The systray command is a minimal ScaleTail systray application for Linux.
 It is designed to provide quick access to common operations like profile switching
 and exit node selection.
 

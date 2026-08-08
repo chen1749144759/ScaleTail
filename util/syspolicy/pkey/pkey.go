@@ -166,10 +166,6 @@ const (
 	// organization. A button in the client UI provides easy access to this URL.
 	ManagedByURL Key = "ManagedByURL"
 
-	// AuthKey is an auth key that will be used to login whenever the backend starts. This can be used to
-	// automatically authenticate managed devices, without requiring user interaction.
-	AuthKey Key = "AuthKey"
-
 	// MachineCertificateSubject is the exact name of a Subject that needs
 	// to be present in an identity's certificate chain to sign a RegisterRequest,
 	// formatted as per pkix.Name.String(). The Subject may be that of the identity

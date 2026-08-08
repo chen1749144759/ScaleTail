@@ -16,11 +16,11 @@ import (
 var systrayCmd = &ffcli.Command{
 	Name:       "systray",
 	ShortUsage: "scaletail systray",
-	ShortHelp:  "Run a systray application to manage Tailscale",
-	LongHelp:   "Run a systray application to manage Tailscale.",
+	ShortHelp:  "Run a systray application to manage ScaleTail",
+	LongHelp:   "Run a systray application to manage ScaleTail.",
 	FlagSet: (func() *flag.FlagSet {
 		fs := newFlagSet("systray")
-		fs.StringVar(&systrayArgs.theme, "theme", "dark", "color theme for Tailscale icon: dark, dark:nobg, light, light:nobg")
+		fs.StringVar(&systrayArgs.theme, "theme", "dark", "color theme for ScaleTail icon: dark, dark:nobg, light, light:nobg")
 		return fs
 	})(),
 	Exec: runSystray,

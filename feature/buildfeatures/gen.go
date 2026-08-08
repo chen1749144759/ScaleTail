@@ -32,17 +32,25 @@ func main() {
 		}
 		sym := "Has" + cmp.Or(m.Sym, strings.ToUpper(string(k)[:1])+string(k)[1:])
 		for _, suf := range []string{"enabled", "disabled"} {
-			bang := ""
+			buildExpr := string(k.OmitTag())
+			detail := fmt.Sprintf("it's whether the binary was NOT built with the %q build tag", k.OmitTag())
 			if suf == "enabled" {
-				bang = "!" // !ts_omit_...
+				buildExpr = "!" + buildExpr
+			}
+			if k == "webclient" {
+				buildExpr = "scaletail_legacy_webclient"
+				if suf == "disabled" {
+					buildExpr = "!" + buildExpr
+				}
+				detail = "it's whether the binary was built with the \"scaletail_legacy_webclient\" build tag"
 			}
 			must.Do(os.WriteFile("feature_"+string(k)+"_"+suf+".go",
-				fmt.Appendf(nil, "%s//go:build %s%s\n\npackage buildfeatures\n\n"+
+				fmt.Appendf(nil, "%s//go:build %s\n\npackage buildfeatures\n\n"+
 					"// %s is whether the binary was built with support for modular feature %q.\n"+
-					"// Specifically, it's whether the binary was NOT built with the %q build tag.\n"+
+					"// Specifically, %s.\n"+
 					"// It's a const so it can be used for dead code elimination.\n"+
 					"const %s = %t\n",
-					header, bang, k.OmitTag(), sym, m.Desc, k.OmitTag(), sym, suf == "enabled"), 0644))
+					header, buildExpr, sym, m.Desc, detail, sym, suf == "enabled"), 0644))
 
 		}
 	}

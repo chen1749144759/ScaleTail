@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 // scaletail-update-sign generates and uses the offline ScaleTail OTA signing key.
@@ -17,16 +17,20 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"scaletail.com/clientupdate/scaletailota"
 )
 
 type metadata struct {
-	Version   string `json:"version"`
-	Platform  string `json:"platform"`
-	SHA256    string `json:"sha256"`
-	FileSize  int64  `json:"file_size"`
-	Signature string `json:"signature"`
+	PolicyRevision uint64 `json:"policy_revision"`
+	UpdateType     string `json:"update_type"`
+	Version        string `json:"version"`
+	Platform       string `json:"platform"`
+	DownloadURL    string `json:"download_url"`
+	SHA256         string `json:"sha256"`
+	FileSize       int64  `json:"file_size"`
+	Signature      string `json:"signature"`
 }
 
 func main() {
@@ -36,6 +40,9 @@ func main() {
 	filePath := flag.String("file", "", "installer to sign")
 	version := flag.String("version", "", "release version")
 	platform := flag.String("platform", "windows-amd64", "release platform")
+	action := flag.String("action", scaletailota.ActionSuggested, "release policy action: suggested, forced, or clear")
+	revision := flag.Uint64("revision", uint64(time.Now().UTC().UnixMilli()), "monotonically increasing release policy revision")
+	downloadURL := flag.String("download-url", "", "canonical HTTPS installer URL to bind into the release signature")
 	jsonOut := flag.String("json-out", "", "metadata JSON output")
 	flag.Parse()
 
@@ -43,7 +50,7 @@ func main() {
 		generateKeys(*privateKeyPath, *publicKeyPath)
 		return
 	}
-	signFile(*privateKeyPath, *filePath, *version, *platform, *jsonOut)
+	signPolicy(*privateKeyPath, *filePath, *version, *platform, *action, *revision, *downloadURL, *jsonOut)
 }
 
 func generateKeys(privatePath, publicPath string) {
@@ -69,9 +76,13 @@ func generateKeys(privatePath, publicPath string) {
 	fmt.Println("OTA signing key pair generated; keep the private key offline and backed up.")
 }
 
-func signFile(privatePath, filePath, version, platform, jsonOut string) {
-	if privatePath == "" || filePath == "" || strings.TrimSpace(version) == "" || jsonOut == "" {
-		fatalf("-private-key, -file, -version and -json-out are required")
+func signPolicy(privatePath, filePath, version, platform, action string, revision uint64, downloadURL, jsonOut string) {
+	action = strings.ToLower(strings.TrimSpace(action))
+	if privatePath == "" || strings.TrimSpace(version) == "" || jsonOut == "" || revision == 0 {
+		fatalf("-private-key, -version, -revision and -json-out are required")
+	}
+	if action != scaletailota.ActionClear && (filePath == "" || downloadURL == "") {
+		fatalf("-file and -download-url are required for suggested and forced policies")
 	}
 	privateKey := readPrivateKey(privatePath)
 	publicKey := privateKey.Public().(ed25519.PublicKey)
@@ -80,31 +91,59 @@ func signFile(privatePath, filePath, version, platform, jsonOut string) {
 		fatalf("private key does not match the public key embedded in ScaleTail")
 	}
 
-	f, err := os.Open(filePath)
+	var shaHex string
+	var size int64
+	if action != scaletailota.ActionClear {
+		f, err := os.Open(filePath)
+		if err != nil {
+			fatalf("open installer: %v", err)
+		}
+		hash := sha256.New()
+		size, err = io.Copy(hash, f)
+		closeErr := f.Close()
+		if err != nil {
+			fatalf("hash installer: %v", err)
+		}
+		if closeErr != nil {
+			fatalf("close installer: %v", closeErr)
+		}
+		shaHex = hex.EncodeToString(hash.Sum(nil))
+	}
+	policy, err := scaletailota.Canonicalize(scaletailota.Policy{
+		Revision:    revision,
+		Action:      action,
+		Version:     version,
+		Platform:    platform,
+		SHA256:      shaHex,
+		FileSize:    size,
+		DownloadURL: downloadURL,
+	})
 	if err != nil {
-		fatalf("open installer: %v", err)
+		fatalf("invalid OTA policy: %v", err)
 	}
-	hash := sha256.New()
-	size, err := io.Copy(hash, f)
-	closeErr := f.Close()
+	message, err := scaletailota.Message(policy)
 	if err != nil {
-		fatalf("hash installer: %v", err)
+		fatalf("encode OTA policy: %v", err)
 	}
-	if closeErr != nil {
-		fatalf("close installer: %v", closeErr)
+	rawSignature := ed25519.Sign(privateKey, message)
+	signature, err := scaletailota.EncodeSignature(rawSignature)
+	if err != nil {
+		fatalf("encode v3 signature envelope: %v", err)
 	}
-	shaHex := hex.EncodeToString(hash.Sum(nil))
-	cleanPlatform := strings.ToLower(strings.TrimSpace(platform))
-	signature := base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, scaletailota.Message(version, cleanPlatform, shaHex, size)))
-	if err := scaletailota.Verify(version, cleanPlatform, shaHex, size, signature); err != nil {
+	policy.Signature = signature
+	policy, err = scaletailota.Verify(policy)
+	if err != nil {
 		fatalf("self-verify signed metadata: %v", err)
 	}
 	meta := metadata{
-		Version:   strings.TrimSpace(version),
-		Platform:  cleanPlatform,
-		SHA256:    shaHex,
-		FileSize:  size,
-		Signature: signature,
+		PolicyRevision: policy.Revision,
+		UpdateType:     policy.Action,
+		Version:        policy.Version,
+		Platform:       policy.Platform,
+		SHA256:         policy.SHA256,
+		FileSize:       policy.FileSize,
+		DownloadURL:    policy.DownloadURL,
+		Signature:      policy.Signature,
 	}
 	encoded, err := json.MarshalIndent(meta, "", "  ")
 	if err != nil {
@@ -114,7 +153,11 @@ func signFile(privatePath, filePath, version, platform, jsonOut string) {
 	if err := os.WriteFile(jsonOut, encoded, 0644); err != nil {
 		fatalf("write metadata: %v", err)
 	}
-	fmt.Printf("signed %s metadata written to %s\n", filepath.Base(filePath), jsonOut)
+	label := filepath.Base(filePath)
+	if action == scaletailota.ActionClear {
+		label = "clear policy"
+	}
+	fmt.Printf("signed %s metadata written to %s\n", label, jsonOut)
 }
 
 func readPrivateKey(path string) ed25519.PrivateKey {

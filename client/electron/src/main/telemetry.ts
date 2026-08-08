@@ -1,25 +1,26 @@
+// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 import { spawn } from "node:child_process";
 import { readClientReportConfig } from "./report_config";
 import {
+  fetchScaleForgePolicy,
+  reportScaleForgePolicyState,
+  reportScaleForgeTraffic,
   setTrafficShaper,
   type TrafficShaperRequest,
   type TrafficShaperResponse,
 } from "./localapi";
-import type { ClientReportConfig, NetcheckReport, Status } from "../shared/types";
+import type { ClientReportConfig, Status } from "../shared/types";
 
 type StatusReader = (peers?: boolean) => Promise<Status>;
-type NetcheckReader = () => Promise<NetcheckReport>;
 
 interface TelemetryReporterOptions {
   getStatus: StatusReader;
-  runNetcheck: NetcheckReader;
   intervalMS?: number;
-  netcheckIntervalMS?: number;
 }
 
 interface ReportConfig {
-  baseURL: string;
-  token: string;
   intervalSeconds: number;
   flowEnabled: boolean;
   quotaGuardEnabled: boolean;
@@ -58,7 +59,6 @@ interface TrafficReportPayload {
   tx_bytes_total: number;
   derp: boolean;
   endpoint_type: string;
-  public_ip: string;
   flows: FlowSummary[];
 }
 
@@ -75,6 +75,8 @@ interface PolicyResponse {
   data?: {
     effective?: EffectivePolicy;
     matched_policies?: Array<{ id?: number }>;
+    matched_policy_ids?: number[];
+    policy_revision?: string;
   };
 }
 
@@ -82,7 +84,8 @@ interface PolicyApplyResult {
   applied: boolean;
   error: string;
   effectivePolicy: EffectivePolicy;
-  policyID?: number;
+  matchedPolicyIDs: number[];
+  policyRevision: string;
 }
 
 interface QuotaGuard {
@@ -91,13 +94,12 @@ interface QuotaGuard {
   baseTrafficBytes: number;
   exceedAction: string;
   effectivePolicy: EffectivePolicy;
-  policyID?: number;
+  matchedPolicyIDs: number[];
+  policyRevision: string;
 }
 
 let timer: NodeJS.Timeout | undefined;
 let running = false;
-let lastNetcheckAt = 0;
-let lastNetcheck: NetcheckReport | undefined;
 let quotaGuard: QuotaGuard | undefined;
 let disabledPolicyCleared = false;
 let policyEpoch = 0;
@@ -155,19 +157,12 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
       return;
     }
 
-    const now = Date.now();
-    const netcheckIntervalMS = options.netcheckIntervalMS ?? 10 * 60_000;
-    if (!lastNetcheck || now - lastNetcheckAt > netcheckIntervalMS) {
-      try {
-        lastNetcheck = await options.runNetcheck();
-        lastNetcheckAt = now;
-      } catch {
-        lastNetcheck = undefined;
-      }
+    const report = await buildTrafficReport(status, config);
+    try {
+      await reportScaleForgeTraffic(report);
+    } catch (err) {
+      console.warn("ScaleTail traffic report failed:", err);
     }
-
-    const report = await buildTrafficReport(status, config, lastNetcheck);
-    await postJSON(endpoint(config.baseURL, "/traffic"), config.token, report);
     if (epoch !== policyEpoch) {
       return;
     }
@@ -175,13 +170,13 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
     if (config.quotaGuardEnabled) {
       const guardResult = await enforceLocalQuotaGuard(report, epoch);
       if (guardResult) {
-        await reportPolicyState(config, report, guardResult);
+        await reportPolicyState(report, guardResult);
         return;
       }
     }
 
     try {
-      const policy = await fetchPolicy(config, report);
+      const policy = await fetchPolicy();
       if (epoch !== policyEpoch) {
         return;
       }
@@ -190,7 +185,7 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
         return;
       }
       updateQuotaGuard(config, report, result);
-      await reportPolicyState(config, report, result);
+      await reportPolicyState(report, result);
     } catch (err) {
       console.warn("ScaleTail policy fetch failed:", err);
     }
@@ -203,14 +198,10 @@ async function collectAndReport(options: TelemetryReporterOptions): Promise<void
 
 function readReportConfig(): ReportConfig | undefined {
   const stored = readClientReportConfig();
-  const baseURL = stored.baseURL.trim();
-  const token = stored.token.trim();
-  if (!stored.enabled || !baseURL || !token) {
+  if (!stored.enabled) {
     return undefined;
   }
   return {
-    baseURL,
-    token,
     intervalSeconds: normalizeInterval(stored.intervalSeconds),
     flowEnabled: stored.flowEnabled,
     quotaGuardEnabled: stored.quotaGuardEnabled,
@@ -220,13 +211,11 @@ function readReportConfig(): ReportConfig | undefined {
 async function buildTrafficReport(
   status: Status,
   config: ReportConfig,
-  netcheck?: NetcheckReport,
 ): Promise<TrafficReportPayload> {
   const peers = Object.values(status.Peer || {});
   const self = status.Self || {};
   const rxBytesTotal = peers.reduce((sum, peer) => sum + Number(peer.RxBytes || 0), 0);
   const txBytesTotal = peers.reduce((sum, peer) => sum + Number(peer.TxBytes || 0), 0);
-  const publicIP = String(netcheck?.GlobalV4 || netcheck?.GlobalV6 || "");
   const scaleTailIPs = status.ScaleTailIPs?.length ? status.ScaleTailIPs : (self.ScaleTailIPs || []);
 
   return {
@@ -237,32 +226,22 @@ async function buildTrafficReport(
     tx_bytes_total: txBytesTotal,
     derp: peers.some((peer) => Boolean(peer.Relay)),
     endpoint_type: peers.some((peer) => Boolean(peer.CurAddr)) ? "direct" : "derp",
-    public_ip: publicIP,
     flows: config.flowEnabled ? await collectFlowSummaries(config.intervalSeconds, scaleTailIPs) : [],
   };
 }
 
-async function fetchPolicy(config: ReportConfig, report: TrafficReportPayload): Promise<PolicyResponse> {
-  const params = new URLSearchParams();
-  if (report.machine_name) {
-    params.set("machine_name", report.machine_name);
-  }
-  if (report.group_name) {
-    params.set("group_name", report.group_name);
-  }
-  const url = `${endpoint(config.baseURL, "/policy")}?${params.toString()}`;
-  const res = await fetch(url, {
-    headers: { "X-ScaleTail-Token": config.token },
-  });
-  if (!res.ok) {
-    throw new Error(`policy fetch failed: HTTP ${res.status}`);
-  }
-  return await res.json() as PolicyResponse;
+async function fetchPolicy(): Promise<PolicyResponse> {
+  return fetchScaleForgePolicy<PolicyResponse>();
 }
 
 async function applyPolicy(policy: PolicyResponse, epoch: number): Promise<PolicyApplyResult | undefined> {
   const effectivePolicy = policy.data?.effective || {};
-  const policyID = policy.data?.matched_policies?.[0]?.id;
+  const matchedPolicyIDs = (policy.data?.matched_policy_ids
+    || policy.data?.matched_policies?.map((item) => item.id)
+    || [])
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
+  const policyRevision = String(policy.data?.policy_revision || "");
   const rateUp = positiveNumber(effectivePolicy.rate_up_mbps);
   const rateDown = positiveNumber(effectivePolicy.rate_down_mbps);
   const quotaExceeded = Boolean(effectivePolicy.quota_exceeded);
@@ -284,14 +263,16 @@ async function applyPolicy(policy: PolicyResponse, epoch: number): Promise<Polic
       applied: !error,
       error,
       effectivePolicy,
-      policyID,
+      matchedPolicyIDs,
+      policyRevision,
     };
   } catch (err) {
     return {
       applied: false,
       error: `ScaleTail 核心限速策略应用失败：${messageOf(err)}`,
       effectivePolicy,
-      policyID,
+      matchedPolicyIDs,
+      policyRevision,
     };
   }
 }
@@ -316,7 +297,8 @@ async function enforceLocalQuotaGuard(
   return applyPolicy({
     data: {
       effective: effectivePolicy,
-      matched_policies: quotaGuard.policyID ? [{ id: quotaGuard.policyID }] : [],
+      matched_policy_ids: quotaGuard.matchedPolicyIDs,
+      policy_revision: quotaGuard.policyRevision,
     },
   }, epoch);
 }
@@ -337,18 +319,19 @@ function updateQuotaGuard(config: ReportConfig, report: TrafficReportPayload, re
     baseTrafficBytes: trafficBytes(report),
     exceedAction: result.effectivePolicy.exceed_action || "alert",
     effectivePolicy: result.effectivePolicy,
-    policyID: result.policyID,
+    matchedPolicyIDs: result.matchedPolicyIDs,
+    policyRevision: result.policyRevision,
   };
 }
 
 async function reportPolicyState(
-  config: ReportConfig,
   report: TrafficReportPayload,
   result: PolicyApplyResult,
 ): Promise<void> {
-  await postJSON(endpoint(config.baseURL, "/policy-state"), config.token, {
-    policy_id: result.policyID,
+  await reportScaleForgePolicyState({
     machine_name: report.machine_name,
+    policy_revision: result.policyRevision,
+    matched_policy_ids: result.matchedPolicyIDs,
     applied: result.applied,
     effective_policy: result.effectivePolicy,
     error: result.error,
@@ -490,30 +473,6 @@ function runCommandCapture(command: string, args: string[], timeoutMS: number): 
       reject(new Error(detail));
     });
   });
-}
-
-async function postJSON(url: string, token: string, body: unknown): Promise<void> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-ScaleTail-Token": token,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${text}`);
-  }
-}
-
-function endpoint(baseURL: string, pathName: string): string {
-  const cleanBase = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
-  const cleanPath = pathName.startsWith("/") ? pathName : `/${pathName}`;
-  if (cleanBase.endsWith("/api/client-reports")) {
-    return `${cleanBase}${cleanPath}`;
-  }
-  return `${cleanBase}/api/client-reports${cleanPath}`;
 }
 
 function parseJSONRecords(raw: string): RawFlowRecord[] {

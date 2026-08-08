@@ -15,8 +15,8 @@ import (
 
 // TODO(will): update URL to KB article when available
 var systrayHelp = strings.TrimSpace(`
-The Tailscale systray app is not included in this client build.
-To run it manually, see https://github.com/tailscale/tailscale/tree/main/cmd/systray
+The ScaleTail systray app is not included in this client build.
+Install a ScaleTail build that includes Linux desktop support to use it.
 `)
 
 var systrayCmd = &ffcli.Command{

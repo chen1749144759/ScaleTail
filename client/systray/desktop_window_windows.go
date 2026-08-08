@@ -58,7 +58,7 @@ func panelBrowserUserDataDir() string {
 			base = os.TempDir()
 		}
 	}
-	dir := filepath.Join(base, "Tailscale Dev", "PanelBrowser")
+	dir := filepath.Join(base, "ScaleTail", "PanelBrowser")
 	_ = os.MkdirAll(dir, 0700)
 	return dir
 }

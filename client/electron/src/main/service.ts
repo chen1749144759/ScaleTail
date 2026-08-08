@@ -1,9 +1,11 @@
+// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { ServiceOverview, ServiceState } from "../shared/types";
 
 const scaleTailService = "ScaleTail";
-const dependencies = ["Dnscache", "iphlpsvc", "netprofm", "WinHttpAutoProxySvc"];
 
 const stateMap: Record<number, ServiceState["state"]> = {
   1: "stopped",
@@ -13,16 +15,14 @@ const stateMap: Record<number, ServiceState["state"]> = {
 };
 
 export async function getServiceOverview(): Promise<ServiceOverview> {
-  const [service, ...deps] = await Promise.all([scaleTailService, ...dependencies].map(queryService));
   return {
-    service,
-    dependencies: deps,
+    service: await queryService(scaleTailService),
+    dependencies: [],
   };
 }
 
 export async function startScaleTailService(checkReady: () => Promise<void>): Promise<ServiceOverview> {
-  const deps = await Promise.all(dependencies.map(ensureServiceRunning));
-  await ensureServiceRunning(scaleTailService);
+  await ensureScaleTailServiceRunning();
 
   const deadline = Date.now() + 20000;
   let lastErr: unknown;
@@ -34,12 +34,6 @@ export async function startScaleTailService(checkReady: () => Promise<void>): Pr
       lastErr = err;
       await delay(700);
     }
-  }
-
-  const overview = await getServiceOverview();
-  const blocked = deps.find((d) => d.state !== "running");
-  if (blocked) {
-    throw new Error(`依赖服务 ${blocked.name} 未就绪，请确认该服务未被禁用并以管理员身份启动。`);
   }
   throw new Error(`ScaleTail 服务已尝试启动，但 LocalAPI 仍不可用: ${stringifyError(lastErr)}`);
 }
@@ -65,24 +59,24 @@ export async function queryService(name: string): Promise<ServiceState> {
   };
 }
 
-async function ensureServiceRunning(name: string): Promise<ServiceState> {
-  const current = await queryService(name);
+async function ensureScaleTailServiceRunning(): Promise<ServiceState> {
+  const current = await queryService(scaleTailService);
   if (current.state === "running") {
     return current;
   }
   if (!current.exists) {
-    throw new Error(name === scaleTailService ? "ScaleTail 服务未安装，请重新运行安装包。" : `依赖服务 ${name} 不存在。`);
+    throw new Error("ScaleTail 服务未安装，请重新运行安装包。");
   }
 
-  const start = await runSC(["start", name], 12000);
+  const start = await runSC(["start", scaleTailService], 12000);
   if (start.code !== 0 && !`${start.stdout}\n${start.stderr}`.includes("1056")) {
-    throw new Error(`无法启动服务 ${name}: ${start.stderr || start.stdout || `退出码 ${start.code}`}`);
+    throw new Error(`无法启动 ScaleTail 服务: ${start.stderr || start.stdout || `退出码 ${start.code}`}`);
   }
 
   const deadline = Date.now() + 15000;
   let latest = current;
   while (Date.now() < deadline) {
-    latest = await queryService(name);
+    latest = await queryService(scaleTailService);
     if (latest.state === "running") {
       return latest;
     }

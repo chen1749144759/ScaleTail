@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.0.7"
+  #define AppVersion "0.0.8"
 #endif
 
 [Setup]
@@ -8,6 +8,8 @@ AppVersion={#AppVersion}
 DefaultDirName={autopf}\ScaleTail
 DefaultGroupName=ScaleTail
 PrivilegesRequired=admin
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist\installer
 OutputBaseFilename=ScaleTail-{#AppVersion}-windows-amd64-setup-custom
 Compression=lzma2
@@ -27,17 +29,6 @@ Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: 
 
 [InstallDelete]
 Type: files; Name: "{app}\ScaleTail.exe"
-Type: files; Name: "{app}\ScaleTailUI.exe"
-Type: files; Name: "{app}\scaletail.exe"
-Type: files; Name: "{app}\scaletaild.exe"
-Type: files; Name: "{app}\scaletail-localapi.exe"
-Type: files; Name: "{app}\ScaleTailUpdateHelper.exe"
-Type: files; Name: "{app}\tailscale.exe"
-Type: files; Name: "{app}\tailscaled.exe"
-Type: files; Name: "{app}\tailscale-localapi.exe"
-Type: files; Name: "{app}\wintun.dll"
-Type: filesandordirs; Name: "{app}\resources"
-Type: filesandordirs; Name: "{app}\locales"
 
 [Files]
 Source: "..\dist\electron\win-unpacked\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
@@ -48,43 +39,7 @@ Name: "{autodesktop}\ScaleTail"; Filename: "{app}\ScaleTailUI.exe"; Parameters: 
 Name: "{commonstartup}\ScaleTail"; Filename: "{app}\ScaleTailUI.exe"; IconFilename: "{app}\resources\app\resources\app.ico"
 
 [Run]
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 命令行..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭本地接口辅助进程..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版命令行..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版本地接口辅助进程..."
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 ScaleTail 服务..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletaild.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 服务进程..."
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscaled.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版 ScaleTail 服务进程..."
-Filename: "{cmd}"; Parameters: "/C call ""{app}\scaletaild.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧服务..."
-Filename: "{cmd}"; Parameters: "/C if exist ""{app}\tailscaled.exe"" call ""{app}\tailscaled.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧版服务..."
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧服务..."
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""$policy = Get-NetQosPolicy -Name 'ScaleTail-UploadThrottle' -PolicyStore ActiveStore -ErrorAction SilentlyContinue; if ($policy) {{ Remove-NetQosPolicy -Name 'ScaleTail-UploadThrottle' -PolicyStore ActiveStore -Confirm:$false -ErrorAction SilentlyContinue }"""; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧版限速规则..."
-Filename: "{app}\scaletaild.exe"; Parameters: "install-system-daemon"; Flags: runhidden waituntilterminated; StatusMsg: "正在安装 ScaleTail 服务..."
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" start ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在启动 ScaleTail 服务..."
-Filename: "{cmd}"; Parameters: "/C timeout /T 3 /NOBREAK >NUL"; Flags: runhidden waituntilterminated; StatusMsg: "正在等待 ScaleTail 服务就绪..."
-Filename: "{app}\ScaleTailUpdateHelper.exe"; Parameters: "signal --marker-id={param:OTAMARKER|}"; Flags: runhidden waituntilterminated; StatusMsg: "正在完成 ScaleTail 自动更新..."; Check: IsOTAUpdate
 Filename: "{app}\ScaleTailUI.exe"; Parameters: "--open-dashboard"; Description: "启动 ScaleTail 客户端"; Flags: nowait postinstall skipifsilent
-
-[UninstallRun]
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."; RunOnceId: "CloseScaleTailElectron"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 客户端..."; RunOnceId: "CloseScaleTailUI"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 命令行..."; RunOnceId: "CloseScaleTailCLI"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭本地接口辅助进程..."; RunOnceId: "CloseScaleTailLocalAPIHelper"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版命令行..."; RunOnceId: "CloseLegacyTailscaleCLI"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版本地接口辅助进程..."; RunOnceId: "CloseLegacyTailscaleLocalAPIHelper"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 ScaleTail 服务..."; RunOnceId: "StopScaleTailService"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM scaletaild.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭 ScaleTail 服务进程..."; RunOnceId: "CloseScaleTailDaemon"
-Filename: "{cmd}"; Parameters: "/C taskkill /F /T /IM tailscaled.exe >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在关闭旧版 ScaleTail 服务进程..."; RunOnceId: "CloseLegacyTailscaleDaemon"
-Filename: "{cmd}"; Parameters: "/C call ""{app}\scaletaild.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在卸载 ScaleTail 服务..."; RunOnceId: "UninstallScaleTailService"
-Filename: "{cmd}"; Parameters: "/C if exist ""{app}\tailscaled.exe"" call ""{app}\tailscaled.exe"" uninstall-system-daemon >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在卸载旧版 ScaleTail 服务..."; RunOnceId: "UninstallLegacyTailscaleService"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete ScaleTail >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在删除 ScaleTail 服务..."; RunOnceId: "DeleteScaleTailService"
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""$policy = Get-NetQosPolicy -Name 'ScaleTail-UploadThrottle' -PolicyStore ActiveStore -ErrorAction SilentlyContinue; if ($policy) {{ Remove-NetQosPolicy -Name 'ScaleTail-UploadThrottle' -PolicyStore ActiveStore -Confirm:$false -ErrorAction SilentlyContinue }"""; Flags: runhidden waituntilterminated; StatusMsg: "正在清理旧版限速规则..."; RunOnceId: "RemoveLegacyScaleTailQoS"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop WinTun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 WinTun 驱动..."; RunOnceId: "StopWinTun"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete WinTun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在删除 WinTun 驱动..."; RunOnceId: "DeleteWinTun"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" stop Wintun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在停止 Wintun 驱动..."; RunOnceId: "StopWintun"
-Filename: "{cmd}"; Parameters: "/C call ""{sys}\sc.exe"" delete Wintun >NUL 2>NUL || exit /B 0"; Flags: runhidden waituntilterminated; StatusMsg: "正在删除 Wintun 驱动..."; RunOnceId: "DeleteWintun"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
@@ -92,6 +47,10 @@ Type: filesandordirs; Name: "{commonappdata}\ScaleTail"
 Type: filesandordirs; Name: "{commonappdata}\ScaleTailOTA"
 
 [Code]
+var
+  ServiceExistedBeforeSetup: Boolean;
+  SetupServiceReady: Boolean;
+
 procedure RunHidden(CommandLine: String);
 var
   ResultCode: Integer;
@@ -99,20 +58,58 @@ begin
   Exec(ExpandConstant('{cmd}'), '/C ' + CommandLine, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
-procedure StopScaleTailBeforeFileOps();
+procedure ExecRequired(FileName: String; Parameters: String; Operation: String);
+var
+  ResultCode: Integer;
+begin
+  if not Exec(ExpandConstant(FileName), Parameters, '', SW_HIDE,
+    ewWaitUntilTerminated, ResultCode) then
+    RaiseException(Operation + '：无法启动命令');
+  if ResultCode <> 0 then
+    RaiseException(Format('%s失败，退出码 %d', [Operation, ResultCode]));
+end;
+
+function ScaleTailServiceExists(): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := Exec(ExpandConstant('{sys}\sc.exe'), 'query ScaleTail', '', SW_HIDE,
+    ewWaitUntilTerminated, ResultCode) and (ResultCode = 0);
+end;
+
+procedure StartScaleTailServiceRequired();
+var
+  ResultCode: Integer;
+begin
+  if not Exec(ExpandConstant('{sys}\sc.exe'), 'start ScaleTail', '', SW_HIDE,
+    ewWaitUntilTerminated, ResultCode) then
+    RaiseException('启动 ScaleTail 服务：无法启动命令');
+  if (ResultCode <> 0) and (ResultCode <> 1056) then
+    RaiseException(Format('启动 ScaleTail 服务失败，退出码 %d', [ResultCode]));
+end;
+
+procedure InstallAndStartScaleTailService();
+begin
+  ExecRequired('{app}\scaletaild.exe', 'install-system-daemon', '安装或更新 ScaleTail 服务');
+  StartScaleTailServiceRequired();
+end;
+
+procedure StopScaleTailForFileOps();
 begin
   RunHidden('taskkill /F /T /IM ScaleTail.exe >NUL 2>NUL');
   RunHidden('taskkill /F /T /IM ScaleTailUI.exe >NUL 2>NUL');
   RunHidden('taskkill /F /T /IM scaletail.exe >NUL 2>NUL');
   RunHidden('taskkill /F /T /IM scaletail-localapi.exe >NUL 2>NUL');
-  RunHidden('taskkill /F /T /IM tailscale.exe >NUL 2>NUL');
-  RunHidden('taskkill /F /T /IM tailscale-localapi.exe >NUL 2>NUL');
+  RunHidden('taskkill /F /T /IM ScaleTailUpdateHelper.exe >NUL 2>NUL');
   RunHidden('call "' + ExpandConstant('{sys}\sc.exe') + '" stop ScaleTail >NUL 2>NUL');
   RunHidden('timeout /T 2 /NOBREAK >NUL');
   RunHidden('taskkill /F /T /IM scaletaild.exe >NUL 2>NUL');
-  RunHidden('taskkill /F /T /IM tailscaled.exe >NUL 2>NUL');
-  RunHidden('call "' + ExpandConstant('{app}\scaletaild.exe') + '" uninstall-system-daemon >NUL 2>NUL');
-  RunHidden('if exist "' + ExpandConstant('{app}\tailscaled.exe') + '" call "' + ExpandConstant('{app}\tailscaled.exe') + '" uninstall-system-daemon >NUL 2>NUL');
+end;
+
+procedure UninstallScaleTailService();
+begin
+  if FileExists(ExpandConstant('{app}\scaletaild.exe')) then
+    RunHidden('call "' + ExpandConstant('{app}\scaletaild.exe') + '" uninstall-system-daemon >NUL 2>NUL');
   RunHidden('call "' + ExpandConstant('{sys}\sc.exe') + '" delete ScaleTail >NUL 2>NUL');
 end;
 
@@ -120,6 +117,14 @@ procedure CleanupCurrentUserScaleTailData();
 begin
   RunHidden('if exist "%APPDATA%\ScaleTail" rmdir /S /Q "%APPDATA%\ScaleTail"');
   RunHidden('if exist "%LOCALAPPDATA%\ScaleTail" rmdir /S /Q "%LOCALAPPDATA%\ScaleTail"');
+  RunHidden('"' + ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe') +
+    '" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_UserProfile | Where-Object { -not $_.Special -and $_.LocalPath } | ForEach-Object { Remove-Item -LiteralPath (Join-Path $_.LocalPath ''AppData\Roaming\ScaleTail'') -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -LiteralPath (Join-Path $_.LocalPath ''AppData\Local\ScaleTail'') -Recurse -Force -ErrorAction SilentlyContinue }"');
+end;
+
+procedure CleanupScaleTailSystemArtifacts();
+begin
+  RunHidden('"' + ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe') +
+    '" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$policy = Get-NetQosPolicy -Name ''ScaleTail-UploadThrottle'' -PolicyStore ActiveStore -ErrorAction SilentlyContinue; if ($policy) { Remove-NetQosPolicy -Name ''ScaleTail-UploadThrottle'' -PolicyStore ActiveStore -Confirm:$false -ErrorAction SilentlyContinue }"');
 end;
 
 function IsOTAUpdate(): Boolean;
@@ -130,13 +135,44 @@ end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
-  StopScaleTailBeforeFileOps();
+  ServiceExistedBeforeSetup := ScaleTailServiceExists();
+  SetupServiceReady := False;
+  StopScaleTailForFileOps();
   Result := '';
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then begin
+    InstallAndStartScaleTailService();
+    SetupServiceReady := True;
+    if IsOTAUpdate() then
+      ExecRequired('{app}\ScaleTailUpdateHelper.exe',
+        'signal --marker-id=' + ExpandConstant('{param:OTAMARKER|}'),
+        '完成 ScaleTail 自动更新');
+  end;
+end;
+
+procedure DeinitializeSetup();
+var
+  ResultCode: Integer;
+begin
+  if ServiceExistedBeforeSetup and not SetupServiceReady then
+    Exec(ExpandConstant('{sys}\sc.exe'), 'start ScaleTail', '', SW_HIDE,
+      ewWaitUntilTerminated, ResultCode);
 end;
 
 function InitializeUninstall(): Boolean;
 begin
-  StopScaleTailBeforeFileOps();
-  CleanupCurrentUserScaleTailData();
   Result := True;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then begin
+    StopScaleTailForFileOps();
+    UninstallScaleTailService();
+    CleanupScaleTailSystemArtifacts();
+    CleanupCurrentUserScaleTailData();
+  end;
 end;

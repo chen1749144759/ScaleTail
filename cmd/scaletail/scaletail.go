@@ -1,7 +1,7 @@
 // Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
-// The scaletail command is the Tailscale command-line client. It interacts
+// The scaletail command is the ScaleTail command-line client. It interacts
 // with the scaletaild node agent.
 package main // import "scaletail.com/cmd/scaletail"
 

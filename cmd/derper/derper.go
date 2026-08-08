@@ -27,7 +27,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -37,7 +36,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tailscale/setec/client/setec"
 	"golang.org/x/time/rate"
 	"scaletail.com/atomicfile"
 	"scaletail.com/derp/derpserver"
@@ -62,7 +60,7 @@ var (
 	configPath  = flag.String("c", "", "config file path")
 	certMode    = flag.String("certmode", "letsencrypt", "mode for getting a cert. possible options: manual, letsencrypt, gcp")
 	certDir     = flag.String("certdir", tsweb.DefaultCertDir("derper-certs"), "directory to store ACME (e.g. LetsEncrypt) certs, if addr's port is :443")
-	hostname    = flag.String("hostname", "derp.tailscale.com", "TLS host name for certs, if addr's port is :443. When --certmode=manual, this can be an IP address to avoid SNI checks")
+	hostname    = flag.String("hostname", "derp.scaletail.com", "TLS host name for certs, if addr's port is :443. When --certmode=manual, this can be an IP address to avoid SNI checks")
 	acmeEABKid  = flag.String("acme-eab-kid", "", "ACME External Account Binding (EAB) Key ID (required for --certmode=gcp)")
 	acmeEABKey  = flag.String("acme-eab-key", "", "ACME External Account Binding (EAB) HMAC key, base64-encoded (required for --certmode=gcp)")
 	acmeEmail   = flag.String("acme-email", "", "ACME account contact email address (required for --certmode=gcp, optional for letsencrypt)")
@@ -70,13 +68,10 @@ var (
 	runDERP     = flag.Bool("derp", true, "whether to run a DERP server. The only reason to set this false is if you're decommissioning a server but want to keep its bootstrap DNS functionality still running.")
 	flagHome    = flag.String("home", "", "what to serve at the root path. It may be left empty (the default, for a default homepage), \"blank\" for a blank page, or a URL to redirect to")
 
-	meshPSKFile     = flag.String("mesh-psk-file", defaultMeshPSKFile(), "if non-empty, path to file containing the mesh pre-shared key file. It must be 64 lowercase hexadecimal characters; whitespace is trimmed.")
-	meshWith        = flag.String("mesh-with", "", "optional comma-separated list of hostnames to mesh with; the server's own hostname can be in the list. If an entry contains a slash, the second part names a hostname to be used when dialing the target.")
-	secretsURL      = flag.String("secrets-url", "", "SETEC server URL for secrets retrieval of mesh key")
-	secretPrefix    = flag.String("secrets-path-prefix", "prod/derp", "setec path prefix for \""+setecMeshKeyName+"\" secret for DERP mesh key")
-	secretsCacheDir = flag.String("secrets-cache-dir", defaultSetecCacheDir(), "directory to cache setec secrets in (required if --secrets-url is set)")
-	bootstrapDNS    = flag.String("bootstrap-dns-names", "", "optional comma-separated list of hostnames to make available at /bootstrap-dns")
-	unpublishedDNS  = flag.String("unpublished-bootstrap-dns-names", "", "optional comma-separated list of hostnames to make available at /bootstrap-dns and not publish in the list. If an entry contains a slash, the second part names a DNS record to poll for its TXT record with a `0` to `100` value for rollout percentage.")
+	meshPSKFile    = flag.String("mesh-psk-file", defaultMeshPSKFile(), "if non-empty, path to file containing the mesh pre-shared key file. It must be 64 lowercase hexadecimal characters; whitespace is trimmed.")
+	meshWith       = flag.String("mesh-with", "", "optional comma-separated list of hostnames to mesh with; the server's own hostname can be in the list. If an entry contains a slash, the second part names a hostname to be used when dialing the target.")
+	bootstrapDNS   = flag.String("bootstrap-dns-names", "", "optional comma-separated list of hostnames to make available at /bootstrap-dns")
+	unpublishedDNS = flag.String("unpublished-bootstrap-dns-names", "", "optional comma-separated list of hostnames to make available at /bootstrap-dns and not publish in the list. If an entry contains a slash, the second part names a DNS record to poll for its TXT record with a `0` to `100` value for rollout percentage.")
 
 	verifyClients   = flag.Bool("verify-clients", false, "verify clients to this DERP server through a local scaletaild instance.")
 	verifyClientURL = flag.String("verify-client-url", "", "if non-empty, an admission controller URL for permitting client connections; see tailcfg.DERPAdmitClientRequest")
@@ -105,8 +100,7 @@ var (
 	tlsActiveVersion  = metrics.NewLabelMap("gauge_derper_tls_active_version", "version")
 )
 
-const setecMeshKeyName = "meshkey"
-const meshKeyEnvVar = "TAILSCALE_DERPER_MESH_KEY"
+const meshKeyEnvVar = "SCALETAIL_DERPER_MESH_KEY"
 
 type config struct {
 	PrivateKey key.NodePrivate
@@ -209,34 +203,13 @@ func main() {
 		} else {
 			log.Printf("Set mesh key from %s\n", meshKeyEnvVar)
 		}
-	} else if *secretsURL != "" {
-		meshKeySecret := path.Join(*secretPrefix, setecMeshKeyName)
-		fc, err := setec.NewFileCache(*secretsCacheDir)
-		if err != nil {
-			log.Fatalf("NewFileCache: %v", err)
-		}
-		log.Printf("Setting up setec store from %q", *secretsURL)
-		st, err := setec.NewStore(ctx,
-			setec.StoreConfig{
-				Client: setec.Client{Server: *secretsURL},
-				Secrets: []string{
-					meshKeySecret,
-				},
-				Cache: fc,
-			})
-		if err != nil {
-			log.Fatalf("NewStore: %v", err)
-		}
-		meshKey = st.Secret(meshKeySecret).GetString()
-		log.Println("Got mesh key from setec store")
-		st.Close()
 	} else if *meshPSKFile != "" {
-		b, err := setec.StaticFile(*meshPSKFile)
+		b, err := os.ReadFile(*meshPSKFile)
 		if err != nil {
-			log.Fatalf("StaticFile failed to get key: %v", err)
+			log.Fatalf("failed to read mesh key file: %v", err)
 		}
 		log.Println("Got mesh key from static file")
-		meshKey = b.GetString()
+		meshKey = strings.TrimSpace(string(b))
 	}
 
 	if meshKey == "" && *dev {
@@ -455,17 +428,13 @@ func watchRateConfig(ctx context.Context, s *derpserver.Server, path string) {
 	}
 }
 
-var validProdHostname = regexp.MustCompile(`^derp([^.]*)\.tailscale\.com\.?$`)
+var validProdHostname = regexp.MustCompile(`^derp([^.]*)\.scaletail\.com\.?$`)
 
 func prodAutocertHostPolicy(_ context.Context, host string) error {
 	if validProdHostname.MatchString(host) {
 		return nil
 	}
 	return errors.New("invalid hostname")
-}
-
-func defaultSetecCacheDir() string {
-	return filepath.Join(os.Getenv("HOME"), ".cache", "derper-secrets")
 }
 
 func defaultMeshPSKFile() string {

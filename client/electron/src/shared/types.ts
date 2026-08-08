@@ -1,3 +1,6 @@
+// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 export type BackendState =
   | "NoState"
   | "NeedsLogin"
@@ -54,7 +57,8 @@ export interface ConnectRequest {
   serverPort: string;
   useHTTPS: boolean;
   hostname: string;
-  authKey: string;
+  username: string;
+  password: string;
   acceptRoutes: boolean;
   acceptDNS: boolean;
 }
@@ -67,8 +71,6 @@ export interface ConnectResponse {
 
 export interface ClientReportConfig {
   enabled: boolean;
-  baseURL: string;
-  token: string;
   intervalSeconds: number;
   flowEnabled: boolean;
   quotaGuardEnabled: boolean;
@@ -77,9 +79,10 @@ export interface ClientReportConfig {
 export interface ClientUpdateInfo {
   has_update: boolean;
   id?: number;
+  policy_revision?: number;
   version?: string;
   platform?: string;
-  update_type?: "suggested" | "forced" | string;
+  update_type?: "suggested" | "forced" | "clear" | string;
   forced?: boolean;
   title?: string;
   description?: string;

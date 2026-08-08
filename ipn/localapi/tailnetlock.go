@@ -30,7 +30,6 @@ func init() {
 	Register("tka/status", (*Handler).serveTKAStatus)
 	Register("tka/submit-recovery-aum", (*Handler).serveTKASubmitRecoveryAUM)
 	Register("tka/verify-deeplink", (*Handler).serveTKAVerifySigningDeeplink)
-	Register("tka/wrap-preauth-key", (*Handler).serveTKAWrapPreauthKey)
 }
 
 func (h *Handler) serveTKAStatus(w http.ResponseWriter, r *http.Request) {
@@ -145,40 +144,6 @@ func (h *Handler) serveTKAModify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(204)
-}
-
-func (h *Handler) serveTKAWrapPreauthKey(w http.ResponseWriter, r *http.Request) {
-	if !h.PermitWrite {
-		http.Error(w, "tailnet-lock modify access denied", http.StatusForbidden)
-		return
-	}
-	if r.Method != httpm.POST {
-		http.Error(w, "use POST", http.StatusMethodNotAllowed)
-		return
-	}
-
-	type wrapRequest struct {
-		TSKey  string
-		TKAKey string // key.NLPrivate.MarshalText
-	}
-	var req wrapRequest
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 12*1024)).Decode(&req); err != nil {
-		http.Error(w, "invalid JSON body", http.StatusBadRequest)
-		return
-	}
-	var priv key.NLPrivate
-	if err := priv.UnmarshalText([]byte(req.TKAKey)); err != nil {
-		http.Error(w, "invalid JSON body", http.StatusBadRequest)
-		return
-	}
-
-	wrappedKey, err := h.b.NetworkLockWrapPreauthKey(req.TSKey, priv)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(wrappedKey))
 }
 
 func (h *Handler) serveTKAVerifySigningDeeplink(w http.ResponseWriter, r *http.Request) {

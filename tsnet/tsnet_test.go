@@ -1717,8 +1717,12 @@ func TestCapturePcap(t *testing.T) {
 	controlURL, _ := startControl(t)
 	s1, s1ip, _ := startServer(t, ctx, controlURL, "s1")
 	s2, _, _ := startServer(t, ctx, controlURL, "s2")
-	s1.CapturePcap(ctx, s1Pcap)
-	s2.CapturePcap(ctx, s2Pcap)
+	if err := s1.CapturePcap(ctx, s1Pcap); err != nil {
+		t.Fatalf("s1 CapturePcap: %v", err)
+	}
+	if err := s2.CapturePcap(ctx, s2Pcap); err != nil {
+		t.Fatalf("s2 CapturePcap: %v", err)
+	}
 
 	lc2, err := s2.LocalClient()
 	if err != nil {

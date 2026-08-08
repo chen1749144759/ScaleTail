@@ -412,7 +412,7 @@ func TestAuthorityInformNonLinear(t *testing.T) {
                | -> L4 -> L5
 
         G1.template = genesis
-        L1.hashSeed = 3
+        L1.hashSeed = 2
         L2.hashSeed = 2
         L4.hashSeed = 2
     `,
@@ -445,6 +445,8 @@ func TestAuthorityInformNonLinear(t *testing.T) {
 	}
 
 	if a.Head() != c.AUMHashes["L3"] {
+		t.Logf("a.Head() = %s", a.Head())
+		t.Logf("AUM hashes = %v", c.AUMHashes)
 		t.Fatal("authority did not converge to correct AUM")
 	}
 }

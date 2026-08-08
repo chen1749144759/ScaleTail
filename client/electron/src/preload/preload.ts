@@ -1,5 +1,8 @@
+// Copyright (c) Tailscale Inc & contributors
+// SPDX-License-Identifier: BSD-3-Clause
+
 import { contextBridge, ipcRenderer } from "electron";
-import { ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
+import type { ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
 
 const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
@@ -35,8 +38,6 @@ contextBridge.exposeInMainWorld("scaletail", api);
 function cleanReportConfig(config: ClientReportConfig): ClientReportConfig {
   return {
     enabled: Boolean(config.enabled),
-    baseURL: String(config.baseURL || ""),
-    token: String(config.token || ""),
     intervalSeconds: Number(config.intervalSeconds || 15),
     flowEnabled: Boolean(config.flowEnabled),
     quotaGuardEnabled: Boolean(config.quotaGuardEnabled),

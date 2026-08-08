@@ -1247,14 +1247,14 @@ func TestCleanRedirectURL(t *testing.T) {
 		{"https://google.com", tailscaleHost, "", true},
 		{"", tailscaleHost, "", false},
 		{"\"\"", tailscaleHost, "", true},
-		{"https://tailscale.com@goats.com:8443", tailscaleHost, "", true},
-		{"https://tailscale.com:8443@goats.com:8443", tailscaleHost, "", true},
-		{"HttP://tailscale.com", tailscaleHost, "http://tailscale.com", false},
-		{"http://TaIlScAlE.CoM/spongebob", tailscaleHost, "http://TaIlScAlE.CoM/spongebob", false},
-		{"ftp://tailscale.com", tailscaleHost, "", true},
+		{"https://scaletail.com@goats.com:8443", tailscaleHost, "", true},
+		{"https://scaletail.com:8443@goats.com:8443", tailscaleHost, "", true},
+		{"HttP://scaletail.com", tailscaleHost, "http://scaletail.com", false},
+		{"http://ScAlETaIL.CoM/spongebob", tailscaleHost, "http://ScAlETaIL.CoM/spongebob", false},
+		{"ftp://scaletail.com", tailscaleHost, "", true},
 		{"https:/evil.com", tailscaleHost, "", true},                     // regression test for tailscale/corp#892
 		{"%2Fa%2F44869c061701", tailscaleHost, "/a/44869c061701", false}, // regression test for tailscale/corp#13288
-		{"https%3A%2Ftailscale.com", tailscaleHost, "", true},            // escaped colon-single-slash malformed URL
+		{"https%3A%2Fscaletail.com", tailscaleHost, "", true},            // escaped colon-single-slash malformed URL
 		{"", nil, "", false},
 	}
 

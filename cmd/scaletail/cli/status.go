@@ -264,15 +264,11 @@ func isRunningOrStarting(st *ipnstate.Status) (description string, ok bool) {
 	default:
 		return fmt.Sprintf("unexpected state: %s", st.BackendState), false
 	case ipn.Stopped.String():
-		return "Tailscale is stopped.", false
+		return "ScaleTail is stopped.", false
 	case ipn.NeedsLogin.String():
-		s := "Logged out."
-		if st.AuthURL != "" {
-			s += fmt.Sprintf("\nLog in at: %s", st.AuthURL)
-		}
-		return s, false
+		return "ScaleTail account authentication is required. Run: scaletail login --username <account>", false
 	case ipn.NeedsMachineAuth.String():
-		return "Machine is not yet approved by tailnet admin.", false
+		return "Machine is waiting for administrator approval in ScaleForge.", false
 	case ipn.Running.String(), ipn.Starting.String():
 		return st.BackendState, true
 	}

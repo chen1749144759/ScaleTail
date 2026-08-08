@@ -100,7 +100,7 @@ var (
 // keyToEnvVarName returns the environment variable name for a given policy
 // setting key, or an error if the key is invalid. It converts CamelCase keys into
 // underscore-separated words and prepends the variable name with the TS prefix.
-// For example: AuthKey => TS_AUTH_KEY, ExitNodeAllowLANAccess => TS_EXIT_NODE_ALLOW_LAN_ACCESS, etc.
+// For example: ControlURL => TS_CONTROL_URL, ExitNodeAllowLANAccess => TS_EXIT_NODE_ALLOW_LAN_ACCESS, etc.
 //
 // It's fine to use this in [EnvPolicyStore] without caching variable names since it's not a hot path.
 // [EnvPolicyStore] is not a [Changeable] policy store, so the conversion will only happen once.

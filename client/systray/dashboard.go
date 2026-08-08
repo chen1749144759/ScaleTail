@@ -1,4 +1,4 @@
-// Copyright (c) ScaleTail Inc & contributors
+// Copyright (c) Tailscale Inc & contributors
 // SPDX-License-Identifier: BSD-3-Clause
 
 package systray
@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"mime"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,20 +18,29 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"scaletail.com/client/local"
+	"scaletail.com/internal/controlurl"
 	"scaletail.com/ipn"
+	"scaletail.com/ipn/ipnstate"
 	"scaletail.com/net/netcheck"
 	"scaletail.com/net/netmon"
 	"scaletail.com/tailcfg"
 	"scaletail.com/types/logger"
 	"scaletail.com/util/dnsname"
 	"scaletail.com/util/eventbus"
+	"scaletail.com/util/httpm"
 )
 
 var (
 	panelMu     sync.Mutex
 	panelServer *DashboardServer
+)
+
+const (
+	maxDashboardJSONBodyBytes   = 16 << 10
+	dashboardStatusPollInterval = 250 * time.Millisecond
 )
 
 // DashboardServer serves the Windows-friendly control panel used by systray.
@@ -80,6 +91,19 @@ func startPanel(lc *local.Client) (*DashboardServer, error) {
 		url: "http://" + listener.Addr().String(),
 	}
 
+	ds.http = &http.Server{Handler: ds.handler()}
+	panelServer = ds
+
+	go func() {
+		if err := ds.http.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("control panel server: %v", err)
+		}
+	}()
+
+	return ds, nil
+}
+
+func (ds *DashboardServer) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ds.serveRoot)
 	mux.HandleFunc("/dashboard", ds.serveDashboard)
@@ -92,17 +116,50 @@ func startPanel(lc *local.Client) (*DashboardServer, error) {
 	mux.HandleFunc("/api/logout", ds.serveLogoutAPI)
 	mux.HandleFunc("/api/exit-node", ds.serveExitNodeAPI)
 	mux.HandleFunc("/api/netcheck", ds.serveNetcheck)
+	return ds.secureHandler(mux)
+}
 
-	ds.http = &http.Server{Handler: mux}
-	panelServer = ds
-
-	go func() {
-		if err := ds.http.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("control panel server: %v", err)
+func (ds *DashboardServer) secureHandler(next http.Handler) http.Handler {
+	panelURL, err := url.Parse(ds.url)
+	if err != nil || panelURL.Scheme != "http" || panelURL.Host == "" {
+		panic("invalid dashboard URL")
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		setDashboardSecurityHeaders(w)
+		if !strings.EqualFold(r.Host, panelURL.Host) {
+			writeError(w, http.StatusForbidden, errors.New("拒绝无效的本地面板 Host"))
+			return
 		}
-	}()
+		if r.Method != httpm.GET && r.Method != httpm.HEAD {
+			if !samePanelOrigin(r.Header.Get("Origin"), panelURL) {
+				writeError(w, http.StatusForbidden, errors.New("拒绝非同源的本地面板请求"))
+				return
+			}
+			r.Body = http.MaxBytesReader(w, r.Body, maxDashboardJSONBodyBytes)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
-	return ds, nil
+func samePanelOrigin(origin string, panelURL *url.URL) bool {
+	originURL, err := url.Parse(strings.TrimSpace(origin))
+	if err != nil || originURL.Scheme == "" || originURL.Host == "" || originURL.User != nil ||
+		originURL.Path != "" || originURL.RawQuery != "" || originURL.Fragment != "" {
+		return false
+	}
+	return strings.EqualFold(originURL.Scheme, panelURL.Scheme) &&
+		strings.EqualFold(originURL.Host, panelURL.Host)
+}
+
+func setDashboardSecurityHeaders(w http.ResponseWriter) {
+	h := w.Header()
+	h.Set("Cache-Control", "no-store")
+	h.Set("Pragma", "no-cache")
+	h.Set("Content-Security-Policy", "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+	h.Set("Cross-Origin-Resource-Policy", "same-origin")
+	h.Set("Referrer-Policy", "no-referrer")
+	h.Set("X-Content-Type-Options", "nosniff")
+	h.Set("X-Frame-Options", "DENY")
 }
 
 // Shutdown stops the dashboard server.
@@ -120,13 +177,11 @@ func (ds *DashboardServer) serveRoot(w http.ResponseWriter, r *http.Request) {
 
 func (ds *DashboardServer) serveDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-cache")
 	fmt.Fprint(w, dashboardHTML)
 }
 
 func (ds *DashboardServer) serveConnect(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-cache")
 	fmt.Fprint(w, connectHTML)
 }
 
@@ -179,14 +234,14 @@ func (ds *DashboardServer) servePing(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ds *DashboardServer) serveConnectAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != httpm.POST {
 		writeError(w, http.StatusMethodNotAllowed, errors.New("需要使用 POST 请求"))
 		return
 	}
 
 	var req connectRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, err)
+	if err := decodeDashboardJSON(w, r, &req); err != nil {
+		writeDashboardDecodeError(w, err)
 		return
 	}
 
@@ -200,6 +255,12 @@ func (ds *DashboardServer) serveConnectAPI(w http.ResponseWriter, r *http.Reques
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
+	username, password, err := req.accountCredential()
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	defer clear(password)
 
 	ctx, cancel := context.WithTimeout(r.Context(), 45*time.Second)
 	defer cancel()
@@ -208,7 +269,12 @@ func (ds *DashboardServer) serveConnectAPI(w http.ResponseWriter, r *http.Reques
 		writeError(w, http.StatusServiceUnavailable, err)
 		return
 	}
-	if st, err := ds.lc.StatusWithoutPeers(ctx); err == nil && st.BackendState == ipn.Running.String() {
+	status, err := ds.lc.StatusWithoutPeers(ctx)
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, err)
+		return
+	}
+	if status.BackendState == ipn.Running.String() {
 		writeError(w, http.StatusConflict, errors.New("当前已连接。请先退出当前网络，再修改服务端配置"))
 		return
 	}
@@ -222,22 +288,9 @@ func (ds *DashboardServer) serveConnectAPI(w http.ResponseWriter, r *http.Reques
 	prefs.WantRunning = true
 	prefs.RouteAll = req.AcceptRoutes
 
-	authKey := strings.TrimSpace(req.AuthKey)
-	if err := ds.lc.Start(ctx, ipn.Options{
-		UpdatePrefs: prefs,
-		AuthKey:     authKey,
-	}); err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	if _, err := connectDashboardAccount(ctx, ds.lc, ipn.Options{UpdatePrefs: prefs}, username, password, status.HaveNodeKey); err != nil {
+		writeError(w, dashboardConnectErrorStatus(err), err)
 		return
-	}
-
-	message := "已提交连接请求。"
-	if authKey == "" {
-		if err := ds.lc.StartLoginInteractive(ctx); err != nil {
-			writeError(w, http.StatusInternalServerError, err)
-			return
-		}
-		message = "已提交连接请求，请在随后打开的浏览器中完成认证。"
 	}
 
 	writeJSON(w, struct {
@@ -247,12 +300,115 @@ func (ds *DashboardServer) serveConnectAPI(w http.ResponseWriter, r *http.Reques
 	}{
 		OK:         true,
 		ControlURL: controlURL,
-		Message:    message,
+		Message:    "账号认证成功，已连接到控制服务器。",
 	})
 }
 
+type dashboardAccountClient interface {
+	Start(context.Context, ipn.Options) error
+	StartLoginInteractive(context.Context) error
+	ScaleTailAuthenticateAccount(context.Context, string, []byte) error
+	StatusWithoutPeers(context.Context) (*ipnstate.Status, error)
+}
+
+func connectDashboardAccount(
+	ctx context.Context,
+	lc dashboardAccountClient,
+	opts ipn.Options,
+	username string,
+	password []byte,
+	haveNodeKey bool,
+) (*ipnstate.Status, error) {
+	if err := lc.Start(ctx, opts); err != nil {
+		return nil, fmt.Errorf("启动连接流程失败: %w", err)
+	}
+	if !haveNodeKey {
+		if err := lc.StartLoginInteractive(ctx); err != nil {
+			return nil, fmt.Errorf("创建账号认证会话失败: %w", err)
+		}
+		if _, err := waitForDashboardStatus(ctx, lc, "等待账号认证会话超时", func(st *ipnstate.Status) bool {
+			return strings.TrimSpace(st.AuthURL) != ""
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if err := authenticateDashboardAccount(ctx, lc, username, password); err != nil {
+		return nil, fmt.Errorf("账号认证失败: %w", err)
+	}
+	return waitForDashboardStatus(ctx, lc, "账号认证已提交，但连接未进入 Running 状态", func(st *ipnstate.Status) bool {
+		return st.BackendState == ipn.Running.String()
+	})
+}
+
+func authenticateDashboardAccount(ctx context.Context, lc dashboardAccountClient, username string, password []byte) error {
+	for {
+		err := lc.ScaleTailAuthenticateAccount(ctx, username, password)
+		if err == nil || !isTransientDashboardAuthError(err) {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(dashboardStatusPollInterval):
+		}
+	}
+}
+
+func isTransientDashboardAuthError(err error) bool {
+	var authErr *local.ScaleTailPasswordAuthError
+	if !errors.As(err, &authErr) {
+		return false
+	}
+	return authErr.Code == "network_error" ||
+		authErr.StatusCode == http.StatusBadGateway ||
+		authErr.StatusCode == http.StatusServiceUnavailable ||
+		authErr.StatusCode == http.StatusGatewayTimeout
+}
+
+func waitForDashboardStatus(
+	ctx context.Context,
+	lc dashboardAccountClient,
+	timeoutMessage string,
+	ready func(*ipnstate.Status) bool,
+) (*ipnstate.Status, error) {
+	var lastState string
+	var lastErr error
+	for {
+		status, err := lc.StatusWithoutPeers(ctx)
+		if err == nil && status != nil {
+			lastState = status.BackendState
+			if ready(status) {
+				return status, nil
+			}
+		} else if err == nil {
+			lastErr = errors.New("scaletaild 返回了空状态")
+		} else {
+			lastErr = err
+		}
+		select {
+		case <-ctx.Done():
+			if lastErr != nil {
+				return nil, fmt.Errorf("%s（最后一次状态查询失败: %v）: %w", timeoutMessage, lastErr, ctx.Err())
+			}
+			return nil, fmt.Errorf("%s（最后状态: %s）: %w", timeoutMessage, lastState, ctx.Err())
+		case <-time.After(dashboardStatusPollInterval):
+		}
+	}
+}
+
+func dashboardConnectErrorStatus(err error) int {
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return http.StatusGatewayTimeout
+	}
+	var authErr *local.ScaleTailPasswordAuthError
+	if errors.As(err, &authErr) && authErr.StatusCode >= 400 && authErr.StatusCode <= 599 {
+		return authErr.StatusCode
+	}
+	return http.StatusInternalServerError
+}
+
 func (ds *DashboardServer) serveDisconnectAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != httpm.POST {
 		writeError(w, http.StatusMethodNotAllowed, errors.New("需要使用 POST 请求"))
 		return
 	}
@@ -278,7 +434,7 @@ func (ds *DashboardServer) serveDisconnectAPI(w http.ResponseWriter, r *http.Req
 }
 
 func (ds *DashboardServer) serveLogoutAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != httpm.POST {
 		writeError(w, http.StatusMethodNotAllowed, errors.New("需要使用 POST 请求"))
 		return
 	}
@@ -298,7 +454,7 @@ func (ds *DashboardServer) serveLogoutAPI(w http.ResponseWriter, r *http.Request
 }
 
 func (ds *DashboardServer) serveExitNodeAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != httpm.POST {
 		writeError(w, http.StatusMethodNotAllowed, errors.New("需要使用 POST 请求"))
 		return
 	}
@@ -306,8 +462,8 @@ func (ds *DashboardServer) serveExitNodeAPI(w http.ResponseWriter, r *http.Reque
 	var req struct {
 		ID string
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, err)
+	if err := decodeDashboardJSON(w, r, &req); err != nil {
+		writeDashboardDecodeError(w, err)
 		return
 	}
 
@@ -341,7 +497,7 @@ func (ds *DashboardServer) serveExitNodeAPI(w http.ResponseWriter, r *http.Reque
 }
 
 func (ds *DashboardServer) serveNetcheck(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost && r.Method != http.MethodGet {
+	if r.Method != httpm.POST && r.Method != httpm.GET {
 		writeError(w, http.StatusMethodNotAllowed, errors.New("需要使用 GET 或 POST 请求"))
 		return
 	}
@@ -400,7 +556,8 @@ type connectRequest struct {
 	ServerPort   string
 	UseHTTPS     bool
 	Hostname     string
-	AuthKey      string
+	Username     string
+	Password     string
 	AcceptRoutes bool
 }
 
@@ -413,6 +570,10 @@ func (r connectRequest) controlURL() (string, error) {
 		u, err := url.Parse(host)
 		if err != nil {
 			return "", fmt.Errorf("服务端 URL 无效: %w", err)
+		}
+		if u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" ||
+			u.RawPath != "" || (u.Path != "" && u.Path != "/") {
+			return "", errors.New("服务端 URL 不能包含凭据、路径、查询参数或片段")
 		}
 		if u.Scheme == "https" {
 			useHTTPS = true
@@ -452,7 +613,11 @@ func (r connectRequest) controlURL() (string, error) {
 		Scheme: scheme,
 		Host:   net.JoinHostPort(host, port),
 	}
-	return strings.TrimRight(u.String(), "/"), nil
+	validated, err := controlurl.ParseControl(u.String())
+	if err != nil {
+		return "", fmt.Errorf("服务端 URL 无效: %w", err)
+	}
+	return strings.TrimRight(validated.String(), "/"), nil
 }
 
 func (r connectRequest) hostname() (string, error) {
@@ -466,15 +631,66 @@ func (r connectRequest) hostname() (string, error) {
 	return hostname, nil
 }
 
+func (r *connectRequest) accountCredential() (string, []byte, error) {
+	username := strings.TrimSpace(r.Username)
+	password := []byte(r.Password)
+	r.Password = ""
+	if username == "" || len([]byte(username)) > 254 || strings.IndexFunc(username, unicode.IsControl) >= 0 {
+		clear(password)
+		return "", nil, errors.New("请输入有效账号，长度不能超过 254 字节且不能包含控制字符")
+	}
+	if len(password) == 0 || len(password) > 72 {
+		clear(password)
+		return "", nil, errors.New("请输入有效密码，长度必须为 1 到 72 字节")
+	}
+	return username, password, nil
+}
+
+var errDashboardJSONContentType = errors.New("Content-Type 必须是 application/json")
+
+func decodeDashboardJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || !strings.EqualFold(mediaType, "application/json") {
+		return errDashboardJSONContentType
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, maxDashboardJSONBodyBytes)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(dst); err != nil {
+		return err
+	}
+	if err := dec.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return errors.New("请求体只能包含一个 JSON 对象")
+		}
+		return err
+	}
+	return nil
+}
+
+func writeDashboardDecodeError(w http.ResponseWriter, err error) {
+	if errors.Is(err, errDashboardJSONContentType) {
+		writeError(w, http.StatusUnsupportedMediaType, err)
+		return
+	}
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		writeError(w, http.StatusRequestEntityTooLarge, errors.New("JSON 请求体过大"))
+		return
+	}
+	writeError(w, http.StatusBadRequest, fmt.Errorf("JSON 请求无效: %w", err))
+}
+
 func writeJSON(w http.ResponseWriter, v any) {
+	setDashboardSecurityHeaders(w)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-cache")
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Printf("write json: %v", err)
 	}
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
+	setDashboardSecurityHeaders(w)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(struct {
@@ -513,7 +729,7 @@ button.danger{border-color:#fecaca;color:var(--red);background:#fff}
   </div>
   <div class="panel">
     <h1>服务端连接</h1>
-    <p>填写控制服务器信息。下方会同步生成等价命令，方便你核对参数。</p>
+    <p>填写控制服务器和 ScaleForge 账号信息。下方会同步生成不含密码的等价命令，方便核对参数。</p>
     <div class="grid">
       <div>
         <label for="serverIP">服务端 IP 或域名</label>
@@ -528,15 +744,19 @@ button.danger{border-color:#fecaca;color:var(--red);background:#fff}
       <label for="hostname">本机设备名称，可选</label>
       <input id="hostname" type="text" placeholder="留空使用系统主机名，例如 office-pc">
     </div>
+    <div class="field">
+      <label for="username">账号</label>
+      <input id="username" type="text" autocomplete="username" maxlength="254" placeholder="请输入 ScaleForge 账号">
+    </div>
+    <div class="field">
+      <label for="password">密码</label>
+      <input id="password" type="password" autocomplete="current-password" maxlength="72" placeholder="请输入账号密码">
+    </div>
     <div class="checks">
       <label class="check"><input id="useHTTPS" type="checkbox"> 使用 HTTPS</label>
       <label class="check"><input id="acceptRoutes" type="checkbox" checked> 接受路由</label>
     </div>
     <div class="url" id="preview">http://:80</div>
-    <div class="field">
-      <label for="authKey">预认证密钥，可选</label>
-      <input id="authKey" type="password" placeholder="tskey-auth-...">
-    </div>
     <div class="cmd-head">
       <div class="cmd-title">等价命令</div>
       <button id="copyBtn">复制命令</button>
@@ -629,17 +849,17 @@ function quoteArg(v){
 }
 function refreshPreview(){
   const url = currentURL();
-  const key = $('authKey').value.trim();
+  const username = $('username').value.trim();
   const hostname = $('hostname').value.trim();
-  const args = ['scaletail','up','--login-server=' + quoteArg(url),'--accept-routes=' + ($('acceptRoutes').checked ? 'true' : 'false')];
-  if(hostname) args.push('--hostname=' + quoteArg(hostname));
-  if(key) args.push('--auth-key=' + quoteArg(key));
+  const loginArgs = ['scaletail','login','--login-server',quoteArg(url),'--username',quoteArg(username)];
+  const setArgs = ['scaletail','set','--accept-routes=' + ($('acceptRoutes').checked ? 'true' : 'false')];
+  if(hostname) setArgs.push('--hostname=' + quoteArg(hostname));
   $('preview').textContent = url;
-  $('commandLine').value = args.join(' ');
+  $('commandLine').value = loginArgs.join(' ') + '\n' + setArgs.join(' ');
 }
 function setLocked(locked){
   connected = locked;
-  ['serverIP','serverPort','useHTTPS','hostname','acceptRoutes','authKey'].forEach(id => { $(id).disabled = locked; });
+  ['serverIP','serverPort','useHTTPS','hostname','username','password','acceptRoutes'].forEach(id => { $(id).disabled = locked; });
   $('connectBtn').disabled = locked;
   $('copyBtn').disabled = locked;
   $('logoutBtn').style.display = locked ? 'inline-flex' : 'none';
@@ -678,7 +898,8 @@ async function connect(){
         ServerPort:$('serverPort').value,
         UseHTTPS:$('useHTTPS').checked,
         Hostname:$('hostname').value,
-        AuthKey:$('authKey').value,
+        Username:$('username').value,
+        Password:$('password').value,
         AcceptRoutes:$('acceptRoutes').checked
       })
     });
@@ -688,6 +909,7 @@ async function connect(){
     $('msg').className = 'msg err';
     $('msg').textContent = e.message || String(e);
   }finally{
+    $('password').value = '';
     $('connectBtn').disabled = false;
   }
 }
@@ -721,7 +943,7 @@ async function copyCommand(){
     document.execCommand('copy');
   }
 }
-['serverIP','serverPort','useHTTPS','hostname','acceptRoutes','authKey'].forEach(id => $(id).addEventListener('input', refreshPreview));
+['serverIP','serverPort','useHTTPS','hostname','username','acceptRoutes'].forEach(id => $(id).addEventListener('input', refreshPreview));
 $('connectBtn').addEventListener('click', connect);
 $('logoutBtn').addEventListener('click', logoutCurrent);
 $('copyBtn').addEventListener('click', copyCommand);
@@ -873,7 +1095,16 @@ function fmtLatency(v){
   return String(v);
 }
 function rows(el, items){
-  el.innerHTML = items.map(x => '<div class="muted">' + x[0] + '</div><div>' + (x[1] || '-') + '</div>').join('');
+  el.replaceChildren();
+  items.forEach(x => {
+    const label = document.createElement('div');
+    label.className = 'muted';
+    label.textContent = String(x[0] || '');
+    const value = document.createElement('div');
+    value.textContent = x[1] === undefined || x[1] === null || x[1] === '' ? '-' : String(x[1]);
+    value.style.whiteSpace = 'pre-line';
+    el.append(label, value);
+  });
 }
 function nodeName(p){
   return p.HostName || (p.DNSName ? p.DNSName.split('.')[0] : '') || p.ID || '-';
@@ -894,7 +1125,16 @@ function renderExitNodeOptions(st, peers){
   const sig = current + '|' + options.map(o => o.id + ':' + o.label + ':' + o.disabled).join('|');
   if(exitNodeTouched && sig === lastExitNodeSignature) return;
   lastExitNodeSignature = sig;
-  $('exitNodeSelect').innerHTML = options.map(o => '<option value="' + o.id + '"' + (o.disabled ? ' disabled' : '') + (o.id === current ? ' selected' : '') + '>' + o.label + '</option>').join('');
+  const select = $('exitNodeSelect');
+  select.replaceChildren();
+  options.forEach(o => {
+    const option = document.createElement('option');
+    option.value = o.id;
+    option.textContent = o.label;
+    option.disabled = o.disabled;
+    option.selected = o.id === current;
+    select.append(option);
+  });
   $('applyExitNodeBtn').disabled = options.length <= 1;
   if(options.length <= 1) $('exitNodeMsg').textContent = '当前没有可用出口节点。';
 }
@@ -944,13 +1184,32 @@ async function refresh(manual){
       ['接受路由', prefs.RouteAll ? '是' : '否']
     ]);
     renderExitNodeOptions(st, peers);
-    $('peers').innerHTML = peers.length ? peers.map(p => {
+    const peerTable = $('peers');
+    peerTable.replaceChildren();
+    if(!peers.length){
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 5;
+      cell.className = 'muted';
+      cell.textContent = '暂无节点';
+      row.append(cell);
+      peerTable.append(row);
+    }
+    peers.forEach(p => {
       const name = nodeName(p);
       const ip = (p.ScaleTailIPs || []).join(', ');
       const traffic = '接收 ' + fmtBytes(p.RxBytes) + ' / 发送 ' + fmtBytes(p.TxBytes);
       const conn = p.Relay ? ('DERP ' + p.Relay) : (p.CurAddr || '-');
-      return '<tr><td>' + (p.Online ? '<span class="ok">在线</span>' : '离线') + '</td><td>' + name + '</td><td class="mono">' + ip + '</td><td>' + traffic + '</td><td>' + conn + '</td></tr>';
-    }).join('') : '<tr><td colspan="5" class="muted">暂无节点</td></tr>';
+      const row = document.createElement('tr');
+      [p.Online ? '在线' : '离线', name, ip, traffic, conn].forEach((value, index) => {
+        const cell = document.createElement('td');
+        cell.textContent = String(value || '-');
+        if(index === 0 && p.Online) cell.className = 'ok';
+        if(index === 2) cell.className = 'mono';
+        row.append(cell);
+      });
+      peerTable.append(row);
+    });
   }catch(e){
     $('summary').textContent = '无法连接 scaletaild：' + e.message;
   }finally{
@@ -986,7 +1245,7 @@ async function runNetcheck(){
   try{
     const r = await getJSON('/api/netcheck', {method:'POST'});
     const lat = r.RegionLatency || {};
-    const regions = Object.keys(lat).slice(0, 8).map(k => 'DERP ' + k + ': ' + fmtLatency(lat[k])).join('<br>');
+    const regions = Object.keys(lat).slice(0, 8).map(k => 'DERP ' + k + ': ' + fmtLatency(lat[k])).join('\n');
     rows($('netcheckRows'), [
       ['时间', r.Now || '-'],
       ['UDP', r.UDP ? '可用' : '不可用'],

@@ -26,7 +26,7 @@ var versionRE = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 
 // resolveTestVersion returns the concrete release version (e.g. "1.97.255")
 // for the given --test-version flag value. If v is "unstable" or "stable", it
-// queries pkgs.tailscale.com for the latest TarballsVersion on that track.
+// queries pkgs.scaletail.com for the latest TarballsVersion on that track.
 // Otherwise it returns v unchanged.
 func resolveTestVersion(ctx context.Context, v string) (string, error) {
 	if v != "unstable" && v != "stable" {
@@ -60,7 +60,7 @@ func resolveTestVersion(ctx context.Context, v string) (string, error) {
 	return meta.TarballsVersion, nil
 }
 
-// versionTrack returns the pkgs.tailscale.com track ("stable" or "unstable")
+// versionTrack returns the pkgs.scaletail.com track ("stable" or "unstable")
 // for a release version. Even minors are stable; odd minors are unstable.
 func versionTrack(version string) (string, error) {
 	parts := strings.Split(version, ".")
@@ -87,7 +87,7 @@ func versionCacheRoot() string {
 	if err != nil {
 		panic(fmt.Sprintf("os.UserCacheDir: %v", err))
 	}
-	return filepath.Join(cache, "tailscale-vmtest", "builds")
+	return filepath.Join(cache, "scaletail-vmtest", "builds")
 }
 
 // versionCacheDir returns the directory holding the extracted binaries for
@@ -102,9 +102,9 @@ func versionCacheDir(version, arch string) string {
 func ensureVersionBinaries(ctx context.Context, version, arch string, logf logger.Logf) (string, error) {
 	dir := versionCacheDir(version, arch)
 	scaletaild := filepath.Join(dir, "scaletaild")
-	scaletail := filepath.Join(dir, "tailscale")
+	scaletail := filepath.Join(dir, "scaletail")
 	if _, err1 := os.Stat(scaletaild); err1 == nil {
-		if _, err2 := os.Stat(tailscale); err2 == nil {
+		if _, err2 := os.Stat(scaletail); err2 == nil {
 			return dir, nil
 		}
 	}
@@ -113,7 +113,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 	if err != nil {
 		return "", err
 	}
-	url := fmt.Sprintf("https://pkgs.scaletail.com/%s/tailscale_%s_%s.tgz", track, version, arch)
+	url := fmt.Sprintf("https://pkgs.scaletail.com/%s/scaletail_%s_%s.tgz", track, version, arch)
 	logf("downloading %s", url)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -141,7 +141,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 	tr := tar.NewReader(gzr)
 
 	wantBase := map[string]bool{
-		"tailscale":  true,
+		"scaletail":  true,
 		"scaletaild": true,
 	}
 	got := map[string]bool{}
@@ -170,7 +170,7 @@ func ensureVersionBinaries(ctx context.Context, version, arch string, logf logge
 			return "", fmt.Errorf("tarball %s missing %s", url, b)
 		}
 	}
-	logf("extracted %s and %s to %s", "tailscale", "scaletaild", dir)
+	logf("extracted %s and %s to %s", "scaletail", "scaletaild", dir)
 	return dir, nil
 }
 
