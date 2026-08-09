@@ -58,25 +58,30 @@ ScaleTail UI / scaletail CLI
 - CLI 不提供明文 `--password` 参数，避免密码进入 shell 历史和进程列表。
 - 旧预认证 Key、浏览器认证、OIDC 登录和手工注册码不是当前产品登录路径。
 
-交互式 Linux 登录：
+Linux 安装包提供账户配置工具。它会隐藏密码输入，验证登录成功后才以 `0600` 权限保存凭据，并启用守护进程重启后的自动重认证：
 
 ```bash
-sudo scaletail login \
-  --login-server=https://control.example.com \
-  --username=alice
+sudo scaletail-configure-account \
+  --server https://control.example.com \
+  --username alice \
+  --accept-routes true \
+  --accept-dns true
 ```
 
-命令会在终端中隐藏输入密码。无人值守或 ISO 预制场景应由安全的配置系统生成仅 root 可读的密码文件：
+无人值守或 ISO 预制场景应由安全的配置系统生成 `/etc/scaletail/account.conf` 和仅 root 可读的 `/etc/scaletail/account-password`，再启用自动登录单元：
 
 ```bash
 sudo install -o root -g root -m 0600 /secure/provision/account-password \
   /etc/scaletail/account-password
 
-sudo scaletail login \
-  --login-server=https://control.example.com \
-  --username=alice \
-  --password-file=/etc/scaletail/account-password
+sudo install -o root -g root -m 0600 /secure/provision/account.conf \
+  /etc/scaletail/account.conf
+
+sudo systemctl enable --now scaletaild.service
+sudo systemctl enable --now scaletail-account-login.service
 ```
+
+配置模板位于 `/usr/share/doc/scaletail/account.conf.example`。不要把账号密码写入镜像公共层、内核命令行或 shell 历史。
 
 登录后再单独配置路由，避免身份参数和网络参数混在同一条命令中：
 
@@ -162,22 +167,22 @@ npm run build
 
 ## Linux 构建
 
-在安装了 Ubuntu 24.04 WSL 的 Windows 构建机上执行：
+在安装了 Rocky Linux 9 WSL 的 Windows 构建机上执行：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\build-linux-packages-wsl.ps1 `
-  -Distro Ubuntu-24.04 `
+  -Distro Rocky-9.4 `
   -Version 0.0.8 `
-  -DependencyRoot D:\workspace-qoder\deps
+  -DependencyRoot D:\DevDeps `
+  -GoProxy https://goproxy.cn,direct
 ```
 
 输出目录 `dist\linux-v0.0.8` 包含 amd64 的 `.tgz`、`.deb`、`.rpm`、校验文件以及可选 GUI 包。无桌面的服务器只安装核心包：
 
 ```bash
 sudo dpkg -i scaletail_0.0.8_amd64.deb
-sudo systemctl enable --now scaletaild
-sudo scaletail login --login-server=https://control.example.com --username=alice
+sudo scaletail-configure-account --server https://control.example.com --username alice
 ```
 
 ## 部署难度

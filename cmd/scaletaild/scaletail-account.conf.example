@@ -1,0 +1,3 @@
+SCALETAIL_LOGIN_SERVER=https://control.example.com
+SCALETAIL_ACCOUNT_USERNAME=alice
+SCALETAIL_ACCOUNT_PASSWORD_FILE=/etc/scaletail/account-password

@@ -1,8 +1,9 @@
 param(
-  [string]$Distro = "Ubuntu-24.04",
-  [string]$Version = "0.0.1",
+  [string]$Distro = "Rocky-9.4",
+  [string]$Version = "0.0.8",
   [string]$OutDir = "",
   [string]$DependencyRoot = "D:\DevDeps",
+  [string]$GoProxy = "https://goproxy.cn,direct",
   [switch]$SkipGui
 )
 
@@ -59,6 +60,7 @@ set -euo pipefail
 export HOME="$depWsl/wsl-home"
 export GOCACHE="$depWsl/go-build-cache"
 export GOMODCACHE="$depWsl/go/pkg/mod-wsl"
+export GOPROXY="$GoProxy"
 export PATH="$depWsl/wsl-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 cd "$repoWsl"
 rm -rf "$outWsl"

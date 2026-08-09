@@ -1,0 +1,22 @@
+[Unit]
+Description=ScaleTail account reauthentication
+Documentation=https://github.com/chen1749144759/ScaleTail
+Wants=network-online.target
+After=network-online.target scaletaild.service
+Requires=scaletaild.service
+PartOf=scaletaild.service
+ConditionPathExists=/etc/scaletail/account.conf
+ConditionPathExists=/etc/scaletail/account-password
+StartLimitIntervalSec=10min
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/scaletail/account.conf
+ExecStart=/usr/bin/scaletail up --login-server=${SCALETAIL_LOGIN_SERVER} --username=${SCALETAIL_ACCOUNT_USERNAME} --password-file=${SCALETAIL_ACCOUNT_PASSWORD_FILE} --timeout=60s
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target

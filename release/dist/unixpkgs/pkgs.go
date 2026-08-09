@@ -27,6 +27,14 @@ const (
 	scaleTailPackageHomepage    = "https://github.com/chen1749144759/ScaleTail"
 )
 
+func packageFileInfo(mode os.FileMode) *files.ContentFileInfo {
+	return &files.ContentFileInfo{
+		Owner: "root",
+		Group: "root",
+		Mode:  mode,
+	}
+}
+
 type tgzTarget struct {
 	filenameArch string // arch to use in filename instead of deriving from goEnv["GOARCH"]
 	goEnv        map[string]string
@@ -153,6 +161,16 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err := addFile(filepath.Join(scaletaildDir, "scaletail-wait-online.service"), filepath.Join(dir, "scaletail-wait-online.service"), 0644); err != nil {
 			return nil, err
 		}
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account-login.service"), filepath.Join(dir, "scaletail-account-login.service"), 0644); err != nil {
+			return nil, err
+		}
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account.conf.example"), filepath.Join(dir, "scaletail-account.conf.example"), 0644); err != nil {
+			return nil, err
+		}
+		dir = filepath.Dir(dir)
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-configure-account.sh"), filepath.Join(dir, "scaletail-configure-account"), 0755); err != nil {
+			return nil, err
+		}
 	}
 	if err := tw.Close(); err != nil {
 		return nil, err
@@ -225,31 +243,55 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 			Type:        files.TypeFile,
 			Source:      ts,
 			Destination: "/usr/bin/scaletail",
+			FileInfo:    packageFileInfo(0755),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      tsd,
 			Destination: "/usr/sbin/scaletaild",
+			FileInfo:    packageFileInfo(0755),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletaild.service"),
 			Destination: "/lib/systemd/system/scaletaild.service",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-online.target"),
 			Destination: "/lib/systemd/system/scaletail-online.target",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-wait-online.service"),
 			Destination: "/lib/systemd/system/scaletail-wait-online.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.service"),
+			Destination: "/lib/systemd/system/scaletail-account-login.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-configure-account.sh"),
+			Destination: "/usr/sbin/scaletail-configure-account",
+			FileInfo:    packageFileInfo(0755),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account.conf.example"),
+			Destination: "/usr/share/doc/scaletail/account.conf.example",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
 			Source:      filepath.Join(scaletaildDir, "scaletaild.defaults"),
 			Destination: "/etc/default/scaletaild",
+			FileInfo:    packageFileInfo(0644),
 		},
 	}, 0, "deb", false)
 	if err != nil {
@@ -371,31 +413,55 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 			Type:        files.TypeFile,
 			Source:      ts,
 			Destination: "/usr/bin/scaletail",
+			FileInfo:    packageFileInfo(0755),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      tsd,
 			Destination: "/usr/sbin/scaletaild",
+			FileInfo:    packageFileInfo(0755),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletaild.service"),
 			Destination: "/lib/systemd/system/scaletaild.service",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-online.target"),
 			Destination: "/lib/systemd/system/scaletail-online.target",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-wait-online.service"),
 			Destination: "/lib/systemd/system/scaletail-wait-online.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.service"),
+			Destination: "/lib/systemd/system/scaletail-account-login.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-configure-account.sh"),
+			Destination: "/usr/sbin/scaletail-configure-account",
+			FileInfo:    packageFileInfo(0755),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account.conf.example"),
+			Destination: "/usr/share/doc/scaletail/account.conf.example",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeConfigNoReplace,
 			Source:      filepath.Join(scaletaildDir, "scaletaild.defaults"),
 			Destination: "/etc/default/scaletaild",
+			FileInfo:    packageFileInfo(0644),
 		},
 		// SELinux policy on e.g. CentOS 8 forbids writing to /var/cache.
 		// Creating an empty directory at install time resolves this issue.
@@ -493,16 +559,19 @@ func (t *guiPackageTarget) Build(b *dist.Build) ([]string, error) {
 			Type:        files.TypeFile,
 			Source:      desktopPath,
 			Destination: "/usr/share/applications/scaletail-systray.desktop",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      servicePath,
 			Destination: "/usr/lib/systemd/user/scaletail-systray.service",
+			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
 			Type:        files.TypeFile,
 			Source:      filepath.Join(repoDir, "client/systray/scaletail.png"),
 			Destination: "/usr/share/pixmaps/scaletail.png",
+			FileInfo:    packageFileInfo(0644),
 		},
 	}, 0, t.pkgType, false)
 	if err != nil {

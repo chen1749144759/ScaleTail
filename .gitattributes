@@ -1,2 +1,7 @@
 go.mod filter=go-mod
 *.go  diff=golang
+*.sh text eol=lf
+*.service text eol=lf
+*.target text eol=lf
+*.defaults text eol=lf
+*.conf.example text eol=lf
