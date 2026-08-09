@@ -61,6 +61,11 @@ export HOME="$depWsl/wsl-home"
 export GOCACHE="$depWsl/go-build-cache"
 export GOMODCACHE="$depWsl/go/pkg/mod-wsl"
 export GOPROXY="$GoProxy"
+# WSL Git otherwise treats CRLF files from this Windows worktree as modified
+# and incorrectly stamps clean release binaries with the dirty suffix.
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=core.autocrlf
+export GIT_CONFIG_VALUE_0=true
 export PATH="$depWsl/wsl-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 cd "$repoWsl"
 rm -rf "$outWsl"
