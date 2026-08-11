@@ -286,6 +286,9 @@ func (b *Build) BuildGoBinaryWithTags(path string, env map[string]string, tags [
 			outPath = filepath.Join(buildDir, filepath.Base(path)+".dll")
 		}
 		args := []string{"build", "-v", "-o", outPath}
+		if !useGoCrossForDist() {
+			args = append(args, "-ldflags="+systemGoVersionLDFlags(b.Version))
+		}
 		if len(tags) > 0 {
 			tagsStr := strings.Join(tags, ",")
 			log.Printf("Building %s (with env %s, tags %s)", path, strings.Join(envStrs, " "), tagsStr)
@@ -335,6 +338,14 @@ func (b *Build) Command(dir, cmd string, args ...string) *Command {
 
 func useGoCrossForDist() bool {
 	return os.Getenv("SCALETAIL_DIST_USE_SYSTEM_GO") != "1"
+}
+
+func systemGoVersionLDFlags(version mkversion.VersionInfo) string {
+	return strings.Join([]string{
+		"-X", "scaletail.com/version.longStamp=" + version.Long,
+		"-X", "scaletail.com/version.shortStamp=" + version.Short,
+		"-X", "scaletail.com/version.gitCommitStamp=" + version.GitHash,
+	}, " ")
 }
 
 // Command runs an exec.Cmd and returns its exit status. If the command fails,
