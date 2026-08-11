@@ -1,6 +1,6 @@
 param(
   [string]$Distro = "Rocky-9.4",
-  [string]$Version = "0.0.9",
+  [string]$Version = "0.0.10",
   [string]$OutDir = "",
   [string]$DependencyRoot = "D:\DevDeps",
   [string]$GoProxy = "https://goproxy.cn,direct",
