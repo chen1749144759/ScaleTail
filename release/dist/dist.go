@@ -323,10 +323,18 @@ func (b *Build) Command(dir, cmd string, args ...string) *Command {
 		ret.Cmd.Stdout = &ret.Output
 		ret.Cmd.Stderr = &ret.Output
 	}
-	// dist always wants to use gocross if any Go is involved.
-	ret.Cmd.Env = append(os.Environ(), "TS_USE_GOCROSS=1")
+	ret.Cmd.Env = os.Environ()
+	// Release builds use gocross by default. Windows recovery builds can opt
+	// into an already-installed matching Go toolchain when WSL is unavailable.
+	if useGoCrossForDist() {
+		ret.Cmd.Env = append(ret.Cmd.Env, "TS_USE_GOCROSS=1")
+	}
 	ret.Cmd.Dir = dir
 	return ret
+}
+
+func useGoCrossForDist() bool {
+	return os.Getenv("SCALETAIL_DIST_USE_SYSTEM_GO") != "1"
 }
 
 // Command runs an exec.Cmd and returns its exit status. If the command fails,

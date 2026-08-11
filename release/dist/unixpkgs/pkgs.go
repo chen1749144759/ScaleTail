@@ -13,6 +13,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -169,14 +170,14 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 	if err := addDir(dir); err != nil {
 		return nil, err
 	}
-	if err := addFile(tsd, filepath.Join(dir, "scaletaild"), 0755); err != nil {
+	if err := addFile(tsd, path.Join(dir, "scaletaild"), 0755); err != nil {
 		return nil, err
 	}
-	if err := addFile(ts, filepath.Join(dir, "scaletail"), 0755); err != nil {
+	if err := addFile(ts, path.Join(dir, "scaletail"), 0755); err != nil {
 		return nil, err
 	}
 	if t.os() == "linux" {
-		dir = filepath.Join(dir, "systemd")
+		dir = path.Join(dir, "systemd")
 		if err := addDir(dir); err != nil {
 			return nil, err
 		}
@@ -184,26 +185,26 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.service"), filepath.Join(dir, "scaletaild.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.service"), path.Join(dir, "scaletaild.service"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.defaults"), filepath.Join(dir, "scaletaild.defaults"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletaild.defaults"), path.Join(dir, "scaletaild.defaults"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletail-online.target"), filepath.Join(dir, "scaletail-online.target"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-online.target"), path.Join(dir, "scaletail-online.target"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletail-wait-online.service"), filepath.Join(dir, "scaletail-wait-online.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-wait-online.service"), path.Join(dir, "scaletail-wait-online.service"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account-login.service"), filepath.Join(dir, "scaletail-account-login.service"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account-login.service"), path.Join(dir, "scaletail-account-login.service"), 0644); err != nil {
 			return nil, err
 		}
-		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account.conf.example"), filepath.Join(dir, "scaletail-account.conf.example"), 0644); err != nil {
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account.conf.example"), path.Join(dir, "scaletail-account.conf.example"), 0644); err != nil {
 			return nil, err
 		}
-		dir = filepath.Dir(dir)
-		if err := addFile(filepath.Join(scaletaildDir, "scaletail-configure-account.sh"), filepath.Join(dir, "scaletail-configure-account"), 0755); err != nil {
+		dir = path.Dir(dir)
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-configure-account.sh"), path.Join(dir, "scaletail-configure-account"), 0755); err != nil {
 			return nil, err
 		}
 	}

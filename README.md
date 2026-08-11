@@ -185,6 +185,8 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 输出目录 `dist\linux-v0.0.10` 包含 amd64 的 `.tgz`、`.deb`、`.rpm`、校验文件以及可选 GUI 包。RPM 构建会把安装脚本强制规范为 Unix LF，避免从 Windows 工作区构建时产生脚本解释错误。无桌面的服务器只安装核心包：
 
+WSL 暂时不可用且 Windows 已安装与项目要求完全一致的 Go 版本时，可设置 `SCALETAIL_DIST_USE_SYSTEM_GO=1` 后直接运行 `cmd/dist`。该开关只影响构建工具链选择，默认构建和 CI 仍使用项目的定制 gocross 工具链；跨平台生成的 TGZ 路径固定使用 Unix `/` 分隔符。
+
 ```bash
 sudo dpkg -i scaletail_0.0.10_amd64.deb
 sudo scaletail-configure-account --server http://control.example.com:60090 --username alice
