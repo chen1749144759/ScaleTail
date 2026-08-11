@@ -502,7 +502,7 @@ async function waitForPasswordAuthSession(): Promise<Status> {
     await delay(500);
     latest = await getStatus(false);
   }
-  throw new Error("auth_session_expired: 未能从控制服务器取得有效认证会话，请检查服务端地址和 HTTPS 配置后重试。");
+  throw new Error("auth_session_expired: 未能从控制服务器取得有效认证会话，请检查服务端地址、端口和 HTTP/HTTPS 选择后重试。");
 }
 
 async function waitForPasswordAuthResult(): Promise<Status> {
@@ -670,7 +670,6 @@ function passwordAuthenticationError(err: unknown): Error {
     network_not_assigned: "账号尚未分配到任何网络，请联系管理员。",
     node_limit_reached: "该账号已达到允许的节点数量上限，请联系管理员清理旧节点或调整上限。",
     tags_not_supported: "账号登录节点不支持身份标签，请移除宣告标签后重试。",
-    https_required: "远程控制服务器必须使用 HTTPS。",
     auth_session_expired: "认证会话已过期，请重新连接。",
     invalid_auth_session: "认证会话无效，请重新发起连接。",
     machine_mismatch: "认证会话与当前设备不匹配，请重新发起连接。",
@@ -696,7 +695,6 @@ function asPasswordAuthErrorCode(code: string | undefined): PasswordAuthErrorCod
     case "network_not_assigned":
     case "node_limit_reached":
     case "tags_not_supported":
-    case "https_required":
     case "auth_session_expired":
     case "invalid_auth_session":
     case "machine_mismatch":

@@ -20,7 +20,6 @@ export type PasswordAuthErrorCode =
   | "network_not_assigned"
   | "node_limit_reached"
   | "tags_not_supported"
-  | "https_required"
   | "auth_session_expired"
   | "invalid_auth_session"
   | "machine_mismatch"
@@ -373,6 +372,11 @@ export function buildControlURL(req: ConnectRequest): string {
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       throw new Error("服务端 URL 协议必须是 http 或 https");
     }
+    if (parsed.username || parsed.password
+      || (parsed.pathname && parsed.pathname !== "/")
+      || parsed.search || parsed.hash) {
+      throw new Error("服务端 URL 不能包含凭据、路径、查询参数或片段");
+    }
     host = parsed.hostname;
     useHTTPS = parsed.protocol === "https:";
     if (!port) {
@@ -399,13 +403,6 @@ export function buildControlURL(req: ConnectRequest): string {
   } catch {
     throw new Error("服务端地址格式无效");
   }
-  if (!useHTTPS && !isLoopbackHost(parsed.hostname)) {
-    throw new LocalAPIError(
-      "https_required: 远程控制服务器必须使用 HTTPS；HTTP 仅允许 localhost 或回环地址。",
-      426,
-      "https_required",
-    );
-  }
   return parsed.origin;
 }
 
@@ -418,17 +415,6 @@ export function validateHostname(hostname: string): string {
     throw new Error("设备名称无效，只能使用字母、数字、短横线和点号");
   }
   return value;
-}
-
-function isLoopbackHost(hostname: string): boolean {
-  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
-  if (host === "localhost" || host === "::1" || host === "0:0:0:0:0:0:0:1") {
-    return true;
-  }
-  const parts = host.split(".");
-  return parts.length === 4
-    && parts[0] === "127"
-    && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255);
 }
 
 function parseLocalAPIError(

@@ -3,7 +3,7 @@ set -eu
 
 usage() {
   cat >&2 <<'EOF'
-Usage: scaletail-configure-account --server HTTPS_URL --username USERNAME [--accept-routes true|false] [--accept-dns true|false]
+Usage: scaletail-configure-account --server HTTP_URL_OR_HTTPS_URL --username USERNAME [--accept-routes true|false] [--accept-dns true|false]
 EOF
   exit 2
 }
@@ -50,10 +50,44 @@ done
 
 [ "$(id -u)" -eq 0 ] || fail "must run as root"
 case "$server" in
-  https://*) ;;
-  *) fail "--server must be a trusted HTTPS URL" ;;
+  http://*) authority=${server#http://} ;;
+  https://*) authority=${server#https://} ;;
+  *) fail "--server must use http:// or https://" ;;
 esac
-printf '%s' "$server" | grep -Eq '^https://[^[:space:]]+$' || fail "invalid --server value"
+case "$authority" in
+  */) authority=${authority%/} ;;
+esac
+[ -n "$authority" ] || fail "--server must include a host"
+case "$authority" in
+  *[/?#@]*|*[[:space:]]*) fail "--server must be an origin without credentials, path, query, or fragment" ;;
+esac
+case "$authority" in
+  \[*\]*)
+    host=${authority#\[}
+    host=${host%%\]*}
+    suffix=${authority#*\]}
+    [ -n "$host" ] || fail "--server must include a host"
+    case "$suffix" in ""|:[0-9]*) ;; *) fail "invalid --server port" ;; esac
+    ;;
+  *:*:*) fail "IPv6 control hosts must use brackets" ;;
+  *:*)
+    host=${authority%%:*}
+    suffix=${authority#*:}
+    [ -n "$host" ] || fail "--server must include a host"
+    printf '%s' "$suffix" | grep -Eq '^[0-9]+$' || fail "invalid --server port"
+    ;;
+  *) host=$authority; suffix="" ;;
+esac
+case "$suffix" in
+  :*) port=${suffix#:} ;;
+  "") port="" ;;
+  *) port=$suffix ;;
+esac
+if [ -n "$port" ]; then
+  printf '%s' "$port" | grep -Eq '^[0-9]+$' || fail "invalid --server port"
+  [ "$port" -ge 1 ] && [ "$port" -le 65535 ] || fail "--server port must be between 1 and 65535"
+fi
+server=${server%/}
 printf '%s' "$username" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,253}$' || fail "invalid --username value"
 case "$accept_routes" in true|false) ;; *) fail "--accept-routes must be true or false" ;; esac
 case "$accept_dns" in true|false) ;; *) fail "--accept-dns must be true or false" ;; esac

@@ -27,6 +27,11 @@ type Persist struct {
 	NetworkLockKey    key.NLPrivate
 	NodeID            tailcfg.StableNodeID
 	AttestationKey    key.HardwareAttestationKey `json:",omitzero"`
+	// ControlServerNoiseKeyOrigin and ControlServerNoiseKey pin the first
+	// Noise key observed for an HTTP control origin. HTTPS control servers do
+	// not depend on this TOFU pin.
+	ControlServerNoiseKeyOrigin string            `json:",omitempty"`
+	ControlServerNoiseKey       key.MachinePublic `json:",omitzero"`
 
 	// DisallowedTKAStateIDs stores the tka.State.StateID values which
 	// this node will not operate network lock on. This is used to
@@ -99,6 +104,8 @@ func (p *Persist) Equals(p2 *Persist) bool {
 		p.NetworkLockKey.Equal(p2.NetworkLockKey) &&
 		p.NodeID == p2.NodeID &&
 		pub.Equal(p2Pub) &&
+		p.ControlServerNoiseKeyOrigin == p2.ControlServerNoiseKeyOrigin &&
+		p.ControlServerNoiseKey == p2.ControlServerNoiseKey &&
 		reflect.DeepEqual(nilIfEmpty(p.DisallowedTKAStateIDs), nilIfEmpty(p2.DisallowedTKAStateIDs))
 }
 

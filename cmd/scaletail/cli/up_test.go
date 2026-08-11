@@ -115,9 +115,12 @@ func TestAccountCredentialRejectsUnsafeInput(t *testing.T) {
 	}
 }
 
-func TestPrefsFromUpArgsRejectsRemoteHTTPControlServer(t *testing.T) {
-	_, err := prefsFromUpArgs(upArgsT{server: "http://control.example.com:60090"}, t.Logf, nil, runtime.GOOS)
-	if err == nil || !strings.Contains(err.Error(), "requires HTTPS") {
-		t.Fatalf("prefsFromUpArgs() error = %v, want remote HTTP rejection", err)
+func TestPrefsFromUpArgsAcceptsRemoteHTTPControlServer(t *testing.T) {
+	prefs, err := prefsFromUpArgs(upArgsT{server: "http://control.example.com:60090"}, t.Logf, nil, runtime.GOOS)
+	if err != nil {
+		t.Fatalf("prefsFromUpArgs() error = %v", err)
+	}
+	if prefs.ControlURL != "http://control.example.com:60090" {
+		t.Fatalf("ControlURL = %q", prefs.ControlURL)
 	}
 }

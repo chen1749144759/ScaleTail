@@ -17,7 +17,7 @@ ScaleTail 是面向 Headscale-Admin-AE 与 ScaleForge 私有控制面的网络�
 | 项目 | 当前说明 |
 |---|---|
 | 裂变来源 | `tailscale/tailscale` 主线源码，Go module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.8`，后续版本继续沿用签名 OTA v3 |
+| 当前产品版本 | `v0.0.9`，支持纯 HTTP 控制地址下的 Noise 加密与 TOFU 公钥锁定，继续沿用签名 OTA v3 |
 | 对标版本 | 已定向审计并回补 Tailscale `v1.98.9` 的关键安全和稳定性修复 |
 | Windows 桌面端 | Electron 43.3.0 + Vue 3 + TypeScript |
 | 配套服务端 | Headscale-Admin-AE + ScaleForge |
@@ -54,7 +54,10 @@ ScaleTail UI / scaletail CLI
 
 - 密码最长 72 字节，由服务端使用强密码哈希保存。
 - 密码每 90 天必须由用户更新；过期后不能建立新的认证会话。
-- 生产环境必须使用受信任的 HTTPS 控制地址，避免凭证发往明文或伪造服务端。
+- 控制地址支持严格的 origin-only `http://` 和 `https://`；两者都拒绝 URL 凭据、业务路径、查询参数和片段。
+- 账号密码始终只在现有 Noise 控制通道中传输。HTTP 不会把密码作为明文 HTTP 请求体或请求头发送。
+- HTTP 首次连接采用 TOFU 固定该控制 origin 返回的 Noise 公钥；同 origin 后续公钥变化会立即阻断连接。确认服务端确实重建或轮换密钥后，需要先退出当前网络，再重新连接以建立新信任。
+- HTTPS 使用正常的证书信任建立初始服务端身份，不依赖 HTTP TOFU pin。
 - CLI 不提供明文 `--password` 参数，避免密码进入 shell 历史和进程列表。
 - 旧预认证 Key、浏览器认证、OIDC 登录和手工注册码不是当前产品登录路径。
 
@@ -62,7 +65,7 @@ Linux 安装包提供账户配置工具。它会隐藏密码输入，验证登�
 
 ```bash
 sudo scaletail-configure-account \
-  --server https://control.example.com \
+  --server http://control.example.com:60090 \
   --username alice \
   --accept-routes true \
   --accept-dns true
@@ -123,8 +126,8 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 主要输出：
 
 ```text
-dist\installer\ScaleTail-0.0.8-windows-amd64-setup-custom.exe
-dist\installer\ScaleTail-0.0.8-windows-amd64.ota.json
+dist\installer\ScaleTail-0.0.9-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.9-windows-amd64.ota.json
 ```
 
 OTA 私钥默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。
@@ -138,13 +141,13 @@ v3 将策略版本、建议/强制/撤销动作和安装包元数据放在同一
 ```powershell
 go run ./cmd/scaletail-update-sign `
   -private-key D:\secure\ed25519-private.key `
-  -file .\dist\installer\ScaleTail-0.0.8-windows-amd64-setup-custom.exe `
-  -version 0.0.8 `
+  -file .\dist\installer\ScaleTail-0.0.9-windows-amd64-setup-custom.exe `
+  -version 0.0.9 `
   -platform windows-amd64 `
   -action suggested `
   -revision 202608090001 `
-  -download-url https://downloads.example.com/releases/ScaleTail-0.0.8-windows-amd64-setup.exe `
-  -json-out .\dist\installer\ScaleTail-0.0.8-windows-amd64.ota.json
+  -download-url https://downloads.example.com/releases/ScaleTail-0.0.9-windows-amd64-setup.exe `
+  -json-out .\dist\installer\ScaleTail-0.0.9-windows-amd64.ota.json
 ```
 
 签名消息按顺序包含 `scaletail-update-v3`、`revision`、动作、版本、平台、小写 SHA-256、文件大小和规范化 `download_url`。`signature` 必须使用 `v3.<Ed25519 Base64>`；v1/v2 元数据会被拒绝。
@@ -173,16 +176,16 @@ npm run build
 powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\build-linux-packages-wsl.ps1 `
   -Distro Rocky-9.4 `
-  -Version 0.0.8 `
+  -Version 0.0.9 `
   -DependencyRoot D:\DevDeps `
   -GoProxy https://goproxy.cn,direct
 ```
 
-输出目录 `dist\linux-v0.0.8` 包含 amd64 的 `.tgz`、`.deb`、`.rpm`、校验文件以及可选 GUI 包。无桌面的服务器只安装核心包：
+输出目录 `dist\linux-v0.0.9` 包含 amd64 的 `.tgz`、`.deb`、`.rpm`、校验文件以及可选 GUI 包。无桌面的服务器只安装核心包：
 
 ```bash
-sudo dpkg -i scaletail_0.0.8_amd64.deb
-sudo scaletail-configure-account --server https://control.example.com --username alice
+sudo dpkg -i scaletail_0.0.9_amd64.deb
+sudo scaletail-configure-account --server http://control.example.com:60090 --username alice
 ```
 
 ## 部署难度
@@ -200,6 +203,7 @@ sudo scaletail-configure-account --server https://control.example.com --username
 
 - 不要把账号密码、OTA 私钥或生产配置提交到仓库、镜像、ISO 公共层或安装日志。
 - 不要把密码直接写在命令行参数中；无人值守只使用权限为 `0600` 的文件或标准输入。
+- HTTP 控制面的安全边界是 Noise 加密与按 origin 持久化的 TOFU 公钥；公钥异常变化不得自动接受。
 - 强制 OTA 只接受内置公钥验证通过且摘要匹配的安装包。
 - 自定义 DERP 不是必需组件；当前优先使用服务端嵌入 DERP，并启用私有节点验证。
 - 客户端升级不会部署或迁移 ScaleForge/Headscale 数据库，服务端升级需按各自仓库文档执行。

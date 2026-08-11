@@ -156,9 +156,13 @@ func TestConnectRequestControlURLSecurity(t *testing.T) {
 	}{
 		{name: "remote HTTPS", req: connectRequest{ServerIP: "control.example.com", ServerPort: "60090", UseHTTPS: true}},
 		{name: "loopback HTTP", req: connectRequest{ServerIP: "127.0.0.1", ServerPort: "60090"}},
-		{name: "remote HTTP", req: connectRequest{ServerIP: "control.example.com", ServerPort: "60090"}, wantErr: true},
+		{name: "remote HTTP", req: connectRequest{ServerIP: "control.example.com", ServerPort: "60090"}},
 		{name: "URL credentials", req: connectRequest{ServerIP: "https://user:secret@control.example.com"}, wantErr: true},
+		{name: "HTTP URL credentials", req: connectRequest{ServerIP: "http://user:secret@control.example.com"}, wantErr: true},
 		{name: "URL path", req: connectRequest{ServerIP: "https://control.example.com/control"}, wantErr: true},
+		{name: "HTTP URL path", req: connectRequest{ServerIP: "http://control.example.com/control"}, wantErr: true},
+		{name: "HTTP URL query", req: connectRequest{ServerIP: "http://control.example.com/?redirect=x"}, wantErr: true},
+		{name: "HTTP URL fragment", req: connectRequest{ServerIP: "http://control.example.com/#fragment"}, wantErr: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.req.controlURL()

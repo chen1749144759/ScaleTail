@@ -4,6 +4,7 @@
 package persist
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -20,8 +21,34 @@ func fieldsOf(t reflect.Type) (fields []string) {
 	return
 }
 
+func TestControlServerNoisePinPersistence(t *testing.T) {
+	want := &Persist{
+		ControlServerNoiseKeyOrigin: "http://control.example:60090",
+		ControlServerNoiseKey:       key.NewMachine().Public(),
+	}
+	encoded, err := json.Marshal(want)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got Persist
+	if err := json.Unmarshal(encoded, &got); err != nil {
+		t.Fatal(err)
+	}
+	if !want.Equals(&got) {
+		t.Fatalf("JSON round trip = %#v, want %#v", &got, want)
+	}
+	clone := got.Clone()
+	if !got.Equals(clone) {
+		t.Fatal("Clone did not preserve the control server Noise pin")
+	}
+	view := clone.View()
+	if view.ControlServerNoiseKeyOrigin() != want.ControlServerNoiseKeyOrigin || view.ControlServerNoiseKey() != want.ControlServerNoiseKey {
+		t.Fatal("PersistView did not expose the control server Noise pin")
+	}
+}
+
 func TestPersistEqual(t *testing.T) {
-	persistHandles := []string{"PrivateNodeKey", "OldPrivateNodeKey", "UserProfile", "NetworkLockKey", "NodeID", "AttestationKey", "DisallowedTKAStateIDs"}
+	persistHandles := []string{"PrivateNodeKey", "OldPrivateNodeKey", "UserProfile", "NetworkLockKey", "NodeID", "AttestationKey", "ControlServerNoiseKeyOrigin", "ControlServerNoiseKey", "DisallowedTKAStateIDs"}
 	if have := fieldsOf(reflect.TypeFor[Persist]()); !reflect.DeepEqual(have, persistHandles) {
 		t.Errorf("Persist.Equal check might be out of sync\nfields: %q\nhandled: %q\n",
 			have, persistHandles)
@@ -29,6 +56,8 @@ func TestPersistEqual(t *testing.T) {
 
 	k1 := key.NewNode()
 	nl1 := key.NewNLPrivate()
+	controlKey1 := key.NewMachine().Public()
+	controlKey2 := key.NewMachine().Public()
 	tests := []struct {
 		a, b *Persist
 		want bool
@@ -98,6 +127,21 @@ func TestPersistEqual(t *testing.T) {
 			&Persist{NodeID: ""},
 			&Persist{NodeID: "abc"},
 			false,
+		},
+		{
+			&Persist{ControlServerNoiseKeyOrigin: "http://control.example", ControlServerNoiseKey: controlKey1},
+			&Persist{ControlServerNoiseKeyOrigin: "http://other.example", ControlServerNoiseKey: controlKey1},
+			false,
+		},
+		{
+			&Persist{ControlServerNoiseKeyOrigin: "http://control.example", ControlServerNoiseKey: controlKey1},
+			&Persist{ControlServerNoiseKeyOrigin: "http://control.example", ControlServerNoiseKey: controlKey2},
+			false,
+		},
+		{
+			&Persist{ControlServerNoiseKeyOrigin: "http://control.example", ControlServerNoiseKey: controlKey1},
+			&Persist{ControlServerNoiseKeyOrigin: "http://control.example", ControlServerNoiseKey: controlKey1},
+			true,
 		},
 		{
 			&Persist{DisallowedTKAStateIDs: nil},

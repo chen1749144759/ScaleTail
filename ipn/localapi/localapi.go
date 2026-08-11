@@ -979,7 +979,6 @@ const (
 	passwordAuthNetworkNotAssigned  = "network_not_assigned"
 	passwordAuthNodeLimitReached    = "node_limit_reached"
 	passwordAuthTagsNotSupported    = "tags_not_supported"
-	passwordAuthHTTPSRequired       = "https_required"
 	passwordAuthSessionExpired      = "auth_session_expired"
 	passwordAuthInvalidSession      = "invalid_auth_session"
 	passwordAuthMachineMismatch     = "machine_mismatch"
@@ -1134,10 +1133,6 @@ func (h *Handler) serveScaleTailAuthPassword(w http.ResponseWriter, r *http.Requ
 		req.ControlURL,
 	)
 	if err != nil {
-		if errors.Is(err, errScaleTailHTTPSRequired) {
-			writeScaleTailPasswordAuthError(w, http.StatusUpgradeRequired, passwordAuthHTTPSRequired)
-			return
-		}
 		if errors.Is(err, errScaleTailAuthSessionInvalid) {
 			writeScaleTailPasswordAuthError(w, http.StatusGone, passwordAuthInvalidSession)
 			return
@@ -1227,10 +1222,6 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := validateScaleTailControlURL(controlURL)
 	if err != nil {
-		if errors.Is(err, errScaleTailHTTPSRequired) {
-			writeScaleTailPasswordAuthError(w, http.StatusUpgradeRequired, passwordAuthHTTPSRequired)
-			return
-		}
 		http.Error(w, "invalid ControlURL", http.StatusBadRequest)
 		return
 	}
@@ -1291,7 +1282,6 @@ func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	errScaleTailHTTPSRequired      = controlurl.ErrHTTPSRequired
 	errScaleTailAuthSessionInvalid = errors.New("authentication URL does not belong to the current control server")
 )
 
@@ -1423,8 +1413,6 @@ func scaleTailPasswordAuthCode(status int, body []byte) string {
 		return passwordAuthSessionExpired
 	case http.StatusTooManyRequests:
 		return passwordAuthTooManyAttempts
-	case http.StatusUpgradeRequired:
-		return passwordAuthHTTPSRequired
 	default:
 		return passwordAuthFailed
 	}
@@ -1442,7 +1430,6 @@ func canonicalScaleTailPasswordAuthCode(value string) string {
 		passwordAuthNetworkNotAssigned,
 		passwordAuthNodeLimitReached,
 		passwordAuthTagsNotSupported,
-		passwordAuthHTTPSRequired,
 		passwordAuthSessionExpired,
 		passwordAuthInvalidSession,
 		passwordAuthMachineMismatch,
@@ -1476,8 +1463,6 @@ func passwordAuthHTTPStatus(code string) int {
 		return http.StatusBadRequest
 	case passwordAuthInvalidRequest:
 		return http.StatusBadRequest
-	case passwordAuthHTTPSRequired:
-		return http.StatusUpgradeRequired
 	case passwordAuthSessionExpired, passwordAuthInvalidSession:
 		return http.StatusGone
 	case passwordAuthMachineMismatch:
@@ -1511,8 +1496,6 @@ func passwordAuthMessage(code string) string {
 		return "account has reached its node limit"
 	case passwordAuthTagsNotSupported:
 		return "account-authenticated nodes cannot use identity tags"
-	case passwordAuthHTTPSRequired:
-		return "remote control server requires HTTPS"
 	case passwordAuthSessionExpired:
 		return "authentication session has expired"
 	case passwordAuthInvalidSession:

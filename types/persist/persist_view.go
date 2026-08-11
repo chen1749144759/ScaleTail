@@ -95,6 +95,12 @@ func (v PersistView) NetworkLockKey() key.NLPrivate        { return v.ж.Network
 func (v PersistView) NodeID() tailcfg.StableNodeID         { return v.ж.NodeID }
 func (v PersistView) AttestationKey() tailcfg.StableNodeID { panic("unsupported") }
 
+// ControlServerNoiseKeyOrigin and ControlServerNoiseKey pin the first
+// Noise key observed for an HTTP control origin. HTTPS control servers do
+// not depend on this TOFU pin.
+func (v PersistView) ControlServerNoiseKeyOrigin() string      { return v.ж.ControlServerNoiseKeyOrigin }
+func (v PersistView) ControlServerNoiseKey() key.MachinePublic { return v.ж.ControlServerNoiseKey }
+
 // DisallowedTKAStateIDs stores the tka.State.StateID values which
 // this node will not operate network lock on. This is used to
 // prevent bootstrapping TKA onto a key authority which was forcibly
@@ -105,12 +111,14 @@ func (v PersistView) DisallowedTKAStateIDs() views.Slice[string] {
 
 // A compilation failure here means this code must be regenerated, with the command at the top of this file.
 var _PersistViewNeedsRegeneration = Persist(struct {
-	_                     structs.Incomparable
-	PrivateNodeKey        key.NodePrivate
-	OldPrivateNodeKey     key.NodePrivate
-	UserProfile           tailcfg.UserProfile
-	NetworkLockKey        key.NLPrivate
-	NodeID                tailcfg.StableNodeID
-	AttestationKey        key.HardwareAttestationKey
-	DisallowedTKAStateIDs []string
+	_                           structs.Incomparable
+	PrivateNodeKey              key.NodePrivate
+	OldPrivateNodeKey           key.NodePrivate
+	UserProfile                 tailcfg.UserProfile
+	NetworkLockKey              key.NLPrivate
+	NodeID                      tailcfg.StableNodeID
+	AttestationKey              key.HardwareAttestationKey
+	ControlServerNoiseKeyOrigin string
+	ControlServerNoiseKey       key.MachinePublic
+	DisallowedTKAStateIDs       []string
 }{})

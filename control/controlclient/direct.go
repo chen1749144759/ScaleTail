@@ -39,6 +39,7 @@ import (
 	"scaletail.com/health"
 	"scaletail.com/hostinfo"
 	"scaletail.com/internal/accountauth"
+	"scaletail.com/internal/controlurl"
 	"scaletail.com/ipn/ipnstate"
 	"scaletail.com/logtail"
 	"scaletail.com/net/dnscache"
@@ -662,9 +663,16 @@ func (c *Direct) doLogin(ctx context.Context, opt loginOpt) (mustRegen bool, new
 		}
 		c.logf("control server key from %s: ts2021=%s, legacy=%v", c.serverURL, keys.PublicKey.ShortString(), keys.LegacyPublicKey.ShortString())
 
+		if err := checkOrSetHTTPNoiseKeyPin(c.serverURL, keys.PublicKey, persist); err != nil {
+			return regen, opt.URL, nil, err
+		}
+
 		c.mu.Lock()
 		c.serverLegacyKey = keys.LegacyPublicKey
 		c.serverNoiseKey = keys.PublicKey
+		// Keep the accepted pin in memory before the first Noise connection is
+		// established. The normal control status path persists it to the profile.
+		c.persist = persist.Clone().View()
 		c.mu.Unlock()
 		serverKey = keys.LegacyPublicKey
 		serverNoiseKey = keys.PublicKey
@@ -1484,7 +1492,11 @@ func encode(v any) ([]byte, error) {
 }
 
 func loadServerPubKeys(ctx context.Context, httpc *http.Client, serverURL string) (*tailcfg.OverTLSPublicKeyResponse, error) {
-	keyURL := fmt.Sprintf("%v/key?v=%d", serverURL, tailcfg.CurrentCapabilityVersion)
+	controlBase, err := controlurl.ParseControl(serverURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid control server URL: %w", err)
+	}
+	keyURL := fmt.Sprintf("%s/key?v=%d", controlurl.Origin(controlBase), tailcfg.CurrentCapabilityVersion)
 	req, err := http.NewRequestWithContext(ctx, "GET", keyURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create control key request: %v", err)
@@ -1494,6 +1506,9 @@ func loadServerPubKeys(ctx context.Context, httpc *http.Client, serverURL string
 		return nil, fmt.Errorf("fetch control key: %v", err)
 	}
 	defer res.Body.Close()
+	if !controlurl.SameOrigin(controlBase, res.Request.URL) {
+		return nil, fmt.Errorf("fetch control key: redirected to different origin %s", controlurl.Origin(res.Request.URL))
+	}
 	b, err := io.ReadAll(io.LimitReader(res.Body, 64<<10))
 	if err != nil {
 		return nil, fmt.Errorf("fetch control key response: %v", err)
@@ -1516,6 +1531,35 @@ func loadServerPubKeys(ctx context.Context, httpc *http.Client, serverURL string
 	}
 	out.LegacyPublicKey = k
 	return &out, nil
+}
+
+func checkOrSetHTTPNoiseKeyPin(serverURL string, serverNoiseKey key.MachinePublic, p *persist.Persist) error {
+	u, err := controlurl.ParseControl(serverURL)
+	if err != nil {
+		return fmt.Errorf("invalid control server URL: %w", err)
+	}
+	if u.Scheme != "http" {
+		return nil
+	}
+	if serverNoiseKey.IsZero() {
+		return errors.New("control server is too old; no noise key")
+	}
+	if p == nil {
+		return errors.New("missing persistent state for HTTP control server pin")
+	}
+
+	origin := controlurl.Origin(u)
+	if p.ControlServerNoiseKeyOrigin == origin && !p.ControlServerNoiseKey.IsZero() {
+		if p.ControlServerNoiseKey != serverNoiseKey {
+			return fmt.Errorf("control server Noise key changed for %s (expected %s, got %s); exit the current network before trusting a replacement key",
+				origin, p.ControlServerNoiseKey.ShortString(), serverNoiseKey.ShortString())
+		}
+		return nil
+	}
+
+	p.ControlServerNoiseKeyOrigin = origin
+	p.ControlServerNoiseKey = serverNoiseKey
+	return nil
 }
 
 // DevKnob contains temporary internal-only debug knobs.

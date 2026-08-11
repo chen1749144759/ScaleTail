@@ -305,12 +305,15 @@ func TestProfileDupe(t *testing.T) {
 				}
 				got = append(got, prefs.Persist().AsStruct())
 			}
-			d := cmp.Diff(tc.profs, got, cmpopts.SortSlices(func(a, b *persist.Persist) bool {
-				if a.NodeID != b.NodeID {
-					return a.NodeID < b.NodeID
-				}
-				return a.UserProfile.ID < b.UserProfile.ID
-			}))
+			d := cmp.Diff(tc.profs, got,
+				cmpopts.EquateComparable(key.MachinePublic{}),
+				cmpopts.SortSlices(func(a, b *persist.Persist) bool {
+					if a.NodeID != b.NodeID {
+						return a.NodeID < b.NodeID
+					}
+					return a.UserProfile.ID < b.UserProfile.ID
+				}),
+			)
 			if d != "" {
 				t.Fatal(d)
 			}

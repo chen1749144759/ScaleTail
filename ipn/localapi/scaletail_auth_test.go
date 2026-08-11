@@ -15,21 +15,24 @@ import (
 
 func TestValidateScaleTailControlURL(t *testing.T) {
 	tests := []struct {
-		name      string
-		url       string
-		wantErr   bool
-		wantHTTPS bool
+		name    string
+		url     string
+		wantErr bool
 	}{
 		{name: "https_domain", url: "https://control.example.com:60090"},
 		{name: "http_localhost", url: "http://localhost:8080"},
 		{name: "http_loopback_v4", url: "http://127.0.0.9:8080"},
 		{name: "http_loopback_v6", url: "http://[::1]:8080"},
-		{name: "http_remote_ip", url: "http://192.0.2.10:8080", wantErr: true, wantHTTPS: true},
-		{name: "http_remote_domain", url: "http://control.example.com", wantErr: true, wantHTTPS: true},
+		{name: "http_remote_ip", url: "http://192.0.2.10:8080"},
+		{name: "http_remote_domain", url: "http://control.example.com"},
 		{name: "credentials", url: "https://user:pass@control.example.com", wantErr: true},
+		{name: "http_credentials", url: "http://user:pass@control.example.com", wantErr: true},
 		{name: "path", url: "https://control.example.com/control", wantErr: true},
+		{name: "http_path", url: "http://control.example.com/control", wantErr: true},
 		{name: "query", url: "https://control.example.com/?redirect=x", wantErr: true},
+		{name: "http_query", url: "http://control.example.com/?redirect=x", wantErr: true},
 		{name: "fragment", url: "https://control.example.com/#fragment", wantErr: true},
+		{name: "http_fragment", url: "http://control.example.com/#fragment", wantErr: true},
 		{name: "unsupported_scheme", url: "ftp://control.example.com", wantErr: true},
 	}
 
@@ -44,9 +47,6 @@ func TestValidateScaleTailControlURL(t *testing.T) {
 			}
 			if err == nil {
 				t.Fatalf("validateScaleTailControlURL(%q) succeeded, want error", tt.url)
-			}
-			if tt.wantHTTPS && err != errScaleTailHTTPSRequired {
-				t.Fatalf("validateScaleTailControlURL(%q) error = %v, want %v", tt.url, err, errScaleTailHTTPSRequired)
 			}
 		})
 	}

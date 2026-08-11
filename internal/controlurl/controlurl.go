@@ -7,14 +7,11 @@ package controlurl
 
 import (
 	"errors"
-	"net/netip"
+	"net"
 	"net/url"
+	"strconv"
 	"strings"
 )
-
-// ErrHTTPSRequired reports an attempt to use cleartext HTTP with a remote
-// control server. HTTP is allowed only for an explicit loopback host.
-var ErrHTTPSRequired = errors.New("remote control server requires HTTPS")
 
 // ParseControl validates and parses a control server base URL.
 func ParseControl(raw string) (*url.URL, error) {
@@ -46,31 +43,64 @@ func ParseAuth(raw string) (*url.URL, error) {
 // effective port.
 func SameOrigin(a, b *url.URL) bool {
 	return strings.EqualFold(a.Scheme, b.Scheme) &&
-		strings.EqualFold(a.Hostname(), b.Hostname()) &&
+		strings.EqualFold(canonicalHostname(a.Hostname()), canonicalHostname(b.Hostname())) &&
 		effectivePort(a) == effectivePort(b)
+}
+
+// Origin returns the canonical origin of a validated control or authentication
+// URL. Default ports are omitted so equivalent origins have one persisted form.
+func Origin(u *url.URL) string {
+	scheme := strings.ToLower(u.Scheme)
+	hostname := canonicalHostname(u.Hostname())
+	port := u.Port()
+	if port != "" {
+		n, _ := strconv.Atoi(port)
+		port = strconv.Itoa(n)
+	}
+	if port == effectivePort(&url.URL{Scheme: scheme}) {
+		port = ""
+	}
+	if port != "" {
+		hostname = net.JoinHostPort(hostname, port)
+	} else if strings.Contains(hostname, ":") {
+		hostname = "[" + hostname + "]"
+	}
+	return scheme + "://" + hostname
 }
 
 func parseServer(raw string) (*url.URL, error) {
 	u, err := url.Parse(strings.TrimSpace(raw))
-	if err != nil || u.Scheme == "" || u.Host == "" || u.Hostname() == "" || u.User != nil {
+	if err != nil || u.Scheme == "" || u.Host == "" || canonicalHostname(u.Hostname()) == "" || u.User != nil {
 		return nil, errors.New("invalid ScaleTail server URL")
+	}
+	if strings.HasSuffix(u.Host, ":") {
+		return nil, errors.New("invalid ScaleTail server port")
+	}
+	if port := u.Port(); port != "" {
+		n, err := strconv.Atoi(port)
+		if err != nil || n < 1 || n > 65535 {
+			return nil, errors.New("invalid ScaleTail server port")
+		}
 	}
 	u.Scheme = strings.ToLower(u.Scheme)
 	switch u.Scheme {
-	case "https":
+	case "http", "https":
 		return u, nil
-	case "http":
-		if isLoopbackHost(u.Hostname()) {
-			return u, nil
-		}
-		return nil, ErrHTTPSRequired
 	default:
 		return nil, errors.New("invalid control server URL scheme")
 	}
 }
 
+func canonicalHostname(hostname string) string {
+	return strings.TrimSuffix(strings.ToLower(hostname), ".")
+}
+
 func effectivePort(u *url.URL) string {
 	if port := u.Port(); port != "" {
+		n, err := strconv.Atoi(port)
+		if err == nil {
+			return strconv.Itoa(n)
+		}
 		return port
 	}
 	switch strings.ToLower(u.Scheme) {
@@ -81,13 +111,4 @@ func effectivePort(u *url.URL) string {
 	default:
 		return ""
 	}
-}
-
-func isLoopbackHost(host string) bool {
-	host = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(host)), ".")
-	if host == "localhost" {
-		return true
-	}
-	addr, err := netip.ParseAddr(host)
-	return err == nil && addr.Unmap().IsLoopback()
 }

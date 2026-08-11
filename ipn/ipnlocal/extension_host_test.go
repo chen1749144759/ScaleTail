@@ -38,7 +38,7 @@ import (
 
 // defaultCmpOpts are the default options used for deepcmp comparisons in tests.
 var defaultCmpOpts = []deepcmp.Option{
-	cmpopts.EquateComparable(key.NodePublic{}, netip.Addr{}, netip.Prefix{}),
+	cmpopts.EquateComparable(key.NodePublic{}, key.MachinePublic{}, netip.Addr{}, netip.Prefix{}),
 }
 
 // TestExtensionInitShutdown tests that [ExtensionHost] correctly initializes

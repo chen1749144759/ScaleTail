@@ -240,7 +240,7 @@ function messageOf(err: unknown) {
       <div class="section-head">
         <div>
           <h2>服务端连接</h2>
-          <p>使用控制服务器账号登录。远程服务器必须提供可信 HTTPS。</p>
+          <p>HTTP 与 HTTPS 均通过 Noise 加密账号凭据；HTTP 首次连接会锁定服务端公钥。</p>
         </div>
         <StatusPill :state="backendState" />
       </div>

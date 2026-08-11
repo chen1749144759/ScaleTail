@@ -29,12 +29,14 @@ func (src *Persist) Clone() *Persist {
 
 // A compilation failure here means this code must be regenerated, with the command at the top of this file.
 var _PersistCloneNeedsRegeneration = Persist(struct {
-	_                     structs.Incomparable
-	PrivateNodeKey        key.NodePrivate
-	OldPrivateNodeKey     key.NodePrivate
-	UserProfile           tailcfg.UserProfile
-	NetworkLockKey        key.NLPrivate
-	NodeID                tailcfg.StableNodeID
-	AttestationKey        key.HardwareAttestationKey
-	DisallowedTKAStateIDs []string
+	_                           structs.Incomparable
+	PrivateNodeKey              key.NodePrivate
+	OldPrivateNodeKey           key.NodePrivate
+	UserProfile                 tailcfg.UserProfile
+	NetworkLockKey              key.NLPrivate
+	NodeID                      tailcfg.StableNodeID
+	AttestationKey              key.HardwareAttestationKey
+	ControlServerNoiseKeyOrigin string
+	ControlServerNoiseKey       key.MachinePublic
+	DisallowedTKAStateIDs       []string
 }{})
