@@ -256,8 +256,14 @@ func (c *Client) targetString(reg *tailcfg.DERPRegion) string {
 	return fmt.Sprintf("region %d (%v)", reg.RegionID, reg.RegionCode)
 }
 
-func (c *Client) useHTTPS() bool {
+func (c *Client) useHTTPS(node *tailcfg.DERPNode) bool {
 	if c.url != nil && c.url.Scheme == "http" {
+		return false
+	}
+	// ScaleTail control servers can explicitly advertise an embedded DERP
+	// endpoint on the same HTTP origin. DERP payloads remain end-to-end
+	// encrypted by the DERP protocol even when the HTTP transport has no TLS.
+	if node != nil && node.InsecureForTests {
 		return false
 	}
 	if debugUseDERPHTTP() {
@@ -280,7 +286,7 @@ func (c *Client) urlString(node *tailcfg.DERPNode) string {
 		return c.url.String()
 	}
 	proto := "https"
-	if debugUseDERPHTTP() {
+	if (node != nil && node.InsecureForTests) || debugUseDERPHTTP() {
 		proto = "http"
 	}
 	return fmt.Sprintf("%s://%s/derp", proto, node.HostName)
@@ -462,7 +468,7 @@ func (c *Client) connect(ctx context.Context, caller string) (client *derp.Clien
 	var serverPub key.NodePublic // or zero if unknown (if not using TLS or TLS middlebox eats it)
 	var serverProtoVersion int
 	var tlsState *tls.ConnectionState
-	if c.useHTTPS() {
+	if c.useHTTPS(node) {
 		tlsConn := c.tlsClient(tcpConn, node)
 		httpConn = tlsConn
 
@@ -727,10 +733,14 @@ const dialNodeTimeout = 1500 * time.Millisecond
 // overall but have dialRegion start overlapping races?
 func (c *Client) dialNode(ctx context.Context, n *tailcfg.DERPNode) (net.Conn, error) {
 	// First see if we need to use an HTTP proxy.
+	proxyScheme := "https"
+	if !c.useHTTPS(n) {
+		proxyScheme = "http"
+	}
 	proxyReq := &http.Request{
 		Method: "GET", // doesn't really matter
 		URL: &url.URL{
-			Scheme: "https",
+			Scheme: proxyScheme,
 			Host:   c.tlsServerName(n),
 			Path:   "/", // unused
 		},
@@ -781,7 +791,7 @@ func (c *Client) dialNode(ctx context.Context, n *tailcfg.DERPNode) (net.Conn, e
 				}
 			}
 			port := "443"
-			if !c.useHTTPS() {
+			if !c.useHTTPS(n) {
 				port = "3340"
 			}
 			if n.DERPPort != 0 {

@@ -6,6 +6,7 @@ package unixpkgs
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"errors"
 	"fmt"
@@ -33,6 +34,40 @@ func packageFileInfo(mode os.FileMode) *files.ContentFileInfo {
 		Group: "root",
 		Mode:  mode,
 	}
+}
+
+func normalizedPackageScript(outDir, source string) (string, error) {
+	data, err := os.ReadFile(source)
+	if err != nil {
+		return "", err
+	}
+	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
+
+	f, err := os.CreateTemp(outDir, ".scaletail-package-script-")
+	if err != nil {
+		return "", err
+	}
+	name := f.Name()
+	removeOnError := true
+	defer func() {
+		if removeOnError {
+			_ = os.Remove(name)
+		}
+	}()
+	if err := f.Chmod(0755); err != nil {
+		_ = f.Close()
+		return "", err
+	}
+	if _, err := f.Write(data); err != nil {
+		_ = f.Close()
+		return "", err
+	}
+	if err := f.Close(); err != nil {
+		return "", err
+	}
+	removeOnError = false
+
+	return name, nil
 }
 
 type tgzTarget struct {
@@ -407,6 +442,22 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		return nil, err
 	}
 
+	postInstall, err := normalizedPackageScript(b.Out, filepath.Join(repoDir, "release/rpm/rpm.postinst.sh"))
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(postInstall)
+	preRemove, err := normalizedPackageScript(b.Out, filepath.Join(repoDir, "release/rpm/rpm.prerm.sh"))
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(preRemove)
+	postRemove, err := normalizedPackageScript(b.Out, filepath.Join(repoDir, "release/rpm/rpm.postrm.sh"))
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(postRemove)
+
 	arch := rpmArch(t.arch())
 	contents, err := files.PrepareForPackager(files.Contents{
 		&files.Content{
@@ -485,9 +536,9 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 		Overridables: nfpm.Overridables{
 			Contents: contents,
 			Scripts: nfpm.Scripts{
-				PostInstall: filepath.Join(repoDir, "release/rpm/rpm.postinst.sh"),
-				PreRemove:   filepath.Join(repoDir, "release/rpm/rpm.prerm.sh"),
-				PostRemove:  filepath.Join(repoDir, "release/rpm/rpm.postrm.sh"),
+				PostInstall: postInstall,
+				PreRemove:   preRemove,
+				PostRemove:  postRemove,
 			},
 			Depends:   []string{"iptables", "iproute"},
 			Replaces:  []string{"tailscale", "tailscale-relay"},

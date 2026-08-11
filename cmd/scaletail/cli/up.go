@@ -514,6 +514,38 @@ func updatePrefs(prefs, curPrefs *ipn.Prefs, env upCheckEnv) (simpleUp bool, jus
 	return simpleUp, justEditMP, nil
 }
 
+func isCredentialOnlyAccountReauth(
+	flagSet *flag.FlagSet,
+	upArgs upArgsT,
+	haveNodeKey bool,
+	currentControlURL string,
+) bool {
+	if !haveNodeKey || upArgs.username == "" || upArgs.forceReauth || upArgs.reset {
+		return false
+	}
+
+	onlyCredentials := true
+	loginServerSet := false
+	flagSet.Visit(func(f *flag.Flag) {
+		switch f.Name {
+		case "username", "password-file", "timeout", "json":
+		case "login-server":
+			loginServerSet = true
+		default:
+			onlyCredentials = false
+		}
+	})
+	if !onlyCredentials {
+		return false
+	}
+	if loginServerSet && currentControlURL != upArgs.server &&
+		!(ipn.IsLoginServerSynonym(currentControlURL) && ipn.IsLoginServerSynonym(upArgs.server)) {
+		return false
+	}
+
+	return true
+}
+
 func presentSSHToggleRisk(wantSSH, haveSSH bool, acceptedRisks string) error {
 	if !isSSHOverTailscale() || wantSSH == haveSSH {
 		return nil
@@ -605,9 +637,23 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT, comma
 		}
 	}()
 
-	simpleUp, justEditMP, err := updatePrefs(prefs, curPrefs, env)
-	if err != nil {
-		fatalf("%s", err)
+	credentialOnlyReauth := cmd == "up" && isCredentialOnlyAccountReauth(
+		commandFlagSet,
+		upArgs,
+		st.HaveNodeKey,
+		curPrefs.ControlURL,
+	)
+	var simpleUp bool
+	var justEditMP *ipn.MaskedPrefs
+	if credentialOnlyReauth {
+		// Account proof must not reset unrelated network preferences such as
+		// subnet routes, DNS, exit-node selection, or netfilter settings.
+		simpleUp = true
+	} else {
+		simpleUp, justEditMP, err = updatePrefs(prefs, curPrefs, env)
+		if err != nil {
+			fatalf("%s", err)
+		}
 	}
 	if justEditMP != nil {
 		justEditMP.EggSet = egg
