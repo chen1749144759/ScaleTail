@@ -350,7 +350,29 @@ export async function getPrefs(): Promise<Prefs> {
   return localRequest<Prefs>("GET", "/localapi/v0/prefs");
 }
 
-export async function patchPrefs(body: unknown): Promise<Prefs> {
+export interface MaskedPrefsRequest extends Partial<Prefs> {
+  ExitNodeIDSet?: boolean;
+  AdvertiseRoutesSet?: boolean;
+  WantRunningSet?: boolean;
+  LoggedOutSet?: boolean;
+}
+
+export function buildWantRunningPrefsPatch(
+  wantRunning: boolean,
+  ensureLoggedIn = false,
+): MaskedPrefsRequest {
+  const patch: MaskedPrefsRequest = {
+    WantRunning: wantRunning,
+    WantRunningSet: true,
+  };
+  if (ensureLoggedIn) {
+    patch.LoggedOut = false;
+    patch.LoggedOutSet = true;
+  }
+  return patch;
+}
+
+export async function patchPrefs(body: MaskedPrefsRequest): Promise<Prefs> {
   return localRequest<Prefs>("PATCH", "/localapi/v0/prefs", body);
 }
 

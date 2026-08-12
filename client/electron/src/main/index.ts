@@ -4,6 +4,7 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import path from "node:path";
 import {
+  buildWantRunningPrefsPatch,
   buildControlURL,
   getPrefs,
   getStatus,
@@ -273,7 +274,7 @@ function registerIPC(): void {
       await setUseExitNode(false);
     } else {
       await patchPrefs({
-        Prefs: { ExitNodeID: cleanID },
+        ExitNodeID: cleanID,
         ExitNodeIDSet: true,
       });
     }
@@ -285,7 +286,7 @@ function registerIPC(): void {
     await ensureDaemonReady(false);
     const cleanRoutes = normalizeRoutes(routes);
     await patchPrefs({
-      Prefs: { AdvertiseRoutes: cleanRoutes },
+      AdvertiseRoutes: cleanRoutes,
       AdvertiseRoutesSet: true,
     });
     await refreshTrayStatus();
@@ -566,18 +567,11 @@ async function resumeNetworkAfterForcedUpdateUnlocked(resumeNetwork: boolean): P
 }
 
 async function setWantRunning(wantRunning: boolean): Promise<void> {
-  await patchPrefs({
-    Prefs: { WantRunning: wantRunning },
-    WantRunningSet: true,
-  });
+  await patchPrefs(buildWantRunningPrefsPatch(wantRunning));
 }
 
 async function setRunningPrefs(wantRunning: boolean): Promise<void> {
-  await patchPrefs({
-    Prefs: { WantRunning: wantRunning, LoggedOut: false },
-    WantRunningSet: true,
-    LoggedOutSet: true,
-  });
+  await patchPrefs(buildWantRunningPrefsPatch(wantRunning, true));
 }
 
 async function waitForPasswordAuthSession(requireRegistrationSession: boolean): Promise<Status> {
