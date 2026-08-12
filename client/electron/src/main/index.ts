@@ -309,6 +309,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
   req = normalizeConnectRequest(req);
   const status = await ensureDaemonReady(false);
   const state = status.BackendState || "";
+  const hadNodeKey = Boolean(status.HaveNodeKey);
   if (state === "Stopped" && status.HaveNodeKey) {
     throw new Error("当前只是临时断开状态，请点击“恢复连接”。如需更换服务端，请先点击“退出当前网络”。");
   }
@@ -330,7 +331,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
       Boolean(req.acceptDNS),
     );
 
-    await waitForPasswordAuthSession();
+    await waitForPasswordAuthSession(!hadNodeKey);
     try {
       // Local backend state can become Running before the first authenticated
       // map response arrives. Always submit account proof instead of treating
@@ -342,6 +343,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
           ok: false,
           controlURL,
           passwordChangeRequired: true,
+          passwordChangeRequiresRegistrationSession: !hadNodeKey,
           message: "这是初始密码或密码已到期，请在客户端设置新密码后继续连接。",
         };
       }
@@ -380,7 +382,7 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise
   const currentPassword = validateAccountPassword(normalized.password);
   const newPassword = validateNewAccountPassword(req.newPassword, currentPassword);
   await ensureDaemonReady(false);
-  await waitForPasswordChangeSession();
+  await waitForPasswordChangeSession(Boolean(req.requireRegistrationSession));
 
   try {
     await localRequest<void>(
@@ -416,11 +418,11 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise
   };
 }
 
-async function waitForPasswordChangeSession(): Promise<void> {
+async function waitForPasswordChangeSession(requireRegistrationSession: boolean): Promise<void> {
   const deadline = Date.now() + 30000;
   let latest = await getStatus(false);
   while (Date.now() < deadline) {
-    if (latest.HaveNodeKey || latest.AuthURL) {
+    if (latest.AuthURL || (!requireRegistrationSession && latest.HaveNodeKey)) {
       return;
     }
     await delay(500);
@@ -559,12 +561,12 @@ async function setRunningPrefs(wantRunning: boolean): Promise<void> {
   });
 }
 
-async function waitForPasswordAuthSession(): Promise<Status> {
+async function waitForPasswordAuthSession(requireRegistrationSession: boolean): Promise<Status> {
   const deadline = Date.now() + 30000;
   let latest = await getStatus(false);
   while (Date.now() < deadline) {
     const state = latest.BackendState || "";
-    if (state === "Running" || state === "NeedsMachineAuth" || latest.AuthURL) {
+    if (latest.AuthURL || (!requireRegistrationSession && (state === "Running" || state === "NeedsMachineAuth" || latest.HaveNodeKey))) {
       return latest;
     }
     await delay(500);

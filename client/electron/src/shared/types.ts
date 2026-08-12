@@ -68,10 +68,12 @@ export interface ConnectResponse {
   controlURL: string;
   message: string;
   passwordChangeRequired?: boolean;
+  passwordChangeRequiresRegistrationSession?: boolean;
 }
 
 export interface ChangeExpiredPasswordRequest extends ConnectRequest {
   newPassword: string;
+  requireRegistrationSession: boolean;
 }
 
 export interface ClientReportConfig {

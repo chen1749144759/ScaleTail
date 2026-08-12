@@ -33,6 +33,7 @@ const passwordChangeOpen = ref(false);
 const pendingCurrentPassword = ref("");
 const newPassword = ref("");
 const confirmNewPassword = ref("");
+const passwordChangeRequiresRegistrationSession = ref(true);
 
 const backendState = computed(() => status.value?.BackendState || "");
 const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
@@ -134,6 +135,7 @@ async function connect() {
       pendingCurrentPassword.value = password.value;
       newPassword.value = "";
       confirmNewPassword.value = "";
+      passwordChangeRequiresRegistrationSession.value = res.passwordChangeRequiresRegistrationSession !== false;
       passwordChangeOpen.value = true;
       message.value = res.message;
       return;
@@ -176,6 +178,7 @@ async function submitPasswordChange() {
       username: username.value,
       password: pendingCurrentPassword.value,
       newPassword: newPassword.value,
+      requireRegistrationSession: passwordChangeRequiresRegistrationSession.value,
       acceptRoutes: acceptRoutes.value,
       acceptDNS: acceptDNS.value,
     });
