@@ -32,7 +32,7 @@ import {
   validateAccountPassword,
 } from "./credential_store";
 import type { PasswordAuthErrorCode } from "./localapi";
-import type { BackendState, ClientReportConfig, ConnectRequest, Status } from "../shared/types";
+import type { BackendState, ChangeExpiredPasswordRequest, ClientReportConfig, ConnectRequest, ConnectResponse, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
 
@@ -230,6 +230,9 @@ function registerIPC(): void {
   ipcMain.handle("api:connect", async (_event, req: ConnectRequest) => (
     serializeAccountOperation(() => connect(req))
   ));
+  ipcMain.handle("api:changeExpiredPassword", async (_event, req: ChangeExpiredPasswordRequest) => (
+    serializeAccountOperation(() => changeExpiredPassword(req))
+  ));
   ipcMain.handle("api:disconnect", async () => serializeAccountOperation(disconnect));
   ipcMain.handle("api:reconnect", async () => serializeAccountOperation(reconnect));
   ipcMain.handle("api:logout", async () => serializeAccountOperation(async () => {
@@ -301,7 +304,7 @@ function restartTelemetryReporter(): void {
   stopTelemetry = startTelemetryReporter({ getStatus });
 }
 
-async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: string; message: string }> {
+async function connect(req: ConnectRequest): Promise<ConnectResponse> {
   assertClientUpdateAllowed();
   req = normalizeConnectRequest(req);
   const status = await ensureDaemonReady(false);
@@ -318,7 +321,6 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
   const username = validateUsername(req.username);
   const password = validateAccountPassword(req.password);
   clearAccountCredential();
-  saveAccountCredential({ controlURL, username, password });
   try {
     resetTelemetryPolicyState();
     await startDaemonUp(
@@ -335,8 +337,17 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
       // that local state as proof that the control server accepted the login.
       await authenticateWithPassword(controlURL, username, password);
     } catch (err) {
+      if (err instanceof LocalAPIError && err.code === "password_expired") {
+        return {
+          ok: false,
+          controlURL,
+          passwordChangeRequired: true,
+          message: "这是初始密码或密码已到期，请在客户端设置新密码后继续连接。",
+        };
+      }
       throw passwordAuthenticationError(err);
     }
+    saveAccountCredential({ controlURL, username, password });
     const nextStatus = await waitForPasswordAuthResult();
     await refreshTrayStatus();
 
@@ -359,6 +370,63 @@ async function connect(req: ConnectRequest): Promise<{ ok: boolean; controlURL: 
     clearAccountCredential();
     throw err;
   }
+}
+
+async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise<ConnectResponse> {
+  assertClientUpdateAllowed();
+  const normalized = normalizeConnectRequest(req);
+  const controlURL = buildControlURL(normalized);
+  const username = validateUsername(normalized.username);
+  const currentPassword = validateAccountPassword(normalized.password);
+  const newPassword = validateNewAccountPassword(req.newPassword, currentPassword);
+  await ensureDaemonReady(false);
+  await waitForPasswordChangeSession();
+
+  try {
+    await localRequest<void>(
+      "PUT",
+      "/localapi/v0/scaletail-change-password",
+      { controlUrl: controlURL, username, currentPassword, newPassword },
+      204,
+      30000,
+    );
+  } catch (err) {
+    throw passwordAuthenticationError(err);
+  }
+
+  try {
+    saveAccountCredential({ controlURL, username, password: newPassword });
+  } catch (err) {
+    throw new Error(`新密码已设置，但无法由系统凭据库安全保存。请关闭提示后使用新密码重新连接: ${formatError(err)}`);
+  }
+  let nextStatus: Status;
+  try {
+    await authenticateAccountWithRetry(controlURL, username, newPassword, 45000);
+    nextStatus = await waitForPasswordAuthResult();
+    await refreshTrayStatus();
+  } catch (err) {
+    throw new Error(`新密码已设置并安全保存，但自动连接未完成。请点击“连接”并使用新密码重试: ${formatError(err)}`);
+  }
+  return {
+    ok: true,
+    controlURL,
+    message: nextStatus.BackendState === "Running"
+      ? "新密码已设置，已连接到控制服务器。"
+      : "新密码已设置，连接请求正在处理。",
+  };
+}
+
+async function waitForPasswordChangeSession(): Promise<void> {
+  const deadline = Date.now() + 30000;
+  let latest = await getStatus(false);
+  while (Date.now() < deadline) {
+    if (latest.HaveNodeKey || latest.AuthURL) {
+      return;
+    }
+    await delay(500);
+    latest = await getStatus(false);
+  }
+  throw new Error("auth_session_expired: 未取得与当前机器绑定的改密会话，请重新发起连接。");
 }
 
 async function disconnect(): Promise<{ ok: boolean; message: string }> {
@@ -656,6 +724,17 @@ function validateUsername(username: string): string {
   return value;
 }
 
+function validateNewAccountPassword(password: string, currentPassword: string): string {
+  const value = validateAccountPassword(String(password || ""));
+  if (Buffer.byteLength(value, "utf8") < 12) {
+    throw new Error("新密码至少需要 12 个字节。中文通常占 3 个字节。");
+  }
+  if (value === currentPassword) {
+    throw new Error("新密码不能与当前临时密码相同。");
+  }
+  return value;
+}
+
 function passwordAuthenticationError(err: unknown): Error {
   const code = err instanceof LocalAPIError ? asPasswordAuthErrorCode(err.code) : undefined;
   if (!code) {
@@ -666,7 +745,7 @@ function passwordAuthenticationError(err: unknown): Error {
     account_locked: "账号已锁定，请稍后重试或联系管理员。",
     account_disabled: "账号已被禁用，请联系管理员。",
     account_expired: "账号已过期，请联系管理员。",
-    password_expired: "密码已过期，请先在管理平台修改密码。",
+    password_expired: "初始密码或当前密码已过期，请在客户端设置新密码。",
     network_not_assigned: "账号尚未分配到任何网络，请联系管理员。",
     node_limit_reached: "该账号已达到允许的节点数量上限，请联系管理员清理旧节点或调整上限。",
     tags_not_supported: "账号登录节点不支持身份标签，请移除宣告标签后重试。",
@@ -681,6 +760,10 @@ function passwordAuthenticationError(err: unknown): Error {
     internal_error: "服务端认证处理失败，请稍后重试。",
     authentication_failed: "服务端拒绝了账号认证，请稍后重试。",
     network_error: "暂时无法通过加密控制通道完成账号认证，请稍后重试。",
+    invalid_password: "新密码不符合要求：至少 12 字节、最多 72 字节，且不能包含控制字符。",
+    password_reused: "新密码不能与当前密码或近期使用过的密码相同。",
+    password_not_expired: "当前密码不需要强制修改，请直接使用当前密码连接。",
+    account_changed: "账号在修改密码期间发生变化，请重新输入最新密码后重试。",
   };
   return new Error(`${code}: ${messages[code]}`);
 }
@@ -706,6 +789,10 @@ function asPasswordAuthErrorCode(code: string | undefined): PasswordAuthErrorCod
     case "internal_error":
     case "authentication_failed":
     case "network_error":
+    case "invalid_password":
+    case "password_reused":
+    case "password_not_expired":
+    case "account_changed":
       return code;
     default:
       return undefined;

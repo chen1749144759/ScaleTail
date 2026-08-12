@@ -77,28 +77,29 @@ var handler = map[string]LocalAPIHandler{
 
 	// The other /localapi/v0/NAME handlers are exact matches and contain only NAME
 	// without a trailing slash:
-	"cert-domains":            (*Handler).serveCertDomains,
-	"check-prefs":             (*Handler).serveCheckPrefs,
-	"check-so-mark-in-use":    (*Handler).serveCheckSOMarkInUse,
-	"derpmap":                 (*Handler).serveDERPMap,
-	"dns-config":              (*Handler).serveDNSConfig,
-	"goroutines":              (*Handler).serveGoroutines,
-	"login-interactive":       (*Handler).serveLoginInteractive,
-	"logout":                  (*Handler).serveLogout,
-	"netcheck":                (*Handler).serveNetcheck,
-	"peer-by-id":              (*Handler).servePeerByID,
-	"ping":                    (*Handler).servePing,
-	"prefs":                   (*Handler).servePrefs,
-	"reload-config":           (*Handler).reloadConfig,
-	"reset-auth":              (*Handler).serveResetAuth,
-	"scaletail-auth-password": (*Handler).serveScaleTailAuthPassword,
-	"scaletail-up":            (*Handler).serveScaleTailUp,
-	"services":                (*Handler).serveServices,
-	"set-expiry-sooner":       (*Handler).serveSetExpirySooner,
-	"shutdown":                (*Handler).serveShutdown,
-	"start":                   (*Handler).serveStart,
-	"status":                  (*Handler).serveStatus,
-	"whois":                   (*Handler).serveWhoIs,
+	"cert-domains":              (*Handler).serveCertDomains,
+	"check-prefs":               (*Handler).serveCheckPrefs,
+	"check-so-mark-in-use":      (*Handler).serveCheckSOMarkInUse,
+	"derpmap":                   (*Handler).serveDERPMap,
+	"dns-config":                (*Handler).serveDNSConfig,
+	"goroutines":                (*Handler).serveGoroutines,
+	"login-interactive":         (*Handler).serveLoginInteractive,
+	"logout":                    (*Handler).serveLogout,
+	"netcheck":                  (*Handler).serveNetcheck,
+	"peer-by-id":                (*Handler).servePeerByID,
+	"ping":                      (*Handler).servePing,
+	"prefs":                     (*Handler).servePrefs,
+	"reload-config":             (*Handler).reloadConfig,
+	"reset-auth":                (*Handler).serveResetAuth,
+	"scaletail-auth-password":   (*Handler).serveScaleTailAuthPassword,
+	"scaletail-change-password": (*Handler).serveScaleTailChangePassword,
+	"scaletail-up":              (*Handler).serveScaleTailUp,
+	"services":                  (*Handler).serveServices,
+	"set-expiry-sooner":         (*Handler).serveSetExpirySooner,
+	"shutdown":                  (*Handler).serveShutdown,
+	"start":                     (*Handler).serveStart,
+	"status":                    (*Handler).serveStatus,
+	"whois":                     (*Handler).serveWhoIs,
 }
 
 func init() {
@@ -990,6 +991,10 @@ const (
 	passwordAuthInternalError       = "internal_error"
 	passwordAuthFailed              = "authentication_failed"
 	passwordAuthNetworkError        = "network_error"
+	passwordAuthInvalidPassword     = "invalid_password"
+	passwordAuthPasswordReused      = "password_reused"
+	passwordAuthPasswordNotExpired  = "password_not_expired"
+	passwordAuthAccountChanged      = "account_changed"
 )
 
 type scaleTailUpRequest struct {
@@ -1009,6 +1014,20 @@ type scaleTailPasswordAuthUpstreamRequest struct {
 	AuthID   string `json:"authId"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type scaleTailPasswordChangeRequest struct {
+	ControlURL      string `json:"controlUrl,omitempty"`
+	Username        string `json:"username"`
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
+}
+
+type scaleTailPasswordChangeUpstreamRequest struct {
+	AuthID          string `json:"authId"`
+	Username        string `json:"username"`
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
 }
 
 type scaleTailPasswordAuthError struct {
@@ -1188,6 +1207,90 @@ func (h *Handler) serveScaleTailAuthPassword(w http.ResponseWriter, r *http.Requ
 	writeScaleTailPasswordAuthError(w, passwordAuthHTTPStatus(code), code)
 }
 
+func (h *Handler) serveScaleTailChangePassword(w http.ResponseWriter, r *http.Request) {
+	if !h.PermitWrite {
+		writeScaleTailPasswordAuthError(w, http.StatusForbidden, passwordAuthFailed)
+		return
+	}
+	if r.Method != httpm.PUT {
+		http.Error(w, "want PUT", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req scaleTailPasswordChangeRequest
+	if err := decodeLimitedJSON(w, r, &req, maxScaleTailPasswordAuthRequestBytes); err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusBadRequest, passwordAuthInvalidRequest)
+		return
+	}
+	req.Username = strings.TrimSpace(req.Username)
+	if !validScaleTailAccountUsername(req.Username) ||
+		!validScaleTailAccountPassword(req.CurrentPassword) ||
+		!validScaleTailNewAccountPassword(req.NewPassword) {
+		writeScaleTailPasswordAuthError(w, http.StatusBadRequest, passwordAuthInvalidPassword)
+		return
+	}
+	if req.CurrentPassword == req.NewPassword {
+		writeScaleTailPasswordAuthError(w, http.StatusBadRequest, passwordAuthPasswordReused)
+		return
+	}
+
+	st := h.b.StatusWithoutPeers()
+	authURL := ""
+	if st != nil {
+		authURL = st.AuthURL
+	}
+	_, authID, err := scaleTailPasswordAuthSession(
+		h.b.Prefs().ControlURL(),
+		authURL,
+		req.ControlURL,
+	)
+	if err != nil {
+		if errors.Is(err, errScaleTailAuthSessionInvalid) {
+			writeScaleTailPasswordAuthError(w, http.StatusGone, passwordAuthInvalidSession)
+			return
+		}
+		writeScaleTailPasswordAuthError(w, http.StatusGone, passwordAuthSessionExpired)
+		return
+	}
+
+	payload, err := json.Marshal(scaleTailPasswordChangeUpstreamRequest{
+		AuthID:          authID,
+		Username:        req.Username,
+		CurrentPassword: req.CurrentPassword,
+		NewPassword:     req.NewPassword,
+	})
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusInternalServerError, passwordAuthFailed)
+		return
+	}
+	httpReq, err := http.NewRequestWithContext(r.Context(), httpm.PUT, "https://unused/machine/auth/password", bytes.NewReader(payload))
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusInternalServerError, passwordAuthFailed)
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Accept", "application/json")
+
+	resp, err := h.b.DoNoiseRequest(httpReq)
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusBadGateway, passwordAuthNetworkError)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := readLimitedBody(resp.Body, maxScaleTailPasswordAuthResponseBytes)
+	if err != nil {
+		writeScaleTailPasswordAuthError(w, http.StatusBadGateway, passwordAuthFailed)
+		return
+	}
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	code := scaleTailPasswordAuthCode(resp.StatusCode, body)
+	writeScaleTailPasswordAuthError(w, passwordAuthHTTPStatus(code), code)
+}
+
 func validScaleTailAccountUsername(username string) bool {
 	return username != "" &&
 		len(username) <= maxScaleTailUsernameBytes &&
@@ -1198,6 +1301,10 @@ func validScaleTailAccountPassword(password string) bool {
 	return password != "" &&
 		len(password) <= maxScaleTailPasswordBytes &&
 		strings.IndexFunc(password, unicode.IsControl) == -1
+}
+
+func validScaleTailNewAccountPassword(password string) bool {
+	return len([]byte(password)) >= 12 && validScaleTailAccountPassword(password)
 }
 
 func (h *Handler) serveScaleTailUp(w http.ResponseWriter, r *http.Request) {
@@ -1439,6 +1546,10 @@ func canonicalScaleTailPasswordAuthCode(value string) string {
 		passwordAuthRegistrationFailed,
 		passwordAuthRouteApprovalFailed,
 		passwordAuthInternalError,
+		passwordAuthInvalidPassword,
+		passwordAuthPasswordReused,
+		passwordAuthPasswordNotExpired,
+		passwordAuthAccountChanged,
 	} {
 		if value == code || strings.Contains(value, code) {
 			return code
@@ -1463,6 +1574,10 @@ func passwordAuthHTTPStatus(code string) int {
 		return http.StatusBadRequest
 	case passwordAuthInvalidRequest:
 		return http.StatusBadRequest
+	case passwordAuthInvalidPassword, passwordAuthPasswordReused:
+		return http.StatusBadRequest
+	case passwordAuthPasswordNotExpired, passwordAuthAccountChanged:
+		return http.StatusConflict
 	case passwordAuthSessionExpired, passwordAuthInvalidSession:
 		return http.StatusGone
 	case passwordAuthMachineMismatch:
@@ -1516,6 +1631,14 @@ func passwordAuthMessage(code string) string {
 		return "control server authentication failed"
 	case passwordAuthNetworkError:
 		return "control server request failed"
+	case passwordAuthInvalidPassword:
+		return "new password does not meet the password policy"
+	case passwordAuthPasswordReused:
+		return "new password must not match a recent password"
+	case passwordAuthPasswordNotExpired:
+		return "password change is not required"
+	case passwordAuthAccountChanged:
+		return "account changed during password update"
 	default:
 		return "authentication failed"
 	}

@@ -67,6 +67,11 @@ export interface ConnectResponse {
   ok: boolean;
   controlURL: string;
   message: string;
+  passwordChangeRequired?: boolean;
+}
+
+export interface ChangeExpiredPasswordRequest extends ConnectRequest {
+  newPassword: string;
 }
 
 export interface ClientReportConfig {
@@ -133,6 +138,7 @@ export interface ScaleTailAPI {
   getStatus(peers?: boolean): Promise<Status>;
   getPrefs(): Promise<Prefs>;
   connect(req: ConnectRequest): Promise<ConnectResponse>;
+  changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise<ConnectResponse>;
   disconnect(): Promise<{ ok: boolean; message: string }>;
   reconnect(): Promise<{ ok: boolean; message: string }>;
   logout(): Promise<{ ok: boolean }>;

@@ -187,6 +187,25 @@ func TestValidScaleTailAccountPassword(t *testing.T) {
 	}
 }
 
+func TestValidScaleTailNewAccountPassword(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		password string
+		want     bool
+	}{
+		{name: "minimum", password: "123456789012", want: true},
+		{name: "unicode bytes", password: "安全密码-1234", want: true},
+		{name: "too short", password: "12345678901"},
+		{name: "control", password: "12345678901\n"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := validScaleTailNewAccountPassword(tt.password); got != tt.want {
+				t.Fatalf("validScaleTailNewAccountPassword(%q) = %v, want %v", tt.password, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestServeStartRejectsLegacyAuthKey(t *testing.T) {
 	h := &Handler{PermitWrite: true}
 	req := httptest.NewRequest(http.MethodPost, "/localapi/v0/start", strings.NewReader(`{"AuthKey":"hskey-auth-legacy"}`))

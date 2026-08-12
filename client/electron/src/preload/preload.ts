@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
+import type { ChangeExpiredPasswordRequest, ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
 
 const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
   getPrefs: () => ipcRenderer.invoke("api:getPrefs"),
   connect: (req: ConnectRequest) => ipcRenderer.invoke("api:connect", req),
+  changeExpiredPassword: (req: ChangeExpiredPasswordRequest) => ipcRenderer.invoke("api:changeExpiredPassword", req),
   disconnect: () => ipcRenderer.invoke("api:disconnect"),
   reconnect: () => ipcRenderer.invoke("api:reconnect"),
   logout: () => ipcRenderer.invoke("api:logout"),

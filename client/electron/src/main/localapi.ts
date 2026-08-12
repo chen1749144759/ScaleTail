@@ -30,7 +30,11 @@ export type PasswordAuthErrorCode =
   | "route_approval_failed"
   | "internal_error"
   | "authentication_failed"
-  | "network_error";
+  | "network_error"
+  | "invalid_password"
+  | "password_reused"
+  | "password_not_expired"
+  | "account_changed";
 
 export class LocalAPIError extends Error {
   constructor(

@@ -29,6 +29,10 @@ const reportSaving = ref(false);
 const message = ref("");
 const error = ref("");
 const logoutConfirmOpen = ref(false);
+const passwordChangeOpen = ref(false);
+const pendingCurrentPassword = ref("");
+const newPassword = ref("");
+const confirmNewPassword = ref("");
 
 const backendState = computed(() => status.value?.BackendState || "");
 const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
@@ -126,6 +130,14 @@ async function connect() {
       acceptRoutes: acceptRoutes.value,
       acceptDNS: acceptDNS.value,
     });
+    if (res.passwordChangeRequired) {
+      pendingCurrentPassword.value = password.value;
+      newPassword.value = "";
+      confirmNewPassword.value = "";
+      passwordChangeOpen.value = true;
+      message.value = res.message;
+      return;
+    }
     message.value = res.message;
     await load();
   } catch (err) {
@@ -133,6 +145,59 @@ async function connect() {
     message.value = "";
   } finally {
     password.value = "";
+    loading.value = false;
+  }
+}
+
+async function submitPasswordChange() {
+  const newPasswordBytes = new TextEncoder().encode(newPassword.value).length;
+  if (newPasswordBytes < 12 || newPasswordBytes > 72) {
+    error.value = "新密码需要 12 到 72 个字节，中文通常占 3 个字节。";
+    return;
+  }
+  if (newPassword.value !== confirmNewPassword.value) {
+    error.value = "两次输入的新密码不一致。";
+    return;
+  }
+  if (newPassword.value === pendingCurrentPassword.value) {
+    error.value = "新密码不能与初始密码相同。";
+    return;
+  }
+
+  loading.value = true;
+  error.value = "";
+  message.value = "正在安全更新密码并继续连接...";
+  try {
+    const res = await window.scaletail.changeExpiredPassword({
+      serverIP: serverIP.value,
+      serverPort: serverPort.value,
+      useHTTPS: useHTTPS.value,
+      hostname: hostname.value,
+      username: username.value,
+      password: pendingCurrentPassword.value,
+      newPassword: newPassword.value,
+      acceptRoutes: acceptRoutes.value,
+      acceptDNS: acceptDNS.value,
+    });
+    password.value = "";
+    pendingCurrentPassword.value = "";
+    newPassword.value = "";
+    confirmNewPassword.value = "";
+    passwordChangeOpen.value = false;
+    message.value = res.message;
+    await load();
+  } catch (err) {
+    const detail = messageOf(err);
+    if (detail.startsWith("新密码已设置")) {
+      password.value = "";
+      pendingCurrentPassword.value = "";
+      newPassword.value = "";
+      confirmNewPassword.value = "";
+      passwordChangeOpen.value = false;
+    }
+    error.value = detail;
+    message.value = "";
+  } finally {
     loading.value = false;
   }
 }
@@ -370,6 +435,28 @@ function messageOf(err: unknown) {
             <LogOut :size="16" />
             确认退出
           </button>
+        </div>
+      </section>
+    </div>
+
+    <div v-if="passwordChangeOpen" class="modal-backdrop">
+      <section class="confirm-modal password-change-modal" role="dialog" aria-modal="true" aria-labelledby="password-change-title">
+        <div>
+          <span class="modal-kicker password-kicker">首次登录保护</span>
+          <h3 id="password-change-title">设置你的新密码</h3>
+          <p>管理员发放的是一次性初始密码。设置新密码后，ScaleTail 会自动继续连接，无需访问管理平台。</p>
+        </div>
+        <label class="field">
+          <span>新密码</span>
+          <input v-model="newPassword" :disabled="loading" type="password" autocomplete="new-password" placeholder="12 到 72 字节" />
+        </label>
+        <label class="field">
+          <span>确认新密码</span>
+          <input v-model="confirmNewPassword" :disabled="loading" type="password" autocomplete="new-password" placeholder="再次输入新密码" @keyup.enter="submitPasswordChange" />
+        </label>
+        <p class="field-note">不能与初始密码或近期使用过的密码相同。</p>
+        <div class="modal-actions">
+          <button class="btn primary" :disabled="loading" @click="submitPasswordChange">设置并连接</button>
         </div>
       </section>
     </div>

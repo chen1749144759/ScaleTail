@@ -622,6 +622,15 @@ th {
   margin-top: 18px;
 }
 
+.password-change-modal {
+  display: grid;
+  gap: 14px;
+}
+
+.password-kicker {
+  color: var(--blue);
+}
+
 .spin {
   animation: spin 0.9s linear infinite;
 }
