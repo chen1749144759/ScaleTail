@@ -1,6 +1,6 @@
 {
   "name": "scaletail-windows-client",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "private": true,
   "description": "ScaleTail Windows GUI client",
   "main": "dist/main/index.js",

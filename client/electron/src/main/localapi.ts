@@ -53,12 +53,17 @@ export async function localRequest<T>(
   body?: unknown,
   expectedStatus = 200,
   timeoutMS = 15000,
+  signal?: AbortSignal,
 ): Promise<T> {
   const payload = body === undefined ? undefined : JSON.stringify(body);
   if (payload && Buffer.byteLength(payload, "utf8") > maxHelperRequestBytes) {
     throw new LocalAPIError("LocalAPI 请求体过大");
   }
   return new Promise<T>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new Error("操作已取消"));
+      return;
+    }
     const child = spawn(
       helperPath(),
       [
@@ -79,9 +84,21 @@ export async function localRequest<T>(
     let stdoutBytes = 0;
     let stderrBytes = 0;
     let failed = false;
+    const stopOnAbort = () => {
+      if (failed) return;
+      failed = true;
+      child.kill();
+      reject(new Error("操作已取消"));
+    };
+    signal?.addEventListener("abort", stopOnAbort, { once: true });
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", stopOnAbort);
+    };
     const timer = setTimeout(() => {
       failed = true;
       child.kill();
+      signal?.removeEventListener("abort", stopOnAbort);
       reject(new Error("LocalAPI 请求超时"));
     }, timeoutMS + 3000);
 
@@ -108,12 +125,12 @@ export async function localRequest<T>(
       stderr.push(buffer);
     });
     child.on("error", (err) => {
-      clearTimeout(timer);
+      cleanup();
       failed = true;
       reject(err);
     });
     child.on("close", (code) => {
-      clearTimeout(timer);
+      cleanup();
       if (failed) {
         return;
       }

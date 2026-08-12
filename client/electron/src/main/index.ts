@@ -17,7 +17,6 @@ import {
   validateHostname,
   watchIPNBus,
 } from "./localapi";
-import { readClientReportConfig, saveClientReportConfig } from "./report_config";
 import { getServiceOverview, startScaleTailService } from "./service";
 import { resetTelemetryPolicyState, startTelemetryReporter } from "./telemetry";
 import {
@@ -32,7 +31,7 @@ import {
   validateAccountPassword,
 } from "./credential_store";
 import type { PasswordAuthErrorCode } from "./localapi";
-import type { BackendState, ChangeExpiredPasswordRequest, ClientReportConfig, ConnectRequest, ConnectResponse, Status } from "../shared/types";
+import type { BackendState, ChangeExpiredPasswordRequest, ConnectRequest, ConnectResponse, PasswordChangeProgress, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
 
@@ -46,6 +45,8 @@ let stopUpdateChecker: (() => void) | undefined;
 let refreshTimer: NodeJS.Timeout | undefined;
 let accountOperationTail: Promise<void> = Promise.resolve();
 let accountRestoreQueued = false;
+let passwordChangeController: AbortController | undefined;
+let passwordChangeStage: PasswordChangeProgress | undefined;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -230,9 +231,27 @@ function registerIPC(): void {
   ipcMain.handle("api:connect", async (_event, req: ConnectRequest) => (
     serializeAccountOperation(() => connect(req))
   ));
-  ipcMain.handle("api:changeExpiredPassword", async (_event, req: ChangeExpiredPasswordRequest) => (
-    serializeAccountOperation(() => changeExpiredPassword(req))
-  ));
+  ipcMain.handle("api:changeExpiredPassword", async (_event, req: ChangeExpiredPasswordRequest) => {
+    passwordChangeController?.abort();
+    const controller = new AbortController();
+    passwordChangeController = controller;
+    passwordChangeStage = "preparing";
+    try {
+      return await serializeAccountOperation(() => changeExpiredPassword(req, controller.signal));
+    } finally {
+      if (passwordChangeController === controller) {
+        passwordChangeController = undefined;
+        passwordChangeStage = undefined;
+      }
+    }
+  });
+  ipcMain.handle("api:cancelPasswordChange", async () => {
+    const cancelled = Boolean(passwordChangeController && passwordChangeStage === "preparing");
+    if (cancelled) {
+      passwordChangeController?.abort();
+    }
+    return { cancelled };
+  });
   ipcMain.handle("api:disconnect", async () => serializeAccountOperation(disconnect));
   ipcMain.handle("api:reconnect", async () => serializeAccountOperation(reconnect));
   ipcMain.handle("api:logout", async () => serializeAccountOperation(async () => {
@@ -284,12 +303,6 @@ function registerIPC(): void {
     });
     await refreshTrayStatus();
     return overview;
-  });
-  ipcMain.handle("api:getReportConfig", async () => readClientReportConfig());
-  ipcMain.handle("api:saveReportConfig", async (_event, config: ClientReportConfig) => {
-    const saved = saveClientReportConfig(config);
-    restartTelemetryReporter();
-    return saved;
   });
   ipcMain.handle("window:dashboard", async () => openRoute("dashboard"));
   ipcMain.handle("window:connect", async () => openRoute("connect"));
@@ -374,23 +387,27 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
   }
 }
 
-async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise<ConnectResponse> {
+async function changeExpiredPassword(req: ChangeExpiredPasswordRequest, signal: AbortSignal): Promise<ConnectResponse> {
   assertClientUpdateAllowed();
   const normalized = normalizeConnectRequest(req);
   const controlURL = buildControlURL(normalized);
   const username = validateUsername(normalized.username);
   const currentPassword = validateAccountPassword(normalized.password);
   const newPassword = validateNewAccountPassword(req.newPassword, currentPassword);
+  sendPasswordChangeProgress("preparing");
+  throwIfAborted(signal);
   await ensureDaemonReady(false);
-  await waitForPasswordChangeSession(Boolean(req.requireRegistrationSession));
+  await waitForPasswordChangeSession(Boolean(req.requireRegistrationSession), signal);
 
   try {
+    sendPasswordChangeProgress("updating");
     await localRequest<void>(
       "PUT",
       "/localapi/v0/scaletail-change-password",
       { controlUrl: controlURL, username, currentPassword, newPassword },
       204,
       30000,
+      signal,
     );
   } catch (err) {
     throw passwordAuthenticationError(err);
@@ -403,8 +420,9 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise
   }
   let nextStatus: Status;
   try {
-    await authenticateAccountWithRetry(controlURL, username, newPassword, 45000);
-    nextStatus = await waitForPasswordAuthResult();
+    sendPasswordChangeProgress("connecting");
+    await authenticateAccountWithRetry(controlURL, username, newPassword, 45000, signal);
+    nextStatus = await waitForPasswordAuthResult(signal);
     await refreshTrayStatus();
   } catch (err) {
     throw new Error(`新密码已设置并安全保存，但自动连接未完成。请点击“连接”并使用新密码重试: ${formatError(err)}`);
@@ -418,14 +436,15 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise
   };
 }
 
-async function waitForPasswordChangeSession(requireRegistrationSession: boolean): Promise<void> {
+async function waitForPasswordChangeSession(requireRegistrationSession: boolean, signal: AbortSignal): Promise<void> {
   const deadline = Date.now() + 30000;
   let latest = await getStatus(false);
   while (Date.now() < deadline) {
+    throwIfAborted(signal);
     if (latest.AuthURL || (!requireRegistrationSession && latest.HaveNodeKey)) {
       return;
     }
-    await delay(500);
+    await delayWithSignal(500, signal);
     latest = await getStatus(false);
   }
   throw new Error("auth_session_expired: 未取得与当前机器绑定的改密会话，请重新发起连接。");
@@ -575,15 +594,20 @@ async function waitForPasswordAuthSession(requireRegistrationSession: boolean): 
   throw new Error("auth_session_expired: 未能从控制服务器取得有效认证会话，请检查服务端地址、端口和 HTTP/HTTPS 选择后重试。");
 }
 
-async function waitForPasswordAuthResult(): Promise<Status> {
+async function waitForPasswordAuthResult(signal?: AbortSignal): Promise<Status> {
   const deadline = Date.now() + 45000;
   let latest = await getStatus(false);
   while (Date.now() < deadline) {
+    throwIfAborted(signal);
     const state = latest.BackendState || "";
     if (state === "Running" || state === "NeedsMachineAuth") {
       return latest;
     }
-    await delay(500);
+    if (signal) {
+      await delayWithSignal(500, signal);
+    } else {
+      await delay(500);
+    }
     latest = await getStatus(false);
   }
   throw new Error("auth_session_expired: 账号认证已提交，但连接会话未在 45 秒内完成，请重新连接。");
@@ -594,12 +618,14 @@ async function authenticateAccountWithRetry(
   username: string,
   password: string,
   timeoutMS: number,
+  signal?: AbortSignal,
 ): Promise<void> {
   const deadline = Date.now() + timeoutMS;
   let lastError: unknown;
   while (Date.now() < deadline) {
+    throwIfAborted(signal);
     try {
-      await authenticateWithPassword(controlURL, username, password);
+      await authenticateWithPassword(controlURL, username, password, signal);
       return;
     } catch (err) {
       lastError = err;
@@ -607,19 +633,52 @@ async function authenticateAccountWithRetry(
         throw passwordAuthenticationError(err);
       }
     }
-    await delay(750);
+    if (signal) {
+      await delayWithSignal(750, signal);
+    } else {
+      await delay(750);
+    }
   }
   throw passwordAuthenticationError(lastError ?? new Error("认证连接超时"));
 }
 
-async function authenticateWithPassword(controlURL: string, username: string, password: string): Promise<void> {
+async function authenticateWithPassword(controlURL: string, username: string, password: string, signal?: AbortSignal): Promise<void> {
   await localRequest<void>(
     "POST",
     "/localapi/v0/scaletail-auth-password",
     { controlUrl: controlURL, username, password },
     204,
     30000,
+    signal,
   );
+}
+
+function sendPasswordChangeProgress(stage: PasswordChangeProgress): void {
+  passwordChangeStage = stage;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("password-change-progress", stage);
+  }
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new Error("操作已取消");
+  }
+}
+
+function delayWithSignal(ms: number, signal: AbortSignal): Promise<void> {
+  throwIfAborted(signal);
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", stop);
+      resolve();
+    }, ms);
+    const stop = () => {
+      clearTimeout(timer);
+      reject(new Error("操作已取消"));
+    };
+    signal.addEventListener("abort", stop, { once: true });
+  });
 }
 
 async function readCurrentAccountCredential() {

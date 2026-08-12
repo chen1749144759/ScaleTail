@@ -76,6 +76,8 @@ export interface ChangeExpiredPasswordRequest extends ConnectRequest {
   requireRegistrationSession: boolean;
 }
 
+export type PasswordChangeProgress = "preparing" | "updating" | "connecting";
+
 export interface ClientReportConfig {
   enabled: boolean;
   intervalSeconds: number;
@@ -149,11 +151,11 @@ export interface ScaleTailAPI {
   runNetcheck(): Promise<NetcheckReport>;
   getServiceStatus(): Promise<ServiceOverview>;
   startService(): Promise<ServiceOverview>;
-  getReportConfig(): Promise<ClientReportConfig>;
-  saveReportConfig(config: ClientReportConfig): Promise<ClientReportConfig>;
+  cancelPasswordChange(): Promise<{ cancelled: boolean }>;
   openDashboard(): Promise<void>;
   openConnect(): Promise<void>;
   closeWindow(): Promise<void>;
   onNavigate(cb: (route: "dashboard" | "connect" | "nodes") => void): () => void;
   onDaemonEvent(cb: (event: unknown) => void): () => void;
+  onPasswordChangeProgress(cb: (stage: PasswordChangeProgress) => void): () => void;
 }

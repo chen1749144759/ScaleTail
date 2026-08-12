@@ -502,6 +502,20 @@ th {
   gap: 10px;
 }
 
+.account-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+}
+
+.account-grid .field {
+  min-width: 0;
+}
+
+.account-grid input {
+  min-width: 0;
+  height: 40px;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -625,6 +639,34 @@ th {
 .password-change-modal {
   display: grid;
   gap: 14px;
+}
+
+.modal-error,
+.modal-progress {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.modal-error {
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #b42318;
+  background: rgba(254, 242, 242, 0.9);
+}
+
+.modal-progress {
+  align-items: center;
+  color: var(--blue-strong);
+  background: rgba(239, 246, 255, 0.88);
+}
+
+.modal-actions .btn {
+  min-width: 88px;
 }
 
 .password-kicker {

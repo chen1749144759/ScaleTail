@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { ChangeExpiredPasswordRequest, ClientReportConfig, ConnectRequest, ScaleTailAPI } from "../shared/types";
+import type { ChangeExpiredPasswordRequest, ConnectRequest, PasswordChangeProgress, ScaleTailAPI } from "../shared/types";
 
 const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
   getPrefs: () => ipcRenderer.invoke("api:getPrefs"),
   connect: (req: ConnectRequest) => ipcRenderer.invoke("api:connect", req),
   changeExpiredPassword: (req: ChangeExpiredPasswordRequest) => ipcRenderer.invoke("api:changeExpiredPassword", req),
+  cancelPasswordChange: () => ipcRenderer.invoke("api:cancelPasswordChange"),
   disconnect: () => ipcRenderer.invoke("api:disconnect"),
   reconnect: () => ipcRenderer.invoke("api:reconnect"),
   logout: () => ipcRenderer.invoke("api:logout"),
@@ -17,8 +18,6 @@ const api: ScaleTailAPI = {
   runNetcheck: () => ipcRenderer.invoke("api:netcheck"),
   getServiceStatus: () => ipcRenderer.invoke("api:getServiceStatus"),
   startService: () => ipcRenderer.invoke("api:startService"),
-  getReportConfig: () => ipcRenderer.invoke("api:getReportConfig"),
-  saveReportConfig: (config: ClientReportConfig) => ipcRenderer.invoke("api:saveReportConfig", cleanReportConfig(config)),
   openDashboard: () => ipcRenderer.invoke("window:dashboard"),
   openConnect: () => ipcRenderer.invoke("window:connect"),
   closeWindow: () => ipcRenderer.invoke("window:close"),
@@ -32,15 +31,11 @@ const api: ScaleTailAPI = {
     ipcRenderer.on("daemon-event", listener);
     return () => ipcRenderer.removeListener("daemon-event", listener);
   },
+  onPasswordChangeProgress: (cb) => {
+    const listener = (_event: Electron.IpcRendererEvent, stage: PasswordChangeProgress) => cb(stage);
+    ipcRenderer.on("password-change-progress", listener);
+    return () => ipcRenderer.removeListener("password-change-progress", listener);
+  },
 };
 
 contextBridge.exposeInMainWorld("scaletail", api);
-
-function cleanReportConfig(config: ClientReportConfig): ClientReportConfig {
-  return {
-    enabled: Boolean(config.enabled),
-    intervalSeconds: Number(config.intervalSeconds || 15),
-    flowEnabled: Boolean(config.flowEnabled),
-    quotaGuardEnabled: Boolean(config.quotaGuardEnabled),
-  };
-}

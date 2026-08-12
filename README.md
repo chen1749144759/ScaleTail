@@ -17,7 +17,7 @@ ScaleTail 是面向 Headscale-Admin-AE 与 ScaleForge 私有控制面的网络�
 | 项目 | 当前说明 |
 |---|---|
 | 裂变来源 | `tailscale/tailscale` 主线源码，Go module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.11`，支持客户端首次改密、HTTP 控制地址下的 Noise/TOFU 账户认证、嵌入式 DERP 和稳定的 Linux 自动重认证 |
+| 当前产品版本 | `v0.0.12`，完善 Windows 首次改密交互、HTTP 控制地址下的 Noise/TOFU 账户认证、嵌入式 DERP 和稳定的 Linux 自动重认证 |
 | 对标版本 | 已定向审计并回补 Tailscale `v1.98.9` 的关键安全和稳定性修复 |
 | Windows 桌面端 | Electron 43.3.0 + Vue 3 + TypeScript |
 | 配套服务端 | Headscale-Admin-AE + ScaleForge |
@@ -53,7 +53,7 @@ ScaleTail UI / scaletail CLI
 新设备和重新认证统一使用 ScaleForge 账号密码。服务端要求每个新的控制会话完成账户证明，并将节点有效期限制在密码有效期内。
 
 - 密码最长 72 字节，由服务端使用强密码哈希保存。
-- 管理员创建或重置账户时发放一次性初始密码；Windows 客户端首次连接会要求用户设置自己的新密码并自动继续连接，无需访问 ScaleForge。
+- 管理员创建或重置账户时发放一次性初始密码；Windows 客户端首次连接会要求用户设置自己的新密码并自动继续连接，无需访问 ScaleForge。改密弹窗提供可见的校验错误、分阶段进度和取消操作。
 - 密码每 90 天必须由用户更新；Windows 客户端在连接时通过同一加密控制通道完成改密。
 - 控制地址支持严格的 origin-only `http://` 和 `https://`；两者都拒绝 URL 凭据、业务路径、查询参数和片段。
 - 账号密码始终只在现有 Noise 控制通道中传输。HTTP 不会把密码作为明文 HTTP 请求体或请求头发送。
@@ -105,6 +105,7 @@ sudo scaletail set --advertise-routes=192.168.10.0/24
 - Windows 签名 OTA：下载、SHA-256 校验、Ed25519 发布签名校验、daemon 二次验签和静默覆盖安装。
 - ScaleForge DNS 策略下发；客户端可显式选择是否采用服务端 DNS。
 - 流量、连接摘要、在线状态、策略应用结果和安全数据定时上报。
+- 企业上报、请求分析和本地配额守卫固定启用，不向终端用户暴露关闭入口。
 - 上传/下载限速位于 `scaletaild` TUN 数据路径，按整台机器控制经过 ScaleTail 覆盖网络的总带宽。
 - 限速策略可经 LocalAPI 热更新；断开、退出、关闭和配额阻断会清理运行态。
 - 物理局域网直连和未经过 ScaleTail 虚拟网卡的普通公网流量不统计、不限速。
@@ -129,8 +130,8 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 主要输出：
 
 ```text
-dist\installer\ScaleTail-0.0.11-windows-amd64-setup-custom.exe
-dist\installer\ScaleTail-0.0.11-windows-amd64.ota.json
+dist\installer\ScaleTail-0.0.12-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.12-windows-amd64.ota.json
 ```
 
 OTA 私钥默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。
@@ -144,13 +145,13 @@ v3 将策略版本、建议/强制/撤销动作和安装包元数据放在同一
 ```powershell
 go run ./cmd/scaletail-update-sign `
   -private-key D:\secure\ed25519-private.key `
-  -file .\dist\installer\ScaleTail-0.0.11-windows-amd64-setup-custom.exe `
-  -version 0.0.11 `
+  -file .\dist\installer\ScaleTail-0.0.12-windows-amd64-setup-custom.exe `
+  -version 0.0.12 `
   -platform windows-amd64 `
   -action suggested `
   -revision 202608090001 `
-  -download-url https://downloads.example.com/releases/ScaleTail-0.0.11-windows-amd64-setup.exe `
-  -json-out .\dist\installer\ScaleTail-0.0.11-windows-amd64.ota.json
+  -download-url https://downloads.example.com/releases/ScaleTail-0.0.12-windows-amd64-setup.exe `
+  -json-out .\dist\installer\ScaleTail-0.0.12-windows-amd64.ota.json
 ```
 
 签名消息按顺序包含 `scaletail-update-v3`、`revision`、动作、版本、平台、小写 SHA-256、文件大小和规范化 `download_url`。`signature` 必须使用 `v3.<Ed25519 Base64>`；v1/v2 元数据会被拒绝。

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { Copy, LayoutDashboard, LogOut, PlugZap, PowerOff } from "lucide-vue-next";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { LayoutDashboard, LoaderCircle, LogOut, PlugZap, PowerOff } from "lucide-vue-next";
 import StatusPill from "../components/StatusPill.vue";
-import type { ClientReportConfig, Prefs, Status } from "../../shared/types";
+import type { PasswordChangeProgress, Prefs, Status } from "../../shared/types";
 
 const emit = defineEmits<{
   "open-dashboard": [];
@@ -13,19 +13,11 @@ const prefs = ref<Prefs | null>(null);
 const serverIP = ref("");
 const serverPort = ref("443");
 const useHTTPS = ref(true);
-const hostname = ref("");
 const username = ref("");
 const password = ref("");
 const acceptRoutes = ref(true);
 const acceptDNS = ref(true);
 const loading = ref(false);
-const reportConfig = ref<ClientReportConfig>({
-  enabled: true,
-  intervalSeconds: 15,
-  flowEnabled: true,
-  quotaGuardEnabled: true,
-});
-const reportSaving = ref(false);
 const message = ref("");
 const error = ref("");
 const logoutConfirmOpen = ref(false);
@@ -34,6 +26,11 @@ const pendingCurrentPassword = ref("");
 const newPassword = ref("");
 const confirmNewPassword = ref("");
 const passwordChangeRequiresRegistrationSession = ref(true);
+const passwordChangeLoading = ref(false);
+const passwordChangeError = ref("");
+const passwordChangeProgress = ref<PasswordChangeProgress>("preparing");
+let passwordChangeAttempt = 0;
+let offPasswordChangeProgress: (() => void) | undefined;
 
 const backendState = computed(() => status.value?.BackendState || "");
 const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
@@ -49,7 +46,6 @@ const connectionPreview = computed(() => {
   const lines = [
     `控制服务器  ${controlURL.value}`,
     `登录账号    ${username.value.trim() || "（未填写）"}`,
-    `设备名称    ${hostname.value.trim() || "（使用系统主机名）"}`,
     `接受路由    ${acceptRoutes.value ? "是" : "否"}`,
     `采用 DNS    ${acceptDNS.value ? "是" : "否"}`,
   ];
@@ -57,23 +53,30 @@ const connectionPreview = computed(() => {
 });
 
 onMounted(() => {
+  offPasswordChangeProgress = window.scaletail.onPasswordChangeProgress((stage) => {
+    passwordChangeProgress.value = stage;
+  });
   void load();
+});
+
+onUnmounted(() => {
+  offPasswordChangeProgress?.();
+  if (passwordChangeLoading.value && passwordChangeProgress.value === "preparing") {
+    void window.scaletail.cancelPasswordChange();
+  }
 });
 
 async function load() {
   loading.value = true;
   error.value = "";
   try {
-    const [nextStatus, nextPrefs, nextReportConfig] = await Promise.all([
+    const [nextStatus, nextPrefs] = await Promise.all([
       window.scaletail.getStatus(false),
       window.scaletail.getPrefs(),
-      window.scaletail.getReportConfig(),
     ]);
     status.value = nextStatus;
     prefs.value = nextPrefs;
-    reportConfig.value = nextReportConfig;
     parseControlURL(nextPrefs.ControlURL || "");
-    hostname.value = nextPrefs.Hostname || "";
     if (typeof nextPrefs.RouteAll === "boolean") {
       acceptRoutes.value = nextPrefs.RouteAll;
     }
@@ -93,26 +96,6 @@ async function load() {
   }
 }
 
-async function saveReportConfig() {
-  reportSaving.value = true;
-  error.value = "";
-  message.value = "";
-  try {
-    const nextConfig: ClientReportConfig = {
-      enabled: Boolean(reportConfig.value.enabled),
-      intervalSeconds: Number(reportConfig.value.intervalSeconds),
-      flowEnabled: Boolean(reportConfig.value.flowEnabled),
-      quotaGuardEnabled: Boolean(reportConfig.value.quotaGuardEnabled),
-    };
-    reportConfig.value = await window.scaletail.saveReportConfig(nextConfig);
-    message.value = "平台上报配置已保存。";
-  } catch (err) {
-    error.value = messageOf(err);
-  } finally {
-    reportSaving.value = false;
-  }
-}
-
 async function connect() {
   if (configLocked.value) {
     return;
@@ -125,7 +108,7 @@ async function connect() {
       serverIP: serverIP.value,
       serverPort: serverPort.value,
       useHTTPS: useHTTPS.value,
-      hostname: hostname.value,
+      hostname: "",
       username: username.value,
       password: password.value,
       acceptRoutes: acceptRoutes.value,
@@ -136,8 +119,10 @@ async function connect() {
       newPassword.value = "";
       confirmNewPassword.value = "";
       passwordChangeRequiresRegistrationSession.value = res.passwordChangeRequiresRegistrationSession !== false;
+      passwordChangeError.value = "";
+      passwordChangeProgress.value = "preparing";
       passwordChangeOpen.value = true;
-      message.value = res.message;
+      message.value = "";
       return;
     }
     message.value = res.message;
@@ -152,29 +137,32 @@ async function connect() {
 }
 
 async function submitPasswordChange() {
+  passwordChangeError.value = "";
   const newPasswordBytes = new TextEncoder().encode(newPassword.value).length;
   if (newPasswordBytes < 12 || newPasswordBytes > 72) {
-    error.value = "新密码需要 12 到 72 个字节，中文通常占 3 个字节。";
+    passwordChangeError.value = "新密码需要 12 到 72 个字节。";
     return;
   }
   if (newPassword.value !== confirmNewPassword.value) {
-    error.value = "两次输入的新密码不一致。";
+    passwordChangeError.value = "两次输入的新密码不一致。";
     return;
   }
   if (newPassword.value === pendingCurrentPassword.value) {
-    error.value = "新密码不能与初始密码相同。";
+    passwordChangeError.value = "新密码不能与初始密码相同。";
     return;
   }
 
-  loading.value = true;
+  const attempt = ++passwordChangeAttempt;
+  passwordChangeLoading.value = true;
+  passwordChangeProgress.value = "preparing";
   error.value = "";
-  message.value = "正在安全更新密码并继续连接...";
+  message.value = "";
   try {
     const res = await window.scaletail.changeExpiredPassword({
       serverIP: serverIP.value,
       serverPort: serverPort.value,
       useHTTPS: useHTTPS.value,
-      hostname: hostname.value,
+      hostname: "",
       username: username.value,
       password: pendingCurrentPassword.value,
       newPassword: newPassword.value,
@@ -182,6 +170,7 @@ async function submitPasswordChange() {
       acceptRoutes: acceptRoutes.value,
       acceptDNS: acceptDNS.value,
     });
+    if (attempt !== passwordChangeAttempt) return;
     password.value = "";
     pendingCurrentPassword.value = "";
     newPassword.value = "";
@@ -190,6 +179,7 @@ async function submitPasswordChange() {
     message.value = res.message;
     await load();
   } catch (err) {
+    if (attempt !== passwordChangeAttempt) return;
     const detail = messageOf(err);
     if (detail.startsWith("新密码已设置")) {
       password.value = "";
@@ -198,11 +188,33 @@ async function submitPasswordChange() {
       confirmNewPassword.value = "";
       passwordChangeOpen.value = false;
     }
-    error.value = detail;
-    message.value = "";
+    if (detail !== "操作已取消") {
+      passwordChangeError.value = detail;
+    }
   } finally {
-    loading.value = false;
+    if (attempt === passwordChangeAttempt) {
+      passwordChangeLoading.value = false;
+    }
   }
+}
+
+function cancelPasswordChange() {
+  passwordChangeAttempt += 1;
+  if (passwordChangeLoading.value && passwordChangeProgress.value === "preparing") {
+    void window.scaletail.cancelPasswordChange();
+  }
+  passwordChangeLoading.value = false;
+  passwordChangeOpen.value = false;
+  passwordChangeError.value = "";
+  pendingCurrentPassword.value = "";
+  newPassword.value = "";
+  confirmNewPassword.value = "";
+}
+
+function passwordChangeStatus() {
+  if (passwordChangeProgress.value === "updating") return "正在设置新密码...";
+  if (passwordChangeProgress.value === "connecting") return "密码已设置，正在连接...";
+  return "正在准备连接...";
 }
 
 async function disconnectCurrent() {
@@ -260,16 +272,6 @@ async function logoutCurrent() {
   }
 }
 
-async function copyCommand() {
-  try {
-    await navigator.clipboard.writeText(connectionPreview.value);
-    message.value = "连接参数已复制，密码未包含在内。";
-    error.value = "";
-  } catch {
-    error.value = "复制失败，请手动选中命令文本复制。";
-  }
-}
-
 function parseControlURL(raw: string) {
   if (!raw) {
     return;
@@ -308,7 +310,6 @@ function messageOf(err: unknown) {
       <div class="section-head">
         <div>
           <h2>服务端连接</h2>
-          <p>HTTP 与 HTTPS 均通过 Noise 加密账号凭据；HTTP 首次连接会锁定服务端公钥。</p>
         </div>
         <StatusPill :state="backendState" />
       </div>
@@ -333,11 +334,6 @@ function messageOf(err: unknown) {
         </label>
       </div>
 
-      <label class="field">
-        <span>本机设备名称，可选</span>
-        <input v-model="hostname" :disabled="configLocked" type="text" placeholder="留空使用系统主机名，例如 office-pc" />
-      </label>
-
       <div class="checks">
         <label>
           <input v-model="useHTTPS" :disabled="configLocked" type="checkbox" />
@@ -355,7 +351,7 @@ function messageOf(err: unknown) {
 
       <div class="preview mono">{{ controlURL }}</div>
 
-      <div class="form-grid">
+      <div class="form-grid account-grid">
         <label class="field">
           <span>账号</span>
           <input v-model="username" :disabled="configLocked" type="text" autocomplete="off" placeholder="请输入账号" />
@@ -367,35 +363,7 @@ function messageOf(err: unknown) {
       </div>
 
       <div class="command-head">
-        <strong>平台上报</strong>
-        <button class="btn" :disabled="reportSaving" @click="saveReportConfig">保存</button>
-      </div>
-      <p class="field-note">上报、策略和版本检查通过当前控制服务器的 Noise 加密通道完成，无需单独配置平台地址或密钥。</p>
-      <div class="checks">
-        <label>
-          <input v-model="reportConfig.enabled" type="checkbox" />
-          启用流量统计、策略领取与安全审计上报
-        </label>
-        <label>
-          <input v-model="reportConfig.flowEnabled" type="checkbox" />
-          启用连接/请求分析
-        </label>
-        <label>
-          <input v-model="reportConfig.quotaGuardEnabled" type="checkbox" />
-          启用本地配额守卫
-        </label>
-      </div>
-      <label class="field">
-        <span>上报周期，秒</span>
-        <input v-model.number="reportConfig.intervalSeconds" type="number" min="5" max="3600" placeholder="15" />
-      </label>
-
-      <div class="command-head">
         <strong>连接参数预览</strong>
-        <button class="btn" @click="copyCommand">
-          <Copy :size="16" />
-          复制
-        </button>
       </div>
       <textarea class="command mono" :value="connectionPreview" readonly />
 
@@ -442,24 +410,32 @@ function messageOf(err: unknown) {
       </section>
     </div>
 
-    <div v-if="passwordChangeOpen" class="modal-backdrop">
+    <div v-if="passwordChangeOpen" class="modal-backdrop" @click.self="cancelPasswordChange">
       <section class="confirm-modal password-change-modal" role="dialog" aria-modal="true" aria-labelledby="password-change-title">
         <div>
           <span class="modal-kicker password-kicker">首次登录保护</span>
           <h3 id="password-change-title">设置你的新密码</h3>
-          <p>管理员发放的是一次性初始密码。设置新密码后，ScaleTail 会自动继续连接，无需访问管理平台。</p>
+          <p>首次登录需要设置新密码，完成后会自动连接。</p>
         </div>
         <label class="field">
           <span>新密码</span>
-          <input v-model="newPassword" :disabled="loading" type="password" autocomplete="new-password" placeholder="12 到 72 字节" />
+          <input v-model="newPassword" :disabled="passwordChangeLoading" type="password" autocomplete="new-password" placeholder="12 到 72 字节" />
         </label>
         <label class="field">
           <span>确认新密码</span>
-          <input v-model="confirmNewPassword" :disabled="loading" type="password" autocomplete="new-password" placeholder="再次输入新密码" @keyup.enter="submitPasswordChange" />
+          <input v-model="confirmNewPassword" :disabled="passwordChangeLoading" type="password" autocomplete="new-password" placeholder="再次输入新密码" @keyup.enter="submitPasswordChange" />
         </label>
-        <p class="field-note">不能与初始密码或近期使用过的密码相同。</p>
+        <div v-if="passwordChangeError" class="modal-error" role="alert">{{ passwordChangeError }}</div>
+        <div v-if="passwordChangeLoading" class="modal-progress" role="status">
+          <LoaderCircle :size="16" class="spin" />
+          {{ passwordChangeStatus() }}
+        </div>
         <div class="modal-actions">
-          <button class="btn primary" :disabled="loading" @click="submitPasswordChange">设置并连接</button>
+          <button class="btn" @click="cancelPasswordChange">取消</button>
+          <button class="btn primary" :disabled="passwordChangeLoading" @click="submitPasswordChange">
+            <LoaderCircle v-if="passwordChangeLoading" :size="16" class="spin" />
+            设置并连接
+          </button>
         </div>
       </section>
     </div>
