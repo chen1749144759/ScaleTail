@@ -350,7 +350,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
       // Local backend state can become Running before the first authenticated
       // map response arrives. Always submit account proof instead of treating
       // that local state as proof that the control server accepted the login.
-      await authenticateWithPassword(controlURL, username, password);
+      await authenticateAccountWithRetry(controlURL, username, password, 45_000);
     } catch (err) {
       if (err instanceof LocalAPIError && err.code === "password_expired") {
         return {

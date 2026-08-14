@@ -17,7 +17,7 @@ ScaleTail 是面向 Headscale-Admin-AE 与 ScaleForge 私有控制面的网络�
 | 项目 | 当前说明 |
 |---|---|
 | 裂变来源 | `tailscale/tailscale` 主线源码，Go module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.13`，修复 Windows 客户端断开后无法恢复连接及同类偏好设置请求，并保留首次改密、Noise/TOFU 账户认证、嵌入式 DERP 和 Linux 自动重认证能力 |
+| 当前产品版本 | `v0.0.14`，修复 Windows 首次连接在 Noise 控制通道初始化期间偶发立即失败的问题，并保留断开恢复、首次改密、Noise/TOFU 账户认证、嵌入式 DERP 和 Linux 自动重认证能力 |
 | 对标版本 | 已定向审计并回补 Tailscale `v1.98.9` 的关键安全和稳定性修复 |
 | Windows 桌面端 | Electron 43.3.0 + Vue 3 + TypeScript |
 | 配套服务端 | Headscale-Admin-AE + ScaleForge |
@@ -130,8 +130,8 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 主要输出：
 
 ```text
-dist\installer\ScaleTail-0.0.13-windows-amd64-setup-custom.exe
-dist\installer\ScaleTail-0.0.13-windows-amd64.ota.json
+dist\installer\ScaleTail-0.0.14-windows-amd64-setup-custom.exe
+dist\installer\ScaleTail-0.0.14-windows-amd64.ota.json
 ```
 
 OTA 私钥默认从 `D:\workspace-qoder\deps\scaletail-ota\ed25519-private.key` 读取，也可通过 `SCALETAIL_UPDATE_SIGNING_KEY` 指定。私钥只能保存在构建机并单独备份，禁止提交到 Git。
@@ -145,13 +145,13 @@ v3 将策略版本、建议/强制/撤销动作和安装包元数据放在同一
 ```powershell
 go run ./cmd/scaletail-update-sign `
   -private-key D:\secure\ed25519-private.key `
-  -file .\dist\installer\ScaleTail-0.0.13-windows-amd64-setup-custom.exe `
-  -version 0.0.13 `
+  -file .\dist\installer\ScaleTail-0.0.14-windows-amd64-setup-custom.exe `
+  -version 0.0.14 `
   -platform windows-amd64 `
   -action suggested `
   -revision 202608090001 `
-  -download-url https://downloads.example.com/releases/ScaleTail-0.0.13-windows-amd64-setup.exe `
-  -json-out .\dist\installer\ScaleTail-0.0.13-windows-amd64.ota.json
+  -download-url https://downloads.example.com/releases/ScaleTail-0.0.14-windows-amd64-setup.exe `
+  -json-out .\dist\installer\ScaleTail-0.0.14-windows-amd64.ota.json
 ```
 
 签名消息按顺序包含 `scaletail-update-v3`、`revision`、动作、版本、平台、小写 SHA-256、文件大小和规范化 `download_url`。`signature` 必须使用 `v3.<Ed25519 Base64>`；v1/v2 元数据会被拒绝。
