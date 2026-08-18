@@ -119,6 +119,40 @@ func TestScaleTailAuthenticateAccountError(t *testing.T) {
 	}
 }
 
+func TestScaleTailChangeAccountPassword(t *testing.T) {
+	nw := nettest.GetNetwork(t)
+	ts := nettest.NewHTTPServer(nw, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != httpm.PUT || r.URL.Path != "/localapi/v0/scaletail-change-password" {
+			t.Fatalf("request = %s %s", r.Method, r.URL.Path)
+		}
+		var body struct {
+			Username        string `json:"username"`
+			CurrentPassword string `json:"currentPassword"`
+			NewPassword     string `json:"newPassword"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatalf("decoding request: %v", err)
+		}
+		if body.Username != "alice" || body.CurrentPassword != "old password" || body.NewPassword != "new secure password" {
+			t.Fatalf("password change request = %+v", body)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer ts.Close()
+
+	lc := &Client{Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return nw.Dial(ctx, network, ts.Listener.Addr().String())
+	}}
+	if err := lc.ScaleTailChangeAccountPassword(
+		t.Context(),
+		"alice",
+		[]byte("old password"),
+		[]byte("new secure password"),
+	); err != nil {
+		t.Fatalf("changing password: %v", err)
+	}
+}
+
 func TestUserDialSelf(t *testing.T) {
 	// Start a real TCP listener that the client should dial directly
 	// when the server tells it to dial-self.

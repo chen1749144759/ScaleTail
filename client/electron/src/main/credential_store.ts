@@ -9,10 +9,13 @@ export interface StoredAccountCredential {
   controlURL: string;
   username: string;
   password: string;
+  autoLogin: boolean;
 }
 
+export type StoredAccountMetadata = Omit<StoredAccountCredential, "password">;
+
 const fileName = "account-credential.json";
-const credentialSchemaVersion = 2;
+const credentialSchemaVersion = 3;
 const accountPasswordControlCharacters = /[\u0000-\u001f\u007f-\u009f]/;
 
 export function saveAccountCredential(credential: StoredAccountCredential): void {
@@ -28,6 +31,7 @@ export function saveAccountCredential(credential: StoredAccountCredential): void
     controlURL,
     username: credential.username,
     password,
+    autoLogin: Boolean(credential.autoLogin),
   }));
   const target = credentialPath();
   const temporary = `${target}.tmp`;
@@ -43,24 +47,50 @@ export function saveAccountCredential(credential: StoredAccountCredential): void
 }
 
 export function readAccountCredential(controlURL: string): StoredAccountCredential | undefined {
+  const stored = readStoredAccountCredential();
+  if (!stored) return undefined;
+  const expectedControlURL = canonicalCredentialControlURL(controlURL);
+  return expectedControlURL && stored.controlURL === expectedControlURL ? stored : undefined;
+}
+
+export function readAccountCredentialMetadata(): StoredAccountMetadata | undefined {
+  const stored = readStoredAccountCredential();
+  if (!stored) return undefined;
+  return {
+    controlURL: stored.controlURL,
+    username: stored.username,
+    autoLogin: stored.autoLogin,
+  };
+}
+
+export function disableAccountAutoLogin(): void {
+  const stored = readStoredAccountCredential();
+  if (!stored || !stored.autoLogin) return;
+  try {
+    saveAccountCredential({ ...stored, autoLogin: false });
+  } catch {
+    clearAccountCredential();
+  }
+}
+
+function readStoredAccountCredential(): StoredAccountCredential | undefined {
   try {
     if (!safeStorage.isEncryptionAvailable()) return undefined;
-    const expectedControlURL = canonicalCredentialControlURL(controlURL);
-    if (!expectedControlURL) return undefined;
     const stored = JSON.parse(fs.readFileSync(credentialPath(), "utf8")) as {
       version?: number;
       encrypted?: string;
     };
-    if (stored.version !== credentialSchemaVersion || !stored.encrypted) return undefined;
+    if ((stored.version !== 2 && stored.version !== credentialSchemaVersion) || !stored.encrypted) return undefined;
     const value = JSON.parse(
       safeStorage.decryptString(Buffer.from(stored.encrypted, "base64")),
-    ) as Partial<StoredAccountCredential>;
+    ) as Partial<StoredAccountCredential> & { autoLogin?: boolean };
     const storedControlURL = canonicalCredentialControlURL(value.controlURL || "");
-    if (storedControlURL !== expectedControlURL || !value.username || !value.password) return undefined;
+    if (!storedControlURL || !value.username || !value.password) return undefined;
     return {
       controlURL: storedControlURL,
       username: value.username,
       password: validateAccountPassword(value.password),
+      autoLogin: stored.version === 2 ? true : Boolean(value.autoLogin),
     };
   } catch {
     return undefined;

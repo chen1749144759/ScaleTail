@@ -23,7 +23,7 @@ const title = computed(() => {
 });
 const subtitle = computed(() => {
   if (route.value === "connect") {
-    return "连接与退出网络";
+    return "账号登录与服务端设置";
   }
   if (route.value === "nodes") {
     return "网络检测与路由";

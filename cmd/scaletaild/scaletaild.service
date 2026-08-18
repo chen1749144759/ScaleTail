@@ -2,7 +2,9 @@
 Description=ScaleTail node agent
 Documentation=https://github.com/chen1749144759/ScaleTail
 Wants=network-pre.target
+Wants=scaletail-account-login.service
 After=network-pre.target NetworkManager.service systemd-resolved.service
+Before=scaletail-account-login.service
 
 [Service]
 EnvironmentFile=/etc/default/scaletaild

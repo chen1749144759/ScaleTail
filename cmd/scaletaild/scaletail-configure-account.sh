@@ -130,6 +130,7 @@ systemctl enable --now scaletaild.service
   --login-server="$server" \
   --username="$username" \
   --password-file="$password_tmp" \
+  --auto-rotate-password \
   --timeout=60s
 
 mv -f "$password_tmp" /etc/scaletail/account-password
@@ -137,6 +138,7 @@ password_tmp=""
 mv -f "$config_tmp" /etc/scaletail/account.conf
 config_tmp=""
 systemctl enable scaletail-account-login.service
+systemctl enable --now scaletail-account-login.timer
 /usr/bin/scaletail set --accept-routes="$accept_routes" --accept-dns="$accept_dns"
 
-echo "ScaleTail account login configured. Automatic reauthentication will run after scaletaild restarts."
+echo "ScaleTail account login configured. Password rotation and reauthentication will run automatically."

@@ -1,0 +1,15 @@
+[Unit]
+Description=Periodically renew the ScaleTail managed account password
+Documentation=https://github.com/chen1749144759/ScaleTail
+ConditionPathExists=/etc/scaletail/account.conf
+ConditionPathExists=/etc/scaletail/account-password
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=6h
+RandomizedDelaySec=5min
+Persistent=true
+Unit=scaletail-account-login.service
+
+[Install]
+WantedBy=timers.target

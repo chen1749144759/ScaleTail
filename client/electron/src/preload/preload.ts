@@ -7,11 +7,10 @@ import type { ChangeExpiredPasswordRequest, ConnectRequest, PasswordChangeProgre
 const api: ScaleTailAPI = {
   getStatus: (peers = true) => ipcRenderer.invoke("api:getStatus", peers),
   getPrefs: () => ipcRenderer.invoke("api:getPrefs"),
+  getSavedAccount: () => ipcRenderer.invoke("api:getSavedAccount"),
   connect: (req: ConnectRequest) => ipcRenderer.invoke("api:connect", req),
   changeExpiredPassword: (req: ChangeExpiredPasswordRequest) => ipcRenderer.invoke("api:changeExpiredPassword", req),
   cancelPasswordChange: () => ipcRenderer.invoke("api:cancelPasswordChange"),
-  disconnect: () => ipcRenderer.invoke("api:disconnect"),
-  reconnect: () => ipcRenderer.invoke("api:reconnect"),
   logout: () => ipcRenderer.invoke("api:logout"),
   setExitNode: (id: string) => ipcRenderer.invoke("api:setExitNode", id),
   setAdvertiseRoutes: (routes: string[]) => ipcRenderer.invoke("api:setAdvertiseRoutes", routes),

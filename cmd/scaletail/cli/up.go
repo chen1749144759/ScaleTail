@@ -119,6 +119,7 @@ func newUpFlagSet(goos string, upArgs *upArgsT, cmd string) *flag.FlagSet {
 	}
 	switch goos {
 	case "linux":
+		upf.BoolVar(&upArgs.autoRotatePassword, "auto-rotate-password", false, "rotate a managed password file before account expiry")
 		upf.BoolVar(&upArgs.snat, "snat-subnet-routes", true, "source NAT traffic to local routes advertised with --advertise-routes")
 		upf.BoolVar(&upArgs.statefulFiltering, "stateful-filtering", false, "apply stateful filtering to forwarded packets (subnet routers, exit nodes, and so on)")
 		upf.StringVar(&upArgs.netfilterMode, "netfilter-mode", defaultNetfilterMode(), "netfilter mode (one of on, nodivert, off)")
@@ -170,6 +171,7 @@ type upArgsT struct {
 	server                 string
 	username               string
 	passwordFile           string
+	autoRotatePassword     bool
 	acceptRoutes           bool
 	acceptDNS              bool
 	exitNodeIP             string
@@ -198,10 +200,13 @@ type upArgsT struct {
 func (a upArgsT) accountCredential() (string, []byte, error) {
 	username := strings.TrimSpace(a.username)
 	if username == "" {
-		if a.passwordFile != "" {
-			return "", nil, errors.New("--password-file requires --username")
+		if a.passwordFile != "" || a.autoRotatePassword {
+			return "", nil, errors.New("--password-file and --auto-rotate-password require --username")
 		}
 		return "", nil, nil
+	}
+	if a.autoRotatePassword && (a.passwordFile == "" || a.passwordFile == "-") {
+		return "", nil, errors.New("--auto-rotate-password requires a persistent --password-file path")
 	}
 	if len([]byte(username)) > 254 || strings.IndexFunc(username, unicode.IsControl) >= 0 {
 		return "", nil, errors.New("account username must contain at most 254 bytes and no control characters")
@@ -528,7 +533,7 @@ func isCredentialOnlyAccountReauth(
 	loginServerSet := false
 	flagSet.Visit(func(f *flag.Flag) {
 		switch f.Name {
-		case "username", "password-file", "timeout", "json":
+		case "username", "password-file", "auto-rotate-password", "timeout", "json":
 		case "login-server":
 			loginServerSet = true
 		default:
@@ -729,7 +734,13 @@ func runUp(ctx context.Context, cmd string, args []string, upArgs upArgsT, comma
 		}
 		authOnce.Do(func() {
 			go func() {
-				authResult <- authenticateScaleTailAccount(ctx, username, password)
+				authResult <- authenticateScaleTailAccountWithRotation(
+					ctx,
+					username,
+					password,
+					upArgs.passwordFile,
+					upArgs.autoRotatePassword,
+				)
 			}()
 		})
 	}
@@ -962,7 +973,7 @@ func addPrefFlagMapping(flagName string, prefNames ...string) {
 // correspond to an ipn.Pref.
 func preflessFlag(flagName string) bool {
 	switch flagName {
-	case "username", "password-file", "force-reauth", "reset", "json", "timeout", "accept-risk", "host-routes":
+	case "username", "password-file", "auto-rotate-password", "force-reauth", "reset", "json", "timeout", "accept-risk", "host-routes":
 		return true
 	}
 	return false

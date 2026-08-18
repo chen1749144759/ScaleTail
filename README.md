@@ -17,7 +17,7 @@ ScaleTail 是面向 Headscale-Admin-AE 与 ScaleForge 私有控制面的网络�
 | 项目 | 当前说明 |
 |---|---|
 | 裂变来源 | `tailscale/tailscale` 主线源码，Go module 已改为 `scaletail.com` |
-| 当前产品版本 | `v0.0.14`，修复 Windows 首次连接在 Noise 控制通道初始化期间偶发立即失败的问题，并保留断开恢复、首次改密、Noise/TOFU 账户认证、嵌入式 DERP 和 Linux 自动重认证能力 |
+| 当前产品版本 | `v0.0.14` 开发线，提供 Windows 账号登录/退出、系统凭据库记住密码与自动登录、首次改密、Noise/TOFU 账户认证、嵌入式 DERP，以及 Linux 密码自动轮换与重认证 |
 | 对标版本 | 已定向审计并回补 Tailscale `v1.98.9` 的关键安全和稳定性修复 |
 | Windows 桌面端 | Electron 43.3.0 + Vue 3 + TypeScript |
 | 配套服务端 | Headscale-Admin-AE + ScaleForge |
@@ -53,8 +53,8 @@ ScaleTail UI / scaletail CLI
 新设备和重新认证统一使用 ScaleForge 账号密码。服务端要求每个新的控制会话完成账户证明，并将节点有效期限制在密码有效期内。
 
 - 密码最长 72 字节，由服务端使用强密码哈希保存。
-- 管理员创建或重置账户时发放一次性初始密码；Windows 客户端首次连接会要求用户设置自己的新密码并自动继续连接，无需访问 ScaleForge。改密弹窗提供可见的校验错误、分阶段进度和取消操作。
-- 密码每 90 天必须由用户更新；Windows 客户端在连接时通过同一加密控制通道完成改密。
+- 管理员创建或重置账户时可由 ScaleForge 生成一次性初始密码并仅回显一次；Windows 客户端首次连接会要求用户设置自己的新密码并自动继续连接，无需访问 ScaleForge。
+- 密码最长有效期为 90 天。Windows 客户端通过同一加密控制通道完成改密；Linux 托管节点从第 83 天起自动生成随机新密码、原子更新 root-only 密码文件并重新认证。
 - 控制地址支持严格的 origin-only `http://` 和 `https://`；两者都拒绝 URL 凭据、业务路径、查询参数和片段。
 - 账号密码始终只在现有 Noise 控制通道中传输。HTTP 不会把密码作为明文 HTTP 请求体或请求头发送。
 - HTTP 首次连接采用 TOFU 固定该控制 origin 返回的 Noise 公钥；同 origin 后续公钥变化会立即阻断连接。确认服务端确实重建或轮换密钥后，需要先退出当前网络，再重新连接以建立新信任。
@@ -63,7 +63,7 @@ ScaleTail UI / scaletail CLI
 - CLI 不提供明文 `--password` 参数，避免密码进入 shell 历史和进程列表。
 - 旧预认证 Key、浏览器认证、OIDC 登录和手工注册码不是当前产品登录路径。
 
-Linux 安装包提供账户配置工具。它会隐藏密码输入，验证登录成功后才以 `0600` 权限保存凭据，并启用守护进程重启后的自动重认证：
+Linux 安装包提供账户配置工具。它会隐藏密码输入，验证登录成功后才以 `0600` 权限保存凭据，并启用守护进程重启后的自动重认证和六小时周期密码维护：
 
 ```bash
 sudo scaletail-configure-account \
@@ -83,11 +83,12 @@ sudo install -o root -g root -m 0600 /secure/provision/account.conf \
   /etc/scaletail/account.conf
 
 sudo systemctl enable --now scaletaild.service
-sudo systemctl enable --now scaletail-account-login.service
+sudo systemctl enable scaletail-account-login.service
+sudo systemctl enable --now scaletail-account-login.timer
 ```
 
 配置模板位于 `/usr/share/doc/scaletail/account.conf.example`。不要把账号密码写入镜像公共层、内核命令行或 shell 历史。
-自动重认证走凭据专用路径，只恢复账户证明和运行状态，不会覆盖现有的宣告路由、DNS、出口节点、SNAT 或 netfilter 偏好。
+自动维护走凭据专用路径，只恢复账户证明和运行状态，不会覆盖现有的宣告路由、DNS、出口节点、SNAT 或 netfilter 偏好。换密采用同目录 `.next` 暂存和原子替换；进程中断后会先验证暂存密码并自动完成恢复。
 
 登录后再单独配置路由，避免身份参数和网络参数混在同一条命令中：
 
@@ -98,7 +99,7 @@ sudo scaletail set --advertise-routes=192.168.10.0/24
 
 ## 自实现能力
 
-- Windows 原生产品入口：Electron 仪表盘、托盘单实例、连接/恢复/断开/退出网络、节点、出口节点、路由、DNS 和 netcheck。
+- Windows 原生产品入口：Electron 仪表盘、托盘单实例、账号登录/退出、记住密码、自动登录、节点、出口节点、路由、DNS 和 netcheck。
 - Windows 服务、二进制、安装目录、快捷方式和卸载逻辑统一为 `ScaleTail`、`scaletail.exe`、`scaletaild.exe`。
 - Windows 安装包包含 `ScaleTailUI.exe`、`scaletail.exe`、`scaletaild.exe`、`scaletail-localapi.exe`、更新助手和 `wintun.dll`。
 - 安装包支持直接覆盖升级；卸载会停止服务并清理相关进程、服务和历史残留。
@@ -201,7 +202,7 @@ sudo scaletail-configure-account --server http://control.example.com:60090 --use
 | Windows 安装包 | 低 | 管理员运行安装包，自动安装服务和 Wintun |
 | Windows 源码构建 | 中 | 需要 Go、Node.js、npm 和 Inno Setup 6 |
 | Linux CLI | 中 | 安装核心包、启用服务并完成账户登录 |
-| Linux 无人值守 | 中 | 需要安全注入 0600 密码文件并规划 90 天轮换 |
+| Linux 无人值守 | 中 | 安全注入 0600 密码文件后，由 systemd 定时任务自动换密和重认证 |
 | macOS 未签名包 | 中高 | 通过 GitHub Actions macOS runner 构建，用户需手动信任 |
 | 核心网络开发 | 高 | 涉及 LocalAPI、TUN、路由、DNS、Noise 和控制协议 |
 

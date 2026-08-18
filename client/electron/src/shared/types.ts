@@ -59,8 +59,17 @@ export interface ConnectRequest {
   hostname: string;
   username: string;
   password: string;
+  rememberPassword: boolean;
+  autoLogin: boolean;
+  useSavedPassword?: boolean;
   acceptRoutes: boolean;
   acceptDNS: boolean;
+}
+
+export interface SavedAccountMetadata {
+  controlURL: string;
+  username: string;
+  autoLogin: boolean;
 }
 
 export interface ConnectResponse {
@@ -141,10 +150,9 @@ export interface NetcheckReport {
 export interface ScaleTailAPI {
   getStatus(peers?: boolean): Promise<Status>;
   getPrefs(): Promise<Prefs>;
+  getSavedAccount(): Promise<SavedAccountMetadata | undefined>;
   connect(req: ConnectRequest): Promise<ConnectResponse>;
   changeExpiredPassword(req: ChangeExpiredPasswordRequest): Promise<ConnectResponse>;
-  disconnect(): Promise<{ ok: boolean; message: string }>;
-  reconnect(): Promise<{ ok: boolean; message: string }>;
   logout(): Promise<{ ok: boolean }>;
   setExitNode(id: string): Promise<{ ok: boolean }>;
   setAdvertiseRoutes(routes: string[]): Promise<{ ok: boolean }>;

@@ -200,6 +200,9 @@ func (t *tgzTarget) Build(b *dist.Build) ([]string, error) {
 		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account-login.service"), path.Join(dir, "scaletail-account-login.service"), 0644); err != nil {
 			return nil, err
 		}
+		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account-login.timer"), path.Join(dir, "scaletail-account-login.timer"), 0644); err != nil {
+			return nil, err
+		}
 		if err := addFile(filepath.Join(scaletaildDir, "scaletail-account.conf.example"), path.Join(dir, "scaletail-account.conf.example"), 0644); err != nil {
 			return nil, err
 		}
@@ -309,6 +312,12 @@ func (t *debTarget) Build(b *dist.Build) ([]string, error) {
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.service"),
 			Destination: "/lib/systemd/system/scaletail-account-login.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.timer"),
+			Destination: "/lib/systemd/system/scaletail-account-login.timer",
 			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{
@@ -495,6 +504,12 @@ func (t *rpmTarget) Build(b *dist.Build) ([]string, error) {
 			Type:        files.TypeFile,
 			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.service"),
 			Destination: "/lib/systemd/system/scaletail-account-login.service",
+			FileInfo:    packageFileInfo(0644),
+		},
+		&files.Content{
+			Type:        files.TypeFile,
+			Source:      filepath.Join(scaletaildDir, "scaletail-account-login.timer"),
+			Destination: "/lib/systemd/system/scaletail-account-login.timer",
 			FileInfo:    packageFileInfo(0644),
 		},
 		&files.Content{

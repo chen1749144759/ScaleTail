@@ -26,8 +26,11 @@ import {
   startClientUpdateChecker,
 } from "./client_update";
 import {
+  canonicalCredentialControlURL,
   clearAccountCredential,
+  disableAccountAutoLogin,
   readAccountCredential,
+  readAccountCredentialMetadata,
   saveAccountCredential,
   validateAccountPassword,
 } from "./credential_store";
@@ -35,6 +38,16 @@ import type { PasswordAuthErrorCode } from "./localapi";
 import type { BackendState, ChangeExpiredPasswordRequest, ConnectRequest, ConnectResponse, PasswordChangeProgress, Status } from "../shared/types";
 
 type Route = "dashboard" | "connect" | "nodes";
+
+class AccountAuthenticationError extends Error {
+  constructor(
+    readonly code: PasswordAuthErrorCode | undefined,
+    message: string,
+  ) {
+    super(message);
+    this.name = "AccountAuthenticationError";
+  }
+}
 
 let mainWindow: BrowserWindow | undefined;
 let tray: Tray | undefined;
@@ -229,6 +242,7 @@ function registerIPC(): void {
     await ensureDaemonReady(false);
     return getPrefs();
   });
+  ipcMain.handle("api:getSavedAccount", async () => readAccountCredentialMetadata());
   ipcMain.handle("api:connect", async (_event, req: ConnectRequest) => (
     serializeAccountOperation(() => connect(req))
   ));
@@ -253,15 +267,13 @@ function registerIPC(): void {
     }
     return { cancelled };
   });
-  ipcMain.handle("api:disconnect", async () => serializeAccountOperation(disconnect));
-  ipcMain.handle("api:reconnect", async () => serializeAccountOperation(reconnect));
   ipcMain.handle("api:logout", async () => serializeAccountOperation(async () => {
     try {
       await ensureDaemonReady(false);
       await logout();
       return { ok: true };
     } finally {
-      clearAccountCredential();
+      disableAccountAutoLogin();
       resetTelemetryPolicyState();
       await refreshTrayStatus();
     }
@@ -324,18 +336,20 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
   const status = await ensureDaemonReady(false);
   const state = status.BackendState || "";
   const hadNodeKey = Boolean(status.HaveNodeKey);
-  if (state === "Stopped" && status.HaveNodeKey) {
-    throw new Error("当前只是临时断开状态，请点击“恢复连接”。如需更换服务端，请先点击“退出当前网络”。");
-  }
   if (state === "Running" || state === "Starting" || state === "NeedsMachineAuth") {
-    throw new Error("当前已有连接或连接流程正在进行。请先临时断开，或退出当前网络后再修改服务端配置。");
+    throw new Error("当前已经登录。如需更换账号或服务端，请先退出登录。");
   }
 
   const controlURL = buildControlURL(req);
   const hostname = validateHostname(req.hostname);
   const username = validateUsername(req.username);
-  const password = validateAccountPassword(req.password);
-  clearAccountCredential();
+  const password = connectRequestPassword(req, controlURL, username);
+  if (hadNodeKey) {
+    const currentControlURL = canonicalCredentialControlURL(String((await getPrefs()).ControlURL || ""));
+    if (currentControlURL && currentControlURL !== canonicalCredentialControlURL(controlURL)) {
+      throw new Error("当前节点身份属于另一台控制服务器，请先退出登录再更换服务端。");
+    }
+  }
   try {
     resetTelemetryPolicyState();
     await startDaemonUp(
@@ -352,7 +366,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
       // that local state as proof that the control server accepted the login.
       await authenticateAccountWithRetry(controlURL, username, password, 45_000);
     } catch (err) {
-      if (err instanceof LocalAPIError && err.code === "password_expired") {
+      if (accountAuthenticationErrorCode(err) === "password_expired") {
         return {
           ok: false,
           controlURL,
@@ -363,7 +377,7 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
       }
       throw passwordAuthenticationError(err);
     }
-    saveAccountCredential({ controlURL, username, password });
+    persistAccountCredential(req, controlURL, username, password);
     const nextStatus = await waitForPasswordAuthResult();
     await refreshTrayStatus();
 
@@ -383,7 +397,6 @@ async function connect(req: ConnectRequest): Promise<ConnectResponse> {
       message,
     };
   } catch (err) {
-    clearAccountCredential();
     throw err;
   }
 }
@@ -393,7 +406,7 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest, signal: 
   const normalized = normalizeConnectRequest(req);
   const controlURL = buildControlURL(normalized);
   const username = validateUsername(normalized.username);
-  const currentPassword = validateAccountPassword(normalized.password);
+  const currentPassword = connectRequestPassword(normalized, controlURL, username);
   const newPassword = validateNewAccountPassword(req.newPassword, currentPassword);
   sendPasswordChangeProgress("preparing");
   throwIfAborted(signal);
@@ -415,7 +428,7 @@ async function changeExpiredPassword(req: ChangeExpiredPasswordRequest, signal: 
   }
 
   try {
-    saveAccountCredential({ controlURL, username, password: newPassword });
+    persistAccountCredential(normalized, controlURL, username, newPassword);
   } catch (err) {
     throw new Error(`新密码已设置，但无法由系统凭据库安全保存。请关闭提示后使用新密码重新连接: ${formatError(err)}`);
   }
@@ -451,62 +464,29 @@ async function waitForPasswordChangeSession(requireRegistrationSession: boolean,
   throw new Error("auth_session_expired: 未取得与当前机器绑定的改密会话，请重新发起连接。");
 }
 
-async function disconnect(): Promise<{ ok: boolean; message: string }> {
-  const status = await ensureDaemonReady(false);
-  if (!status.HaveNodeKey && status.BackendState !== "NeedsMachineAuth") {
-    throw new Error("当前没有可临时断开的已登录网络。");
-  }
-  await setWantRunning(false);
-  resetTelemetryPolicyState();
-  await refreshTrayStatus();
-  return { ok: true, message: "已临时断开连接，登录状态仍保留。需要恢复时点击“恢复连接”。" };
-}
-
-async function reconnect(): Promise<{ ok: boolean; message: string }> {
-  assertClientUpdateAllowed();
-  const status = await ensureDaemonReady(false);
-  if (!status.HaveNodeKey) {
-    throw new Error("当前没有已保存的登录身份，请重新填写服务端信息和账号密码后连接。");
-  }
-  const credential = await readCurrentAccountCredential();
-  if (!credential) {
-    throw new Error("恢复连接需要账号密码，请在服务端设置中重新登录。");
-  }
-  resetTelemetryPolicyState();
-  await setRunningPrefs(true);
-  await authenticateAccountWithRetry(credential.controlURL, credential.username, credential.password, 45000);
-  const nextStatus = await waitForPasswordAuthResult();
-  await refreshTrayStatus();
-
-  const nextState = nextStatus.BackendState || "";
-  if (nextState === "Running") {
-    return { ok: true, message: "已恢复连接。" };
-  }
-  if (nextState === "NeedsMachineAuth") {
-    return { ok: true, message: "已提交恢复请求，当前仍在等待服务端设备授权。" };
-  }
-  if (nextState === "NeedsLogin" || nextStatus.AuthURL) {
-    throw new Error("恢复连接需要重新认证。请退出当前网络后，使用账号密码重新连接。");
-  }
-  return { ok: true, message: "已提交恢复连接请求，ScaleTail 服务正在与服务端建立连接。" };
-}
-
 async function restoreAccountCredential(): Promise<void> {
   try {
-    const status = await ensureDaemonReady(false);
-    const state = status.BackendState || "";
-    if (!status.HaveNodeKey || state === "Stopped") return;
     const credential = await readCurrentAccountCredential();
-    if (!credential) return;
+    if (!credential?.autoLogin) return;
+    const status = await ensureDaemonReady(false);
+    resetTelemetryPolicyState();
+    await setRunningPrefs(true);
+    if (!status.HaveNodeKey) {
+      await waitForPasswordAuthSession(true);
+    }
     await authenticateAccountWithRetry(
       credential.controlURL,
       credential.username,
       credential.password,
       15000,
     );
+    await waitForPasswordAuthResult();
     await refreshTrayStatus();
   } catch (err) {
     console.warn("ScaleTail account proof restore failed:", formatError(err));
+    if (accountAuthenticationErrorCode(err) === "password_expired") {
+      await openRoute("connect");
+    }
   }
 }
 
@@ -680,6 +660,37 @@ async function readCurrentAccountCredential() {
   return readAccountCredential(String(prefs.ControlURL || ""));
 }
 
+function connectRequestPassword(req: ConnectRequest, controlURL: string, username: string): string {
+  if (req.password) {
+    return validateAccountPassword(req.password);
+  }
+  if (req.useSavedPassword) {
+    const stored = readAccountCredential(controlURL);
+    if (stored?.username === username) {
+      return stored.password;
+    }
+  }
+  throw new Error("请输入账号密码，或使用已安全保存的密码。");
+}
+
+function persistAccountCredential(
+  req: ConnectRequest,
+  controlURL: string,
+  username: string,
+  password: string,
+): void {
+  if (!req.rememberPassword) {
+    clearAccountCredential();
+    return;
+  }
+  saveAccountCredential({
+    controlURL,
+    username,
+    password,
+    autoLogin: Boolean(req.autoLogin),
+  });
+}
+
 function isTransientAuthenticationError(err: unknown): boolean {
   if (!(err instanceof LocalAPIError)) return false;
   return err.code === "network_error"
@@ -766,6 +777,9 @@ function normalizeConnectRequest(req: ConnectRequest): ConnectRequest {
     hostname: String(req.hostname || ""),
     username: String(req.username || ""),
     password: String(req.password || ""),
+    rememberPassword: Boolean(req.rememberPassword),
+    autoLogin: Boolean(req.rememberPassword && req.autoLogin),
+    useSavedPassword: Boolean(req.useSavedPassword),
     acceptRoutes: Boolean(req.acceptRoutes),
     acceptDNS: Boolean(req.acceptDNS),
   };
@@ -791,9 +805,12 @@ function validateNewAccountPassword(password: string, currentPassword: string): 
 }
 
 function passwordAuthenticationError(err: unknown): Error {
+  if (err instanceof AccountAuthenticationError) {
+    return err;
+  }
   const code = err instanceof LocalAPIError ? asPasswordAuthErrorCode(err.code) : undefined;
   if (!code) {
-    return new Error(`账号认证失败：${formatError(err)}`);
+    return new AccountAuthenticationError(undefined, `账号认证失败：${formatError(err)}`);
   }
   const messages: Record<PasswordAuthErrorCode, string> = {
     invalid_credentials: "账号或密码错误。",
@@ -820,7 +837,17 @@ function passwordAuthenticationError(err: unknown): Error {
     password_not_expired: "当前密码不需要强制修改，请直接使用当前密码连接。",
     account_changed: "账号在修改密码期间发生变化，请重新输入最新密码后重试。",
   };
-  return new Error(`${code}: ${messages[code]}`);
+  return new AccountAuthenticationError(code, `${code}: ${messages[code]}`);
+}
+
+function accountAuthenticationErrorCode(err: unknown): PasswordAuthErrorCode | undefined {
+  if (err instanceof AccountAuthenticationError) {
+    return err.code;
+  }
+  if (err instanceof LocalAPIError) {
+    return asPasswordAuthErrorCode(err.code);
+  }
+  return undefined;
 }
 
 function asPasswordAuthErrorCode(code: string | undefined): PasswordAuthErrorCode | undefined {

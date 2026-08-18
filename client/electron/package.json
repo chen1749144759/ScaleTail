@@ -11,6 +11,7 @@
     "build:main": "tsc -p tsconfig.electron.json",
     "build:renderer": "vite build",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc -p tsconfig.electron.json --noEmit",
+    "test": "npm run build:main && node --test test/*.test.cjs",
     "package:win": "npm run build && electron-builder --win --x64 --dir"
   },
   "devDependencies": {

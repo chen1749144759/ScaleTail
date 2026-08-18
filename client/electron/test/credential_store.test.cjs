@@ -29,7 +29,9 @@ Module._load = function loadElectronStub(request, parent, isMain) {
 const {
   canonicalCredentialControlURL,
   clearAccountCredential,
+  disableAccountAutoLogin,
   readAccountCredential,
+  readAccountCredentialMetadata,
   saveAccountCredential,
   validateAccountPassword,
 } = require("../dist/main/credential_store");
@@ -44,14 +46,54 @@ test("credential is restored only for its canonical control URL", () => {
     controlURL: "HTTPS://Control.Example:443/",
     username: "alice",
     password: "correct horse battery staple",
+    autoLogin: true,
   });
 
   assert.deepEqual(readAccountCredential("https://control.example"), {
     controlURL: "https://control.example",
     username: "alice",
     password: "correct horse battery staple",
+    autoLogin: true,
+  });
+  assert.deepEqual(readAccountCredentialMetadata(), {
+    controlURL: "https://control.example",
+    username: "alice",
+    autoLogin: true,
   });
   assert.equal(readAccountCredential("https://other.example"), undefined);
+});
+
+test("schema v2 credential migrates to automatic login", () => {
+  clearAccountCredential();
+  const encrypted = Buffer.from(JSON.stringify({
+    controlURL: "https://control.example",
+    username: "legacy-user",
+    password: "legacy secure password",
+  }), "utf8");
+  fs.writeFileSync(
+    path.join(userDataPath, "account-credential.json"),
+    JSON.stringify({ version: 2, encrypted: encrypted.toString("base64") }),
+    "utf8",
+  );
+
+  assert.equal(readAccountCredential("https://control.example").autoLogin, true);
+});
+
+test("disabling automatic login retains the encrypted credential", () => {
+  clearAccountCredential();
+  saveAccountCredential({
+    controlURL: "https://control.example",
+    username: "alice",
+    password: "correct horse battery staple",
+    autoLogin: true,
+  });
+
+  disableAccountAutoLogin();
+
+  const credential = readAccountCredential("https://control.example");
+  assert.equal(credential.password, "correct horse battery staple");
+  assert.equal(credential.autoLogin, false);
+  assert.equal(readAccountCredentialMetadata().password, undefined);
 });
 
 test("unscoped schema v1 credential is not restored", () => {

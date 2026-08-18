@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { LayoutDashboard, LoaderCircle, LogOut, PlugZap, PowerOff } from "lucide-vue-next";
+import { LayoutDashboard, LoaderCircle, LogIn, LogOut } from "lucide-vue-next";
 import StatusPill from "../components/StatusPill.vue";
-import type { PasswordChangeProgress, Prefs, Status } from "../../shared/types";
+import type { PasswordChangeProgress, Prefs, SavedAccountMetadata, Status } from "../../shared/types";
 
 const emit = defineEmits<{
   "open-dashboard": [];
@@ -15,6 +15,9 @@ const serverPort = ref("443");
 const useHTTPS = ref(true);
 const username = ref("");
 const password = ref("");
+const rememberPassword = ref(true);
+const autoLogin = ref(true);
+const savedAccount = ref<SavedAccountMetadata | null>(null);
 const acceptRoutes = ref(true);
 const acceptDNS = ref(true);
 const loading = ref(false);
@@ -34,13 +37,22 @@ let offPasswordChangeProgress: (() => void) | undefined;
 
 const backendState = computed(() => status.value?.BackendState || "");
 const activeState = computed(() => ["Running", "Starting", "NeedsMachineAuth"].includes(backendState.value));
-const canResume = computed(() => backendState.value === "Stopped" && Boolean(status.value?.HaveNodeKey));
-const configLocked = computed(() => activeState.value || canResume.value);
-const canLogout = computed(() => activeState.value || canResume.value);
+const hasNodeIdentity = computed(() => Boolean(status.value?.HaveNodeKey));
+const configLocked = computed(() => activeState.value || hasNodeIdentity.value);
+const canLogout = computed(() => activeState.value || hasNodeIdentity.value);
 const controlURL = computed(() => {
   const scheme = useHTTPS.value ? "https" : "http";
   const port = serverPort.value.trim() || (useHTTPS.value ? "443" : "80");
   return `${scheme}://${serverIP.value.trim()}:${port}`;
+});
+const hasSavedPassword = computed(() => {
+  if (!rememberPassword.value || !savedAccount.value) return false;
+  try {
+    return new URL(controlURL.value).origin === savedAccount.value.controlURL
+      && username.value.trim() === savedAccount.value.username;
+  } catch {
+    return false;
+  }
 });
 const connectionPreview = computed(() => {
   const lines = [
@@ -48,6 +60,8 @@ const connectionPreview = computed(() => {
     `登录账号    ${username.value.trim() || "（未填写）"}`,
     `接受路由    ${acceptRoutes.value ? "是" : "否"}`,
     `采用 DNS    ${acceptDNS.value ? "是" : "否"}`,
+    `记住密码    ${rememberPassword.value ? "是" : "否"}`,
+    `自动登录    ${rememberPassword.value && autoLogin.value ? "是" : "否"}`,
   ];
   return lines.join("\n");
 });
@@ -70,13 +84,23 @@ async function load() {
   loading.value = true;
   error.value = "";
   try {
-    const [nextStatus, nextPrefs] = await Promise.all([
+    const [nextStatus, nextPrefs, nextSavedAccount] = await Promise.all([
       window.scaletail.getStatus(false),
       window.scaletail.getPrefs(),
+      window.scaletail.getSavedAccount(),
     ]);
     status.value = nextStatus;
     prefs.value = nextPrefs;
     parseControlURL(nextPrefs.ControlURL || "");
+    savedAccount.value = nextSavedAccount || null;
+    if (nextSavedAccount) {
+      if (!nextStatus.HaveNodeKey) {
+        parseControlURL(nextSavedAccount.controlURL);
+      }
+      username.value ||= nextSavedAccount.username;
+      rememberPassword.value = true;
+      autoLogin.value = nextSavedAccount.autoLogin;
+    }
     if (typeof nextPrefs.RouteAll === "boolean") {
       acceptRoutes.value = nextPrefs.RouteAll;
     }
@@ -111,6 +135,9 @@ async function connect() {
       hostname: "",
       username: username.value,
       password: password.value,
+      rememberPassword: rememberPassword.value,
+      autoLogin: rememberPassword.value && autoLogin.value,
+      useSavedPassword: hasSavedPassword.value,
       acceptRoutes: acceptRoutes.value,
       acceptDNS: acceptDNS.value,
     });
@@ -165,6 +192,9 @@ async function submitPasswordChange() {
       hostname: "",
       username: username.value,
       password: pendingCurrentPassword.value,
+      rememberPassword: rememberPassword.value,
+      autoLogin: rememberPassword.value && autoLogin.value,
+      useSavedPassword: hasSavedPassword.value,
       newPassword: newPassword.value,
       requireRegistrationSession: passwordChangeRequiresRegistrationSession.value,
       acceptRoutes: acceptRoutes.value,
@@ -217,38 +247,6 @@ function passwordChangeStatus() {
   return "正在准备连接...";
 }
 
-async function disconnectCurrent() {
-  loading.value = true;
-  error.value = "";
-  message.value = "正在临时断开连接...";
-  try {
-    const res = await window.scaletail.disconnect();
-    message.value = res.message;
-    await load();
-  } catch (err) {
-    error.value = messageOf(err);
-    message.value = "";
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function reconnectCurrent() {
-  loading.value = true;
-  error.value = "";
-  message.value = "正在恢复连接...";
-  try {
-    const res = await window.scaletail.reconnect();
-    message.value = res.message;
-    await load();
-  } catch (err) {
-    error.value = messageOf(err);
-    message.value = "";
-  } finally {
-    loading.value = false;
-  }
-}
-
 function requestLogout() {
   logoutConfirmOpen.value = true;
 }
@@ -257,12 +255,12 @@ async function logoutCurrent() {
   logoutConfirmOpen.value = false;
   loading.value = true;
   error.value = "";
-  message.value = "正在退出当前网络...";
+  message.value = "正在退出登录...";
   try {
     await window.scaletail.logout();
     username.value = "";
     password.value = "";
-    message.value = "已退出当前网络，现在可以修改服务端配置。";
+    message.value = "已退出登录并离开当前网络。";
     await load();
   } catch (err) {
     error.value = messageOf(err);
@@ -294,9 +292,12 @@ function lockMessage(state: string) {
     return "当前连接正在等待设备授权，服务端配置已临时锁定。";
   }
   if (state === "Stopped") {
-    return "当前已临时断开，登录状态仍保留。可直接恢复连接；如需更换服务端，请先退出当前网络。";
+    return "当前节点已离线，请重新登录；如需更换服务端，请先退出登录。";
   }
-  return "当前已连接，服务端配置已锁定。需要连接其他服务端时，请先退出当前网络。";
+  if (state === "NeedsLogin") {
+    return "当前节点需要重新认证，请输入账号密码登录，或退出登录清除本机身份。";
+  }
+  return "当前已登录，服务端配置已锁定。需要连接其他服务端时，请先退出登录。";
 }
 
 function messageOf(err: unknown) {
@@ -354,11 +355,28 @@ function messageOf(err: unknown) {
       <div class="form-grid account-grid">
         <label class="field">
           <span>账号</span>
-          <input v-model="username" :disabled="configLocked" type="text" autocomplete="off" placeholder="请输入账号" />
+          <input v-model="username" :disabled="activeState" type="text" autocomplete="username" placeholder="请输入账号" />
         </label>
         <label class="field">
           <span>密码</span>
-          <input v-model="password" :disabled="configLocked" type="password" autocomplete="off" placeholder="请输入密码" />
+          <input
+            v-model="password"
+            :disabled="activeState"
+            type="password"
+            autocomplete="current-password"
+            :placeholder="hasSavedPassword ? '已由系统安全保存' : '请输入密码'"
+          />
+        </label>
+      </div>
+
+      <div class="checks account-options">
+        <label>
+          <input v-model="rememberPassword" :disabled="activeState" type="checkbox" />
+          记住密码
+        </label>
+        <label>
+          <input v-model="autoLogin" :disabled="activeState || !rememberPassword" type="checkbox" />
+          自动登录
         </label>
       </div>
 
@@ -368,21 +386,13 @@ function messageOf(err: unknown) {
       <textarea class="command mono" :value="connectionPreview" readonly />
 
       <div class="toolbar">
-        <button v-if="canResume" class="btn primary" :disabled="loading" @click="reconnectCurrent">
-          <PlugZap :size="16" />
-          恢复连接
-        </button>
-        <button v-else-if="!activeState" class="btn primary" :disabled="loading" @click="connect">
-          <PlugZap :size="16" />
-          连接
-        </button>
-        <button v-if="activeState" class="btn" :disabled="loading" @click="disconnectCurrent">
-          <PowerOff :size="16" />
-          断开连接
+        <button v-if="!activeState" class="btn primary" :disabled="loading" @click="connect">
+          <LogIn :size="16" />
+          登录
         </button>
         <button v-if="canLogout" class="btn danger" :disabled="loading" @click="requestLogout">
           <LogOut :size="16" />
-          退出当前网络
+          退出登录
         </button>
         <button class="btn" @click="emit('open-dashboard')">
           <LayoutDashboard :size="16" />
@@ -394,10 +404,10 @@ function messageOf(err: unknown) {
     <div v-if="logoutConfirmOpen" class="modal-backdrop" @click.self="logoutConfirmOpen = false">
       <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-title">
         <div>
-          <span class="modal-kicker">退出当前网络</span>
-          <h3 id="logout-title">清除当前登录状态？</h3>
+          <span class="modal-kicker">退出登录</span>
+          <h3 id="logout-title">退出账号并离开网络？</h3>
           <p>
-            这会删除本机节点身份并解锁服务端配置。之后如需重新加入网络，需要重新输入账号密码完成认证。
+            这会断开连接并删除本机节点身份。已选择“记住密码”时，密码仍由系统安全保存，但自动登录会关闭。
           </p>
         </div>
         <div class="modal-actions">
